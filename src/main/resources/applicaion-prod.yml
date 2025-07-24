@@ -1,0 +1,35 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://localhost:3308/jellyorder
+    username: root
+    password: wpffl@2233
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    generate-ddl: true
+    hibernate:
+      #       create: 매번(서버재시작) table을 drop후 재생성
+      #       update: entity 변경사항만 alter를 적용하고 기존데이터 유지.
+      #       validate: 실제DB와의 차이점을 check만 하고 ddl문 실행X, 콘솔로만 변경사항 출력.
+      ddl-auto: create
+    show_sql: true
+  jackson:
+    time-zone: Asia/Seoul
+
+
+server:
+  port: 8080
+
+logging:
+  level:
+    root: info
+
+jwt:
+  expirationAt: 1000 # 1000분 세팅
+  # 기준: 인코딩된 문자 32자 이상 필요.(특수문자)
+  #
+  secretKeyAt:
