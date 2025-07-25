@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.domain.test;
+package com.beyond.jellyorder.test;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.common.s3.S3Uploader;
@@ -16,41 +16,30 @@ public class TestController {
         this.s3Uploader = s3Uploader;
     }
 
-//    @PostMapping("/s3test")
-//    public ResponseEntity<?> s3Test(
-//            @RequestParam(value = "photo") MultipartFile photo
-//            ) {
-//        System.out.println(photo.getOriginalFilename());
-//        TestDTO testDTO = new TestDTO("이미지 파일 테스트", 10);
-//        String imageurl = s3Uploader.uploadMenuImage(photo, testDTO);
-//        return ApiResponse.ok(imageurl);
-//    }
-
-    // 형진 테스트
-    @GetMapping("/hyungjin")
-    public ResponseEntity<?> testHyungJin() {
+    @GetMapping
+    public ResponseEntity<?> testConnect() {
         TestDTO testDTO = new TestDTO("hello", 10);
         return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
     }
 
-
-    // 현지 테스트
-    @GetMapping("/hyunji")
-    public ResponseEntity<?> testHyunji() {
-        TestDTO testDTO = new TestDTO("hello", 20);
-        return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
-    }
-
-
-    // 혜성 테스트
     @GetMapping("/hyeseong")
     public ResponseEntity<?> testHyeseong() {
         TestDTO testDTO = new TestDTO("hello", 10);
         return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
     }
 
+    @PostMapping("/s3test")
+    public ResponseEntity<?> s3Test(
+            @RequestParam(value = "photo") MultipartFile photo
+            ) {
+        System.out.println(photo.getOriginalFilename());
+        TestDTO testDTO = new TestDTO("이미지 파일 테스트", 10);
+        String imageurl = s3Uploader.uploadMenuImage(photo, testDTO);
+        return ApiResponse.ok(imageurl);
+    }
 
-    // 진호 테스트
+
+
 
 
 

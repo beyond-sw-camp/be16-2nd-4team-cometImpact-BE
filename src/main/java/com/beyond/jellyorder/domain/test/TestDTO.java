@@ -9,5 +9,3 @@ public class TestDTO {
     private String name;
     private Integer age;
 }
-
-
