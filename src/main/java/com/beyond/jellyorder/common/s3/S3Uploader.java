@@ -1,6 +1,6 @@
 package com.beyond.jellyorder.common.s3;
 
-import com.beyond.jellyorder.test.TestDTO;
+import com.beyond.jellyorder.domain.test.TestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
