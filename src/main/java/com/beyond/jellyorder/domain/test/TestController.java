@@ -51,8 +51,9 @@ public class TestController {
 
 
     // 진호 테스트
-
-
-
-
+    @GetMapping("/jinho")
+    public ResponseEntity<?> testJinho() {
+        TestDTO testDTO = new TestDTO("hello", 23);
+        return ApiResponse.ok(testDTO);
+    }
 }
