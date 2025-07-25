@@ -22,6 +22,12 @@ public class TestController {
         return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
     }
 
+    @GetMapping("/hyeseong")
+    public ResponseEntity<?> testHyeseong() {
+        TestDTO testDTO = new TestDTO("hello", 10);
+        return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
+    }
+
     @PostMapping("/s3test")
     public ResponseEntity<?> s3Test(
             @RequestParam(value = "photo") MultipartFile photo
