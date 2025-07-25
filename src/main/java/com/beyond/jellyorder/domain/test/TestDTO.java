@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.test;
+package com.beyond.jellyorder.domain.test;
 
 import lombok.AllArgsConstructor;
 import lombok.Getter;
