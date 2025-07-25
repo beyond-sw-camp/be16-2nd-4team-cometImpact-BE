@@ -35,7 +35,11 @@ public class TestController {
 
 
     // 현지 테스트
-
+    @GetMapping("/hyunji")
+    public ResponseEntity<?> testHyunji() {
+        TestDTO testDTO = new TestDTO("hello", 20);
+        return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
+    }
 
 
     // 혜성 테스트
