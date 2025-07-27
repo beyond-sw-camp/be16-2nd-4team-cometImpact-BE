@@ -1,1 +1,84 @@
-# be16-2nd-4team-untitled-BE
+# Jelly Order
+
+### <img width="50" height="50" alt="팀 로고" src="https://github.com/user-attachments/assets/2c140acc-54f4-4b42-b0ba-a3bde1cf5743" /> 혜성충돌
+> **먼지와 암석, 얼음이 모여 혜성이 되었고, 우리는 세상을 향해 전속력으로 충돌합니다.**
+
+
+<table>
+  <tr>
+    <td align="center">
+      <a href="https://github.com/JeaPple" target="_blank">
+        <img src="./images/parkjihun.png" width="120px"><br />
+        <sub><b>김형진</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/ifunhy" target="_blank">
+        <img src="./images/parkheechaan.png" width="120px"><br />
+        <sub><b>김현지</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/jinnn12" target="_blank">
+        <img src="./images/yoonjiyoung.png" width="120px"><br />
+        <sub><b>김진호</b></sub>
+      </a>
+    </td>
+    <td align="center">
+      <a href="https://github.com/solidify-d" target="_blank">
+        <img src="./images/ominseong.png" width="120px"><br />
+        <sub><b>박헤성</b></sub>
+      </a>
+    </td>
+  </tr>
+</table>
+
+---
+
+## 1. 📌 프로젝트 개요
+
+### 프로젝트 주제
+- 
+
+### 프로젝트 소개
+- 
+
+### 프로젝트 배경
+- 
+
+---
+
+## 2. 📐 분석 및 설계
+
+### ✅ 요구사항 명세서
+- 
+
+### 🎨 화면 설계서
+- 
+
+### 🧾 ERD
+- 
+
+### 📆 WBS (Work Breakdown Structure)
+
+
+---
+
+## 3. 🧪 단위테스트 결과서
+
+
+---
+
+## 4. 🛠 기술 스택
+
+### 👨‍💻 Frontend
+- 
+
+### 👩‍🔧 Backend
+- 
+
+### 🧠 AI/추천
+- 
+
+### 🧪 DevOps & Test
+- 
