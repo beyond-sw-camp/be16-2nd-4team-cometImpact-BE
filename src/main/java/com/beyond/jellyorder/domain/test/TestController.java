@@ -16,15 +16,15 @@ public class TestController {
         this.s3Uploader = s3Uploader;
     }
 
-//    @PostMapping("/s3test")
-//    public ResponseEntity<?> s3Test(
-//            @RequestParam(value = "photo") MultipartFile photo
-//            ) {
-//        System.out.println(photo.getOriginalFilename());
-//        TestDTO testDTO = new TestDTO("이미지 파일 테스트", 10);
-//        String imageurl = s3Uploader.uploadMenuImage(photo, testDTO);
-//        return ApiResponse.ok(imageurl);
-//    }
+    @PostMapping("/s3test")
+    public ResponseEntity<?> s3Test(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam("name") String name
+    ) {
+        TestDTO testDTO = new TestDTO(name, 0); // 임시 데이터
+        String imageUrl = s3Uploader.uploadMenuImage(file, testDTO);
+        return ApiResponse.ok(imageUrl);
+    }
 
     // 형진 테스트
     @GetMapping("/hyungjin")
@@ -33,7 +33,6 @@ public class TestController {
         return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
     }
 
-
     // 현지 테스트
     @GetMapping("/hyunji")
     public ResponseEntity<?> testHyunji() {
@@ -41,14 +40,12 @@ public class TestController {
         return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
     }
 
-
     // 혜성 테스트
     @GetMapping("/hyeseong")
     public ResponseEntity<?> testHyeseong() {
         TestDTO testDTO = new TestDTO("hello", 10);
         return ApiResponse.created(testDTO, "커스텀한 메시지입니다.");
     }
-
 
     // 진호 테스트
     @GetMapping("/jinho")
