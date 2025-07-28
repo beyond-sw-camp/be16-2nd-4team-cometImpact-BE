@@ -11,5 +11,5 @@ public interface ZoneRepository extends JpaRepository<Zone, UUID> {
 
     boolean existsByStoreAndName(Store store, String name);
 
-    Optional<Zone> findByStore(Store store);
+    Optional<Zone> findByStoreAndName(Store store, String name);
 }
