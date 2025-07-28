@@ -8,9 +8,11 @@ import com.beyond.jellyorder.domain.table.entity.Zone;
 import com.beyond.jellyorder.domain.table.repository.ZoneRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.UUID;
 
 @Service
@@ -30,6 +32,10 @@ public class ZoneService {
 
         Store store = storeRepository.findByLoginId(storeLoginId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장이 존재하지 않습니다."));
+
+        if (zoneRepository.existsByStoreAndName(store, dto.getZoneName())) {
+            throw new IllegalArgumentException("해당 매장에 동일한 구역 이름이 존재합니다.");
+        }
 
         Zone zone = dto.toEntity(store);
         zoneRepository.save(zone);

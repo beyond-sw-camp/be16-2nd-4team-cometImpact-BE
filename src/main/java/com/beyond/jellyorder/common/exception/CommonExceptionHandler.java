@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.common.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -53,6 +54,14 @@ public class CommonExceptionHandler {
                 e.getMessage(),
                 HttpStatus.FORBIDDEN.value()
         ), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> DataViolationException(DataIntegrityViolationException e) {
+        return new ResponseEntity<>(new CommonErrorDTO(
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST.value()
+        ), HttpStatus.BAD_REQUEST);
     }
 
 

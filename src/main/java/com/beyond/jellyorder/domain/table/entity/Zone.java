@@ -13,6 +13,12 @@ import java.util.UUID;
 
 @Entity
 @Getter @AllArgsConstructor @NoArgsConstructor @Builder
+@Table(
+        name = "zone",
+        uniqueConstraints = {
+                @UniqueConstraint(name = "uk_store_zone_name", columnNames = {"store_id", "name"})
+        }
+)
 public class Zone extends BaseTimeEntity {
 
     @Id
