@@ -8,6 +8,7 @@ import org.springframework.web.multipart.MultipartFile;
 import software.amazon.awssdk.core.sync.RequestBody;
 import software.amazon.awssdk.services.s3.S3Client;
 import software.amazon.awssdk.services.s3.model.PutObjectRequest;
+import java.util.UUID;
 
 import java.io.IOException;
 
@@ -25,7 +26,7 @@ public class S3Uploader {
      */
     public String uploadMenuImage(MultipartFile menuImage, TestDTO testDTO) {
         // image명 설정
-        String fileName = "menu-" + testDTO.getName() + "-menuImage-" + menuImage.getOriginalFilename();
+        String fileName = "menu-" + testDTO.getName() + "-menuImage-" + menuImage.getOriginalFilename() + "-" + UUID.randomUUID();
 
         // 저장 객체 구성
         PutObjectRequest putObjectRequest = PutObjectRequest.builder()
