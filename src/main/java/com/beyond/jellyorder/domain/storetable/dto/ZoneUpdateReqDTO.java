@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.domain.table.dto;
+package com.beyond.jellyorder.domain.storetable.dto;
 
 import lombok.Getter;
 import lombok.NoArgsConstructor;

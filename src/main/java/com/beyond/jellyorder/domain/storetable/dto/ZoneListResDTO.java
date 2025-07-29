@@ -1,6 +1,6 @@
-package com.beyond.jellyorder.domain.table.dto;
+package com.beyond.jellyorder.domain.storetable.dto;
 
-import com.beyond.jellyorder.domain.table.entity.Zone;
+import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import lombok.Builder;
 import lombok.Getter;
 

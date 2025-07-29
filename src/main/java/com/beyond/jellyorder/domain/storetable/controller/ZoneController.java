@@ -1,11 +1,11 @@
-package com.beyond.jellyorder.domain.table.controller;
+package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.table.dto.ZoneCreateReqDTO;
-import com.beyond.jellyorder.domain.table.dto.ZoneListResDTO;
-import com.beyond.jellyorder.domain.table.dto.ZoneResDTO;
-import com.beyond.jellyorder.domain.table.dto.ZoneUpdateReqDTO;
-import com.beyond.jellyorder.domain.table.service.ZoneService;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneCreateReqDTO;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneListResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneUpdateReqDTO;
+import com.beyond.jellyorder.domain.storetable.service.ZoneService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

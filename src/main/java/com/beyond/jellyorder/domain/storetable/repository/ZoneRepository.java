@@ -1,11 +1,10 @@
-package com.beyond.jellyorder.domain.table.repository;
+package com.beyond.jellyorder.domain.storetable.repository;
 
 import com.beyond.jellyorder.domain.store.entity.Store;
-import com.beyond.jellyorder.domain.table.entity.Zone;
+import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 
 public interface ZoneRepository extends JpaRepository<Zone, UUID> {
