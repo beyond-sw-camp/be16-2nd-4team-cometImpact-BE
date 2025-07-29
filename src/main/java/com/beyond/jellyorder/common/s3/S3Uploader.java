@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.common.s3;
 
+import com.beyond.jellyorder.domain.test.TestDTO;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
@@ -23,7 +24,7 @@ public class S3Uploader {
     /**
      * 사용자 프로필 이미지를 업로드하고 URL을 반환합니다.
      */
-    public String uploadMenuImage(MultipartFile menuImage) {
+    public String uploadMenuImage(MultipartFile menuImage, TestDTO testDTO) {
         // image명 설정
         String fileName = "menu-" + testDTO.getName() + "-menuImage-" + menuImage.getOriginalFilename() + "-" + UUID.randomUUID();
 
