@@ -1,6 +1,8 @@
 package com.beyond.jellyorder.common.exception;
 
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -11,10 +13,12 @@ import javax.naming.AuthenticationException;
 import java.util.NoSuchElementException;
 
 @RestControllerAdvice
+@Slf4j
 public class CommonExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> illegalException(IllegalArgumentException e) {
+        log.error(e.getMessage());
         return new ResponseEntity<>(new CommonErrorDTO(
                 e.getMessage(),
                 HttpStatus.BAD_REQUEST.value()
@@ -23,6 +27,7 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<?> entityException(EntityNotFoundException e) {
+        log.error(e.getMessage());
         return new ResponseEntity<>(new CommonErrorDTO(
                 e.getMessage(),
                 HttpStatus.NOT_FOUND.value()
@@ -31,6 +36,7 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<?> NoSuchElementException(NoSuchElementException e) {
+        log.error(e.getMessage());
         return new ResponseEntity<>(new CommonErrorDTO(
                 e.getMessage(),
                 HttpStatus.NOT_FOUND.value()
@@ -39,6 +45,7 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> MethodNotValidException(MethodArgumentNotValidException e) {
+        log.error(e.getMessage());
         String defaultMessage = e.getBindingResult().getFieldError().getDefaultMessage();
 
         return new ResponseEntity<>(new CommonErrorDTO(
@@ -49,10 +56,20 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<?> authenticationException(AuthenticationException e) {
+        log.error(e.getMessage());
         return new ResponseEntity<>(new CommonErrorDTO(
                 e.getMessage(),
                 HttpStatus.FORBIDDEN.value()
         ), HttpStatus.FORBIDDEN);
+    }
+
+    @ExceptionHandler(DataIntegrityViolationException.class)
+    public ResponseEntity<?> DataViolationException(DataIntegrityViolationException e) {
+        log.error(e.getMessage());
+        return new ResponseEntity<>(new CommonErrorDTO(
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST.value()
+        ), HttpStatus.BAD_REQUEST);
     }
 
 
