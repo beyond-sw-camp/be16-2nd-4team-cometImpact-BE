@@ -16,6 +16,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/zone")
+//    @PreAuthorize("hasRole('STORE')") 토큰 발급 시 추가 예정
 public class ZoneController {
 
     private final ZoneService zoneService;

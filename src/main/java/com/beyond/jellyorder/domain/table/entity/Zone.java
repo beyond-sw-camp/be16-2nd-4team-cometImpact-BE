@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.table.entity;
 
+import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.common.BaseTimeEntity;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import jakarta.persistence.*;
@@ -19,13 +20,7 @@ import java.util.UUID;
                 @UniqueConstraint(name = "uk_store_zone_name", columnNames = {"store_id", "name"})
         }
 )
-public class Zone extends BaseTimeEntity {
-
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
-    private UUID id;
+public class Zone extends BaseIdAndTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "store_id")
