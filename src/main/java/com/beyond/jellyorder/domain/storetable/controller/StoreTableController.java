@@ -4,6 +4,7 @@ import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.storetable.dto.StoreTableCreateReqDTO;
 import com.beyond.jellyorder.domain.storetable.dto.StoreTableResDTO;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -21,8 +22,9 @@ public class StoreTableController {
     @PostMapping("/create/{storeLoginId}")
     public ResponseEntity<?> createStoreTable(
             @PathVariable String storeLoginId,
-            @RequestBody StoreTableCreateReqDTO reqDTO
+            @RequestBody @Valid StoreTableCreateReqDTO reqDTO
     ) {
+        reqDTO.validate();
         List<StoreTableResDTO> resDTO = storeTableService.createTables(reqDTO, storeLoginId);
         return ApiResponse.created(resDTO, "테이블이 생성되었습니다.");
     }

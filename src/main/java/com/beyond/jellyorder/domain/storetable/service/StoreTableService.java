@@ -42,6 +42,7 @@ public class StoreTableService {
         List<String> requestNames = dto.getStoreTableNameList().stream()
                 .map(StoreTableNameReqDTO::getStoreTableName)
                 .toList();
+        // ex) requestNames = List.of("T1", "T2", "T3");
 
         List<String> existingNames = storeTableRepository.findNamesByStoreAndNames(store, requestNames);
 
