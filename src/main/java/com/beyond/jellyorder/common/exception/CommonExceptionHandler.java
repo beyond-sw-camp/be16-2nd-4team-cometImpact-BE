@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.common.exception;
 
+import com.beyond.jellyorder.domain.ingredient.service.IngredientService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -72,5 +73,13 @@ public class CommonExceptionHandler {
         ), HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(IngredientService.DuplicateIngredientNameException.class)
+    public ResponseEntity<?> handleDuplicateIngredientNameException(IngredientService.DuplicateIngredientNameException e) {
+        log.warn("중복 식자재 예외 발생: {}", e.getMessage());
 
+        return new ResponseEntity<>(new CommonErrorDTO(
+                e.getMessage(),
+                HttpStatus.BAD_REQUEST.value()
+        ), HttpStatus.BAD_REQUEST);
+    }
 }
