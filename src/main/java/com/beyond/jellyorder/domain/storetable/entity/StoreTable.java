@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.storetable.entity;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
+import com.beyond.jellyorder.domain.store.entity.Store;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -15,11 +16,15 @@ import lombok.NoArgsConstructor;
 @Table(
         name = "store_table",
         uniqueConstraints = {
-                @UniqueConstraint(name = "uk_zone_storeTable_name",
-                        columnNames = {"zone_id", "name"})
+                @UniqueConstraint(name = "uk_store_storeTable_name",
+                        columnNames = {"store_id", "name"})
         }
 )
 public class StoreTable extends BaseIdAndTimeEntity {
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_id")
+    private Store store;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "zone_id")
