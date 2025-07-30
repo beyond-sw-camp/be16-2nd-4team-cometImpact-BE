@@ -1,20 +1,18 @@
-package com.beyond.jellyorder.domain.table.service;
+package com.beyond.jellyorder.domain.storetable.service;
 
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
-import com.beyond.jellyorder.domain.table.dto.ZoneCreateReqDTO;
-import com.beyond.jellyorder.domain.table.dto.ZoneListResDTO;
-import com.beyond.jellyorder.domain.table.dto.ZoneResDTO;
-import com.beyond.jellyorder.domain.table.dto.ZoneUpdateReqDTO;
-import com.beyond.jellyorder.domain.table.entity.Zone;
-import com.beyond.jellyorder.domain.table.repository.ZoneRepository;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneCreateReqDTO;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneListResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.ZoneUpdateReqDTO;
+import com.beyond.jellyorder.domain.storetable.entity.Zone;
+import com.beyond.jellyorder.domain.storetable.repository.ZoneRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.sql.SQLIntegrityConstraintViolationException;
 import java.util.List;
 import java.util.UUID;
 import java.util.stream.Collectors;
