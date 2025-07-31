@@ -19,7 +19,12 @@ import java.util.UUID;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "category")
+@Table(name = "category", uniqueConstraints = {
+        @UniqueConstraint(
+                name = "uk_category_storeId_name",
+                columnNames = {"store_id", "name"}
+        )
+})
 public class Category extends BaseIdAndTimeEntity {
 
     /**

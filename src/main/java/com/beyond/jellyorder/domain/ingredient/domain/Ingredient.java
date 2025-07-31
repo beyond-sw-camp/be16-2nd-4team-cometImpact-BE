@@ -16,12 +16,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
-@Table(name = "category", uniqueConstraints = {
-        @UniqueConstraint(
-                name = "uk_category_storeId_name",
-                columnNames = {"store_id", "name"}
-        )
-})
+@Table(name = "ingredient")
 public class Ingredient extends BaseIdAndTimeEntity {
 
     /**
