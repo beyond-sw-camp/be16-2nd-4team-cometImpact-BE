@@ -5,6 +5,7 @@ import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateReqDto;
 import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateResDto;
 import com.beyond.jellyorder.domain.ingredient.repository.IngredientRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -31,46 +32,38 @@ public class IngredientService {
      * @throws DuplicateIngredientNameException 동일 매장 내에 이름이 중복되는 경우
      */
     public IngredientCreateResDto create(IngredientCreateReqDto reqDto) {
-        /*
-            TODO: [2025-07-31 기준] storeId에 대한 실제 매장 UUID 유효성 검증 로직 추가 예정
-            현재는 테스트 목적상 단순 UUID 문자열만 전달받고 있으나,
-            향후 Store 도메인 및 StoreRepository가 구현되면 다음과 같은 형태의 검증 로직이 삽입될 예정이다:
+    /*
+        TODO: [2025-07-31 기준] storeId에 대한 실제 매장 UUID 유효성 검증 로직 추가 예정
+    */
 
-                UUID authenticatedStoreId = getStoreIdFromAuthentication(); // 인증 객체로부터 추출
-                if (!storeRepository.existsById(authenticatedStoreId)) {
-                    throw new StoreNotFoundException(authenticatedStoreId); // 커스텀 예외 발생
-                }
-
-            이 검증은 인증된 사용자가 요청한 storeId가 실제로 존재하는 유효한 매장 식별자인지를 확인하여,
-            권한이 없는 접근이나 잘못된 데이터 요청을 사전에 차단하는 데 목적이 있다.
-
-            또한, 해당 검증은 서비스 전반에서 반복적으로 사용될 가능성이 높으므로,
-            공통 검증 유틸리티 또는 Validator 클래스를 common 패키지 하위에 별도로 구성하는 방안에 대한 논의가 필요하다.
-         */
-
-        // 동일 매장 내에 동일한 이름의 식자재가 존재하는지 확인
+        // 1차 중복 검사
         boolean exists = ingredientRepository.existsByStoreIdAndName(reqDto.getStoreId(), reqDto.getName());
         if (exists) {
-            // 중복 식자재 존재 시 예외 발생
             throw new DuplicateIngredientNameException(reqDto.getName());
         }
 
-        // 식자재 엔티티 생성
-        Ingredient ingredient = Ingredient.builder()
-                .storeId(reqDto.getStoreId())
-                .name(reqDto.getName())
-                .status(reqDto.getStatus())
-                .build();
+        try {
+            // 식자재 엔티티 생성
+            Ingredient ingredient = Ingredient.builder()
+                    .storeId(reqDto.getStoreId())
+                    .name(reqDto.getName())
+                    .status(reqDto.getStatus())
+                    .build();
 
-        // DB에 저장
-        Ingredient saved = ingredientRepository.save(ingredient);
+            // DB에 저장
+            Ingredient saved = ingredientRepository.save(ingredient);
 
-        // 저장된 식자재 정보를 응답 DTO로 변환하여 반환
-        return IngredientCreateResDto.builder()
-                .id(saved.getId())
-                .name(saved.getName())
-                .status(saved.getStatus())
-                .build();
+            // 응답 DTO 반환
+            return IngredientCreateResDto.builder()
+                    .id(saved.getId())
+                    .name(saved.getName())
+                    .status(saved.getStatus())
+                    .build();
+
+        } catch (DataIntegrityViolationException e) {
+            // 동시성 문제로 인한 DB 중복 제약 위반 시 예외 변환
+            throw new DuplicateIngredientNameException(reqDto.getName());
+        }
     }
 
     /**
