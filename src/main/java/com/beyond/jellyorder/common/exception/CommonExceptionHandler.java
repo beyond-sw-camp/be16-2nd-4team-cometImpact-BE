@@ -18,58 +18,73 @@ public class CommonExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<?> illegalException(IllegalArgumentException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(new CommonErrorDTO(
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST.value()
-        ), HttpStatus.BAD_REQUEST);
+        log.error("[IllegalArgumentException] code = {}, message = {}", HttpStatus.BAD_REQUEST, e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(CommonErrorDTO.builder()
+                        .status_message(e.getMessage())
+                        .status_code(HttpStatus.BAD_REQUEST.value())
+                        .build()
+
+                );
     }
 
     @ExceptionHandler(EntityNotFoundException.class)
     public ResponseEntity<?> entityException(EntityNotFoundException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(new CommonErrorDTO(
-                e.getMessage(),
-                HttpStatus.NOT_FOUND.value()
-        ), HttpStatus.NOT_FOUND);
+        log.error("[EntityNotFoundException] code = {}, message = {}", HttpStatus.NOT_FOUND, e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(CommonErrorDTO.builder()
+                        .status_message(e.getMessage())
+                        .status_code(HttpStatus.NOT_FOUND.value())
+                        .build()
+                );
     }
 
     @ExceptionHandler(NoSuchElementException.class)
     public ResponseEntity<?> NoSuchElementException(NoSuchElementException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(new CommonErrorDTO(
-                e.getMessage(),
-                HttpStatus.NOT_FOUND.value()
-        ), HttpStatus.NOT_FOUND);
+        log.error("[NoSuchElementException] code = {}, message = {}", HttpStatus.NOT_FOUND, e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .body(CommonErrorDTO.builder()
+                        .status_message(e.getMessage())
+                        .status_code(HttpStatus.NOT_FOUND.value())
+                        .build()
+                );
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)
     public ResponseEntity<?> MethodNotValidException(MethodArgumentNotValidException e) {
-        log.error(e.getMessage());
+        log.error("[MethodArgumentNotValidException] code = {}, message = {}", HttpStatus.BAD_REQUEST, e.getMessage());
         String defaultMessage = e.getBindingResult().getFieldError().getDefaultMessage();
 
-        return new ResponseEntity<>(new CommonErrorDTO(
-                defaultMessage,
-                HttpStatus.BAD_REQUEST.value()
-        ), HttpStatus.BAD_REQUEST);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(CommonErrorDTO.builder()
+                        .status_message(defaultMessage)
+                        .status_code(HttpStatus.BAD_REQUEST.value())
+                        .build()
+                );
+
     }
 
     @ExceptionHandler(AuthenticationException.class)
     public ResponseEntity<?> authenticationException(AuthenticationException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(new CommonErrorDTO(
-                e.getMessage(),
-                HttpStatus.FORBIDDEN.value()
-        ), HttpStatus.FORBIDDEN);
+        log.error("[AuthenticationException] code = {}, message = {}", HttpStatus.FORBIDDEN, e.getMessage());
+        return ResponseEntity.status(HttpStatus.FORBIDDEN)
+                .body(CommonErrorDTO.builder()
+                        .status_message(e.getMessage())
+                        .status_code(HttpStatus.FORBIDDEN.value())
+                        .build()
+                );
     }
 
-    @ExceptionHandler(DataIntegrityViolationException.class)
-    public ResponseEntity<?> DataViolationException(DataIntegrityViolationException e) {
-        log.error(e.getMessage());
-        return new ResponseEntity<>(new CommonErrorDTO(
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST.value()
-        ), HttpStatus.BAD_REQUEST);
+    @ExceptionHandler(DuplicateResourceException.class)
+    public ResponseEntity<?> duplicateResourceException(DuplicateResourceException e) {
+        log.error("[DuplicateResourceException] code = {}, message = {}", HttpStatus.BAD_REQUEST, e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(CommonErrorDTO.builder()
+                        .status_message(e.getMessage())
+                        .status_code(HttpStatus.BAD_REQUEST.value())
+                        .result(e.getData())
+                        .build()
+                );
     }
 
 
