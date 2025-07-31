@@ -25,7 +25,7 @@ public class Category extends BaseIdAndTimeEntity {
     /**
      * 카테고리를 소속시킬 매장의 고유 식별자.
      * 현재는 테스트 및 개발 편의상 String 타입으로 지정되어 있으며,
-     * 추후 UUID 타입으로 변경 예정이다.
+     * 추후 Store 타입으로 변경 예정이다.
      */
     @Column(name = "store_id", nullable = false)
     private String storeId;
