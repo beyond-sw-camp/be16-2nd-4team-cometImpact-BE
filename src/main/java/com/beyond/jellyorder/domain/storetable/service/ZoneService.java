@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.storetable.service;
 
+import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import com.beyond.jellyorder.domain.storetable.dto.ZoneCreateReqDTO;
@@ -36,7 +37,7 @@ public class ZoneService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장이 존재하지 않습니다."));
 
         if (zoneRepository.existsByStoreAndName(store, dto.getZoneName())) {
-            throw new IllegalArgumentException("해당 매장에 동일한 구역 이름이 존재합니다.");
+            throw new DuplicateResourceException("해당 매장에 동일한 구역 이름이 존재합니다.");
         }
 
         Zone zone = dto.toEntity(store);
@@ -74,7 +75,7 @@ public class ZoneService {
         }
 
         if (zoneRepository.existsByStoreAndName(store, dto.getZoneName())) {
-            throw new IllegalArgumentException("해당 매장에 동일한 구역 이름이 존재합니다.");
+            throw new DuplicateResourceException("해당 매장에 동일한 구역 이름이 존재합니다.");
         }
 
         zone.updateName(dto.getZoneName());
