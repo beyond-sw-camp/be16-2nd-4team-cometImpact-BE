@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.storetable.service;
 
+import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import com.beyond.jellyorder.domain.storetable.dto.StoreTableCreateReqDTO;
@@ -47,7 +48,7 @@ public class StoreTableService {
         List<String> existingNames = storeTableRepository.findNamesByStoreAndNames(store, requestNames);
 
         if (!existingNames.isEmpty()) {
-            throw new IllegalArgumentException("이미 존재하는 테이블 이름입니다: " + existingNames);
+            throw new DuplicateResourceException("이미 존재하는 테이블 이름입니다: ",existingNames);
         }
 
         // 중복 없으면 저장
