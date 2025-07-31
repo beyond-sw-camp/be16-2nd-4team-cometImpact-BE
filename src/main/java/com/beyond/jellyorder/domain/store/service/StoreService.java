@@ -19,11 +19,15 @@ public class StoreService {
     private final PasswordEncoder passwordEncoder;
 
 
-
-
-    public String save(StoreCreateDto storeCreateDto) {
+    public String save(StoreCreateDto storeCreateDto) { // Store 회원가입
         if (storeRepository.findByLoginId(storeCreateDto.getLoginId()).isPresent()) {
             throw new IllegalArgumentException("이미 가입된 아이디 입니다.");
+        }
+        if (storeRepository.findByRegisteredNumber(storeCreateDto.getRegisteredNumber()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 사업자등록번호 입니다.");
+        }
+        if (storeRepository.findByOwnerEmail(storeCreateDto.getOwnerEmail()).isPresent()) {
+            throw new IllegalArgumentException("이미 가입된 사업자 이메일 입니다.");
         }
 
         String encodedPassword = passwordEncoder.encode(storeCreateDto.getPassword());
