@@ -5,6 +5,7 @@ import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
@@ -34,13 +35,16 @@ public class SseEmitters {
 
     // 특정 점주에게 알림 전송
     public void notifyStore(String storeId, RequestCreateDto dto) {
-        SseEmitter emitter = emitterMap.get(storeId);
-        if (emitter != null) {
+        List<SseEmitter> emitters = emitterMap.get(storeId);
+
+        if (emitters == null || emitters.isEmpty()) return;
+
+        for (SseEmitter emitter : new ArrayList<>(emitters)) {
             try {
                 emitter.send(SseEmitter.event().name("request").data(dto));
             } catch (IOException e) {
                 emitter.completeWithError(e);
-                emitterMap.remove(storeId);
+                emitters.remove(emitter);  // 실패한 emitter 제거
             }
         }
     }
