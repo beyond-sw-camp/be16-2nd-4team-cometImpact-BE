@@ -40,8 +40,4 @@ public class StoreTable extends BaseIdAndTimeEntity {
     @Builder.Default
     @Column(name = "seat_count", nullable = false)
     private Integer seatCount = 4;
-
-
-
-
 }
