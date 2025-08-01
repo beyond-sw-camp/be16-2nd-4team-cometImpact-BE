@@ -1,5 +1,7 @@
 package com.beyond.jellyorder.common.exception;
 
+import com.beyond.jellyorder.domain.category.service.CategoryService;
+import com.beyond.jellyorder.domain.ingredient.service.IngredientService;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.dao.DataIntegrityViolationException;
@@ -86,6 +88,4 @@ public class CommonExceptionHandler {
                         .build()
                 );
     }
-
-
 }
