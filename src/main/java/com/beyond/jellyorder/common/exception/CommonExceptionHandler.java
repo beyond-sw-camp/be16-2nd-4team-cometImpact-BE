@@ -88,13 +88,13 @@ public class CommonExceptionHandler {
                 );
     }
 
-    @ExceptionHandler(CategoryService.DuplicateCategoryNameException.class)
-    public ResponseEntity<?> handleDuplicateCategoryNameException(CategoryService.DuplicateCategoryNameException e) {
-        log.warn("중복 카테고리 예외 발생: {}", e.getMessage());
-
-        return new ResponseEntity<>(new CommonErrorDTO(
-                e.getMessage(),
-                HttpStatus.BAD_REQUEST.value()
-        ), HttpStatus.BAD_REQUEST);
-    }
+//    @ExceptionHandler(CategoryService.DuplicateCategoryNameException.class)
+//    public ResponseEntity<?> handleDuplicateCategoryNameException(CategoryService.DuplicateCategoryNameException e) {
+//        log.warn("중복 카테고리 예외 발생: {}", e.getMessage());
+//
+//        return new ResponseEntity<>(new CommonErrorDTO(
+//                e.getMessage(),
+//                HttpStatus.BAD_REQUEST.value()
+//        ), HttpStatus.BAD_REQUEST);
+//    }
 }
