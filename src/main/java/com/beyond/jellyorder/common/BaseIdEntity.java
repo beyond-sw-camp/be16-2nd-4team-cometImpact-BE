@@ -9,8 +9,7 @@ import java.util.UUID;
 @Getter
 public abstract class BaseIdEntity {
     @Id
-    @GeneratedValue(generator = "uuid2")
-    @GenericGenerator(name = "uuid2", strategy = "uuid2")
+    @GeneratedValue
     @Column(name = "id", nullable = false, updatable = false, length = 36)
     private UUID id;
 }

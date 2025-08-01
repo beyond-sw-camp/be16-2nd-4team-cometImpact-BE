@@ -13,6 +13,6 @@ import org.springframework.http.ResponseEntity;
 @Data
 public class CommonDTO {
     private String status_message;
-    private int status_code;
+    private Integer status_code;
     private Object result;
 }
