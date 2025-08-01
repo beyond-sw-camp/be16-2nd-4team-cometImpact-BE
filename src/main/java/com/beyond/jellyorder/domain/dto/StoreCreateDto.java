@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.dto;
 
 import com.beyond.jellyorder.domain.store.entity.Store;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -13,12 +14,19 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 @Builder
 
 public class StoreCreateDto {
+    @NotEmpty
     private String loginId;
+    @NotEmpty
     private String storeName;
+    @NotEmpty
     private String registeredNumber;
+    @NotEmpty
     private String ownerName;
+    @NotEmpty
     private String phoneNumber;
+    @NotEmpty
     private String password;
+    @NotEmpty
     private String ownerEmail;
 
     public Store toEntity(String encodedPassword) {
