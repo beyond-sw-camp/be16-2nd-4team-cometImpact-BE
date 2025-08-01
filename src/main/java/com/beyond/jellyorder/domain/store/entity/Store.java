@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.store.entity;
 
+import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -17,13 +18,7 @@ import java.util.UUID;
 @AllArgsConstructor
 @NoArgsConstructor
 @Builder
-public class Store {
-
-    @Id
-    @GeneratedValue(generator = "UUID")
-    @GenericGenerator(name = "UUID", strategy = "org.hibernate.id.UUIDGenerator")
-    @Column(name = "id", updatable = false, nullable = false, columnDefinition = "CHAR(36)")
-    private UUID id;
+public class Store extends BaseIdAndTimeEntity {
 
     @Column(unique = true, nullable = false, columnDefinition = "VARCHAR(50)")
     private String loginId;
