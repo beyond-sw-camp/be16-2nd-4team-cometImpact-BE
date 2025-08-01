@@ -18,13 +18,13 @@ public class RedisConfig {
     @Value("${spring.redis.port}")
     private int port;
 
-    // Redis 서버와 연결하는 클라이언트 커넥션 팩토리
+    // Redis 서버와 TCP 연결하는 클라이언트 커넥션 팩토리
     @Bean
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(host, port);
     }
 
-    // RedisTemplate Bean
+    // RedisTemplate Bean : 데이터를 저장하고 조회하는 주요 도구
     @Bean
     public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
