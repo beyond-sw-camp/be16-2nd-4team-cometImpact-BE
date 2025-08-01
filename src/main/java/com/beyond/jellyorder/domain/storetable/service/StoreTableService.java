@@ -1,10 +1,9 @@
 package com.beyond.jellyorder.domain.storetable.service;
 
+import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
-import com.beyond.jellyorder.domain.storetable.dto.StoreTableCreateReqDTO;
-import com.beyond.jellyorder.domain.storetable.dto.StoreTableNameReqDTO;
-import com.beyond.jellyorder.domain.storetable.dto.StoreTableResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.*;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
@@ -14,7 +13,9 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 @Service
@@ -47,7 +48,7 @@ public class StoreTableService {
         List<String> existingNames = storeTableRepository.findNamesByStoreAndNames(store, requestNames);
 
         if (!existingNames.isEmpty()) {
-            throw new IllegalArgumentException("이미 존재하는 테이블 이름입니다: " + existingNames);
+            throw new DuplicateResourceException("이미 존재하는 테이블 이름입니다: ", existingNames);
         }
 
         // 중복 없으면 저장
@@ -58,5 +59,25 @@ public class StoreTableService {
     }
 
 
+    @Transactional(readOnly = true)
+    public List<StoreTableListResDTO> getStoreTableList(String storeLoginId) {
+        Store store = storeRepository.findByLoginId(storeLoginId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매장을 찾을 수 없습니다."));
+
+        List<Zone> zoneList = zoneRepository.findAllByStoreLoginId(storeLoginId);
+        List<StoreTableListResDTO> storeTableListResDTOList = new ArrayList<>();
+        for (Zone zone : zoneList) {
+            List<StoreTable> storeTableList = storeTableRepository.findAllByZone(zone);
+            List<StoreTableDetail> storeTableDetails = storeTableList.stream().map(StoreTableDetail::from).collect(Collectors.toList());
+            storeTableListResDTOList.add(StoreTableListResDTO.from(zone, storeTableDetails));
+        }
+
+        return storeTableListResDTOList;
+    }
+
+
+
 
 }
+
+
