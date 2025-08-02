@@ -27,6 +27,7 @@ public class StoreTableService {
     private final StoreRepository storeRepository;
     private final ZoneRepository zoneRepository;
 
+    // 테이블 생성
     @Transactional
     public List<StoreTableResDTO> createTables(StoreTableCreateReqDTO dto, String storeLoginId) {
         Store store = storeRepository.findByLoginId(storeLoginId)
@@ -59,6 +60,7 @@ public class StoreTableService {
     }
 
 
+    // 구역별 전체 테이블 조회
     @Transactional(readOnly = true)
     public List<StoreTableListResDTO> getStoreTableList(String storeLoginId) {
         Store store = storeRepository.findByLoginId(storeLoginId)
@@ -73,6 +75,29 @@ public class StoreTableService {
         }
 
         return storeTableListResDTOList;
+    }
+
+    // 테이블 수정
+    public StoreTableResDTO updateStoreTable(StoreTableUpdateReqDTO dto, UUID storeTableId, String storeLoginId) {
+        Store store = storeRepository.findByLoginId(storeLoginId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 매장을 찾을 수 없습니다."));
+
+        StoreTable storeTable = storeTableRepository.findById(storeTableId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 테이블이 존재하지 않습니다."));
+
+        Zone zone = zoneRepository.findById(dto.getZoneId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 구역을 찾을 수 없습니다."));
+
+        if (!storeTable.getStore().getId().equals(store.getId())) {
+            throw new IllegalArgumentException("해당 매장의 테이블이 아닙니다.");
+        }
+
+        if (storeTableRepository.existsByStoreAndNameExcludingId(store, dto.getName(), storeTableId)) {
+            throw new DuplicateResourceException("해당 매장에 동일한 테이블 이름이 존재합니다.");
+        }
+
+        storeTable.updateStoreTableInfo(zone, dto);
+        return StoreTableResDTO.from(storeTable);
     }
 
 

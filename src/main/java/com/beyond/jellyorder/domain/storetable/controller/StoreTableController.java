@@ -1,9 +1,7 @@
 package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.storetable.dto.StoreTableCreateReqDTO;
-import com.beyond.jellyorder.domain.storetable.dto.StoreTableListResDTO;
-import com.beyond.jellyorder.domain.storetable.dto.StoreTableResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.*;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -37,6 +35,16 @@ public class StoreTableController {
     ) {
         List<StoreTableListResDTO> resDTOs = storeTableService.getStoreTableList(storeLoginId);
         return ApiResponse.ok(resDTOs);
+    }
+
+    @PutMapping("/update/{storeTableId}/{storeLoginId}")
+    public ResponseEntity<?> updateStoreTable(
+            @RequestBody @Valid StoreTableUpdateReqDTO reqDTO,
+            @PathVariable UUID storeTableId,
+            @PathVariable String storeLoginId
+    ) {
+        StoreTableResDTO resDTO = storeTableService.updateStoreTable(reqDTO, storeTableId, storeLoginId);
+        return ApiResponse.ok(resDTO, "구역이 수정되었습니다.");
     }
 
 }
