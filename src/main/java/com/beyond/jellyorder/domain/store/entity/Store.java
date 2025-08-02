@@ -33,7 +33,7 @@ public class Store extends BaseIdAndTimeEntity {
     private String phoneNumber;
     @Column(nullable = false)
     private String password;
-    @Column(nullable = false, unique = true)
+    @Column(nullable = false)
     private String ownerEmail;
 
 }

@@ -1,7 +1,7 @@
 package com.beyond.jellyorder.domain.store.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.dto.StoreCreateDto;
+import com.beyond.jellyorder.domain.store.dto.StoreCreateDto;
 import com.beyond.jellyorder.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -23,4 +23,6 @@ public class StoreController {
         String loginId = storeService.save(storeCreateDto);
         return ApiResponse.created(loginId, "회원가입 완료되었습니다.");
     }
+
+
 }

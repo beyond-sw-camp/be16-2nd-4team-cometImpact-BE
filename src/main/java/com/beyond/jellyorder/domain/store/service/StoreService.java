@@ -1,12 +1,10 @@
 package com.beyond.jellyorder.domain.store.service;
 
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
-import com.beyond.jellyorder.domain.dto.StoreCreateDto;
+import com.beyond.jellyorder.domain.store.dto.StoreCreateDto;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;

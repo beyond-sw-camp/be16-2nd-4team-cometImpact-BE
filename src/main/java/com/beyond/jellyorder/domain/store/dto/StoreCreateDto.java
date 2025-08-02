@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.domain.dto;
+package com.beyond.jellyorder.domain.store.dto;
 
 import com.beyond.jellyorder.domain.store.entity.Store;
 import jakarta.validation.constraints.NotEmpty;
@@ -6,7 +6,6 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 @Data
 @NoArgsConstructor
