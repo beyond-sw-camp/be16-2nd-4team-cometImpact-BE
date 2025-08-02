@@ -8,4 +8,5 @@ import java.util.Optional;
 import java.util.UUID;
 
 public interface MenuRepository  extends JpaRepository<Menu, UUID>, MenuRepositoryCustom {
+    Optional<Menu> findByCategory_StoreIdAndName(String storeId, String name);
 }
