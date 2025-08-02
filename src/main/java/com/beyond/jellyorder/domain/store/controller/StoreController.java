@@ -3,6 +3,7 @@ package com.beyond.jellyorder.domain.store.controller;
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.store.dto.LoginRequestDto;
 import com.beyond.jellyorder.domain.store.dto.StoreCreateDto;
+import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -30,7 +31,7 @@ public class StoreController {
 
     @PostMapping("/doLogin")
     public ResponseEntity<?> doLogin(@RequestBody @Valid LoginRequestDto loginRequestDto) {
-        String log = storeService.doLogin(loginRequestDto);
+        Store store = storeService.doLogin(loginRequestDto);
         return ApiResponse.ok("로그인 완료, 추후 토큰 발급 시 토큰 리턴 예정입니다.");
     }
 

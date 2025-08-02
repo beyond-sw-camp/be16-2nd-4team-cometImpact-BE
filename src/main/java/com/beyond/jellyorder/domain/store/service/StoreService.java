@@ -40,13 +40,16 @@ public class StoreService {
         return store.getId(); /* 리턴값 UUID로 수정 완료, 주석 삭제 하고 사용하세요! */
     }
 
-    public String doLogin(LoginRequestDto loginRequestDto) {
+    /* Store 로그인 Service*/
+    public Store doLogin(LoginRequestDto loginRequestDto) {
         Store store = storeRepository.findByLoginId(loginRequestDto.getLoginId())
-                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 회원입니다."));
-        if (!passwordEncoder.matches(loginRequestDto.getPassword(), store.getPassword())) {
-            throw new IllegalArgumentException("비밀번호가 틀립니다.");
+                .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 일치하지 않습니다.")) ; // 로그인 정보가 일치하지 않습니다, 통일 예정
+        if (!passwordEncoder.matches(loginRequestDto.getPassword(), store.getPassword())){
+            throw new IllegalArgumentException("아이디 또는 비밀번호!!가 일치하지 않습니다."); // 로그인 정보가 일치하지 않습니다, 통일 예정
         }
-        return loginRequestDto.getLoginId(); // 나중에 At, Rt 리턴으로 수정 예정
+        return store;
+
+
     }
 
 }
