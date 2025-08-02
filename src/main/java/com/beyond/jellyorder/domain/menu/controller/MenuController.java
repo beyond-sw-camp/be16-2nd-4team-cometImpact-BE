@@ -10,6 +10,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.List;
+
 /**
  * 메뉴 관련 요청을 처리하는 컨트롤러
  */
@@ -37,6 +39,12 @@ public class MenuController {
             @PathVariable String menuName) {
 
         MenuCreateResDto resDto = menuService.getMenuByStoreIdAndName(storeId, menuName);
-        return ApiResponse.ok(resDto, "메뉴가 정상적으로 조회되었습니다.");
+        return ApiResponse.ok(resDto, "단일 메뉴 조회가 정상적으로 조회되었습니다.");
+    }
+
+    @GetMapping("/store/{storeId}")
+    public ResponseEntity<?> getMenusByStoreId(@PathVariable String storeId) {
+        List<MenuCreateResDto> resDtos = menuService.getMenusByStoreId(storeId);
+        return ApiResponse.ok(resDtos, "메뉴 목록이 정상적으로 조회되었습니다.");
     }
 }
