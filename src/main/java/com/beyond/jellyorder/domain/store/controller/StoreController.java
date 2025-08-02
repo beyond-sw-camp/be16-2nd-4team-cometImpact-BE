@@ -33,4 +33,6 @@ public class StoreController {
         String log = storeService.doLogin(loginRequestDto);
         return ApiResponse.ok("로그인 완료, 추후 토큰 발급 시 토큰 리턴 예정입니다.");
     }
+
+
 }
