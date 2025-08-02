@@ -30,4 +30,13 @@ public class MenuController {
         MenuCreateResDto resDto = menuService.create(reqDto);
         return ApiResponse.created(resDto, resDto.getName() + " 메뉴가 정상적으로 저장되었습니다.");
     }
+
+    @GetMapping("/store/{storeId}/name/{menuName}") // 추후 Authentication 도입 시 storeId 필요 X, menuName 대신 UUID를 body를 통해 전달 예정
+    public ResponseEntity<?> getMenuByStoreIdAndName(
+            @PathVariable String storeId,
+            @PathVariable String menuName) {
+
+        MenuCreateResDto resDto = menuService.getMenuByStoreIdAndName(storeId, menuName);
+        return ApiResponse.ok(resDto, "메뉴가 정상적으로 조회되었습니다.");
+    }
 }
