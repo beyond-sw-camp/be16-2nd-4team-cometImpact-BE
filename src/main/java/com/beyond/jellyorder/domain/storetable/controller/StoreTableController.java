@@ -39,7 +39,7 @@ public class StoreTableController {
 
     @PutMapping("/update/{storeTableId}/{storeLoginId}")
     public ResponseEntity<?> updateStoreTable(
-            @RequestBody StoreTableUpdateReqDTO reqDTO,
+            @RequestBody @Valid StoreTableUpdateReqDTO reqDTO,
             @PathVariable UUID storeTableId,
             @PathVariable String storeLoginId
     ) {
