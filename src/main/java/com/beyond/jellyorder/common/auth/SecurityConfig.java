@@ -20,7 +20,7 @@ public class SecurityConfig {
         return httpSecurity
                 /* chain 추가 예정, Security 의존성으로 인한 Req 막힘 방지 */
                 .csrf(AbstractHttpConfigurer::disable) // 비브라우저, 토큰로그인을 위한 csrf disable
-                .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/doLogin", "/storetable/doLogin", "/sse/**").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/doLogin", "/storetable/doLogin", "/sse/**", "/request/**").permitAll().anyRequest().authenticated())
                 .build();
                 }
 
