@@ -2,10 +2,12 @@ package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.storetable.dto.*;
+import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -48,7 +50,10 @@ public class StoreTableController {
     }
 
     @PostMapping("/do-login")
-    public ResponseEntity<?> storeTableLogin() {
+    @PreAuthorize("hasRole('STORE')")
+    public ResponseEntity<?> storeTableLogin(@Valid @RequestBody StoreTableLoginReqDTO storeTableLoginReqDTO) {
+        StoreTable storeTable = storeTableService.doLogin(storeTableLoginReqDTO);
+        return ApiResponse.ok("로그인 완료!"); /* At, Rt 로직 도입 후 리턴 타입 변경 예정 */
 
     }
 }

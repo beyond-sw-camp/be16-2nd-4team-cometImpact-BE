@@ -35,7 +35,7 @@ public class StoreController {
         return ApiResponse.created(storeLoginId, "회원가입 완료되었습니다."); /* 리턴값 UUID로 수정 완료, 주석 삭제 하고 사용하세요! */
     }
 
-    @PostMapping("/doLogin")
+    @PostMapping("/do-login")
     public ResponseEntity<?> doLogin(@RequestBody @Valid StoreLoginReqDTO storeLoginReqDTO) {
         Store store = storeService.doLogin(storeLoginReqDTO);
         String storeAccessToken = jwtTokenProvider.createStoreAtToken(store);

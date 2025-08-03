@@ -41,10 +41,10 @@ public class StoreService {
     }
 
     /* Store 로그인 Service*/
-    public Store doLogin(StoreLoginReqDTO loginRequestDto) {
-        Store store = storeRepository.findByLoginId(loginRequestDto.getLoginId())
+    public Store doLogin(StoreLoginReqDTO storeLoginReqDTO) {
+        Store store = storeRepository.findByLoginId(storeLoginReqDTO.getLoginId())
                 .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 일치하지 않습니다.")) ; /* "로그인 정보가 일치하지 않습니다", 통일 예정 */
-        if (!passwordEncoder.matches(loginRequestDto.getPassword(), store.getPassword())){
+        if (!passwordEncoder.matches(storeLoginReqDTO.getPassword(), store.getPassword())){
             throw new IllegalArgumentException("아이디 또는 비밀번호!!가 일치하지 않습니다."); /* "로그인 정보가 일치하지 않습니다", 통일 예정 */
         }
         return store;

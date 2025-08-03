@@ -12,5 +12,5 @@ import lombok.NoArgsConstructor;
 
 public class StoreTableLoginReqDTO {
     private Store store;
-    private String storeTableName;
+    private String name;
 }
