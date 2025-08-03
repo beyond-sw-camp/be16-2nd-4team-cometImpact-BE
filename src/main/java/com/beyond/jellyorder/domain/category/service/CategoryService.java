@@ -2,12 +2,17 @@ package com.beyond.jellyorder.domain.category.service;
 
 import com.beyond.jellyorder.domain.category.dto.CategoryCreateReqDto;
 import com.beyond.jellyorder.domain.category.dto.CategoryCreateResDto;
+import com.beyond.jellyorder.domain.category.dto.GetCategoryResDto;
 import com.beyond.jellyorder.domain.category.repository.CategoryRepository;
 import com.beyond.jellyorder.domain.category.domain.Category;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
+
+import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * 카테고리 관련 비즈니스 로직을 담당하는 서비스 클래스.
@@ -43,5 +48,23 @@ public class CategoryService {
                 .build());
 
         return new CategoryCreateResDto(saved.getId(), saved.getName(), saved.getDescription());
+    }
+
+    public List<GetCategoryResDto> getCategoriesByStore(String storeId) {
+        // TODO [2025-08-02]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
+
+        if (storeId == null || storeId.trim().isEmpty()) {
+            throw new IllegalArgumentException("storeId는 null이거나 공백일 수 없습니다.");
+        }
+
+        List<Category> categoryList = categoryRepository.findAllByStoreId(storeId);
+
+        if (categoryList.isEmpty()) {
+            throw new EntityNotFoundException("해당 storeId에 대한 카테고리가 존재하지 않습니다: " + storeId);
+        }
+
+        return categoryList.stream()
+                .map(category -> new GetCategoryResDto(category.getId(), category.getName()))
+                .collect(Collectors.toList());
     }
 }

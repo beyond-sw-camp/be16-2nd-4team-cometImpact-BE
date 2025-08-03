@@ -18,12 +18,31 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
     List<StoreTable> findAllByZone(Zone zone);
 
     @Query("""
-    SELECT st FROM StoreTable st
-    JOIN FETCH st.zone z
-    JOIN FETCH st.store s
-    WHERE s.loginId = :storeLoginId
+    SELECT COUNT(st) > 0
+    FROM StoreTable st
+    WHERE st.store = :store
+    AND st.name = :name
+    AND st.id <> :excludedId
 """)
-    List<StoreTable> findAllByStoreLoginIdWithZoneAndStore(@Param("storeLoginId") String storeLoginId);
+    boolean existsByStoreAndNameExcludingId(
+            @Param("store") Store store,
+            @Param("name") String name,
+            @Param("excludedId") UUID excludedId
+    );
+
+
+
+
+
+
+//    추후 fetch join을 위한 메서드 구현. 08.02에 구현 예정
+//    @Query("""
+//    SELECT st FROM StoreTable st
+//    JOIN FETCH st.zone z
+//    JOIN FETCH st.store s
+//    WHERE s.loginId = :storeLoginId
+//""")
+//    List<StoreTable> findAllByStoreLoginIdWithZoneAndStore(@Param("storeLoginId") String storeLoginId);
 
 
 }

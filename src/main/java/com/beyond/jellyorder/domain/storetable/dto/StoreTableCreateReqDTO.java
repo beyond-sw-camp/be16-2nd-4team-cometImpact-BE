@@ -3,6 +3,7 @@ package com.beyond.jellyorder.domain.storetable.dto;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
+import jakarta.validation.constraints.NotEmpty;
 import lombok.*;
 
 import java.util.HashSet;
@@ -16,6 +17,8 @@ import java.util.stream.Collectors;
 public class StoreTableCreateReqDTO {
     private UUID zoneId;
     private Integer seatCount;
+
+    @NotEmpty(message = "테이블 요청 값이 비어있습니다.")
     private List<StoreTableNameReqDTO> storeTableNameList;
 
     public List<StoreTable> toEntityList(Store store, Zone zone) {

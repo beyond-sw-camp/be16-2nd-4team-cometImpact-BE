@@ -1,0 +1,47 @@
+package com.beyond.jellyorder.domain.menu.dto;
+
+import jakarta.validation.constraints.*;
+import lombok.*;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.UUID;
+
+@Getter
+@Setter
+@NoArgsConstructor
+@AllArgsConstructor
+@Builder
+public class MenuCreateReqDto {
+
+    @NotNull(message = "매장 ID(storeId)는 필수입니다.")
+    private String storeId;
+
+    @NotNull(message = "카테고리명은 필수입니다.")
+    private String categoryName;
+
+    @NotBlank(message = "메뉴 이름(name)은 필수입니다.")
+    @Size(max = 30, message = "메뉴 이름은 30자 이하로 입력해주세요.")
+    private String name;
+
+    @NotNull(message = "가격(price)은 필수입니다.")
+    @Min(value = 0, message = "가격은 0 이상이어야 합니다.")
+    private Integer price;
+
+    @NotBlank(message = "설명(description)은 필수입니다.")
+    @Size(max = 255, message = "설명은 255자 이하로 입력해주세요.")
+    private String description;
+
+    @Size(max = 255, message = "원산지(origin)는 255자 이하로 입력해주세요.")
+    private String origin;
+
+    @Min(value = -1, message = "판매 한도는 -1 이상이어야 합니다.")
+    private Long salesLimit = -1L;
+
+    @Builder.Default
+    private List<String> ingredients = new ArrayList<>();
+
+    @NotNull(message = "이미지 파일(imageFile)은 필수입니다.")
+    private MultipartFile imageFile;
+}

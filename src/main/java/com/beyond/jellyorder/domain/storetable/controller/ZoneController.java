@@ -6,6 +6,7 @@ import com.beyond.jellyorder.domain.storetable.dto.ZoneListResDTO;
 import com.beyond.jellyorder.domain.storetable.dto.ZoneResDTO;
 import com.beyond.jellyorder.domain.storetable.dto.ZoneUpdateReqDTO;
 import com.beyond.jellyorder.domain.storetable.service.ZoneService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -23,7 +24,7 @@ public class ZoneController {
 
     @PostMapping("/create/{storeLoginId}")
     public ResponseEntity<?> createZone(
-            @RequestBody ZoneCreateReqDTO reqDTO,
+            @RequestBody @Valid ZoneCreateReqDTO reqDTO,
             @PathVariable String storeLoginId
     ) {
         ZoneResDTO resDTO = zoneService.createZone(reqDTO, storeLoginId);
@@ -40,7 +41,7 @@ public class ZoneController {
 
     @PutMapping("/update/{zoneId}/{storeLoginId}")
     public ResponseEntity<?> updateZone(
-            @RequestBody ZoneUpdateReqDTO reqDTO,
+            @RequestBody @Valid ZoneUpdateReqDTO reqDTO,
             @PathVariable UUID zoneId,
             @PathVariable String storeLoginId
     ) {
