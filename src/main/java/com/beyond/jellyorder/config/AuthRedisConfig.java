@@ -18,8 +18,7 @@ public class AuthRedisConfig {
     private int port;
 
     /* RefreshToken Redis에 저장하기 위한 Factory, 0번에 설정하였으나 추후 변경 가능 합니다! */
-    @Bean
-    @Qualifier("rtInventory")
+    @Bean(name = "rtInventory")
     public RedisConnectionFactory redisConnectionFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(host);
@@ -30,9 +29,17 @@ public class AuthRedisConfig {
     }
 
     /* RefreshToken RedisTemplate */
-    @Bean
-    @Qualifier("rtInventory")
+    @Bean(name = "rtInventoryTemplate")
     public RedisTemplate<String, String> redisTemplate(@Qualifier("rtInventory") RedisConnectionFactory redisConnectionFactory) { // 0번 팩토리 (Bean)싱글톤 객체로 주입 받겠다
+        RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
+        redisTemplate.setKeySerializer(new StringRedisSerializer());
+        redisTemplate.setValueSerializer(new StringRedisSerializer());
+        redisTemplate.setConnectionFactory(redisConnectionFactory);
+        return redisTemplate;
+    }
+
+    @Bean(name = "redisTemplate") /* redisTemplate 기본 이름을 찾기 위해 주입 */
+    public RedisTemplate<String, String> defaultRedisTemplate(@Qualifier("rtInventory") RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, String> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());

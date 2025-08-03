@@ -7,6 +7,7 @@ import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -14,7 +15,6 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 
 @Component
-@RequiredArgsConstructor
 public class AuthService {
 
     private final StoreRepository storeRepository;
@@ -23,6 +23,11 @@ public class AuthService {
     @Value("${jwt.secretKeyRt}")
     private String secretKeyRt;
     private Key secret_rt_key;
+
+    public AuthService(StoreRepository storeRepository, @Qualifier("rtInventoryTemplate") RedisTemplate<String, String> redisTemplate) {
+        this.storeRepository = storeRepository;
+        this.redisTemplate = redisTemplate;
+    }
 
     public Store validateStoreRt(String refreshToken) {
         Claims claims = Jwts.parserBuilder()

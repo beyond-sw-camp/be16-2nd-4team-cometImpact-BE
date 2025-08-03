@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.sseRequest.config;
 
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -19,14 +20,14 @@ public class RedisConfig {
     private int port;
 
     // Redis 서버와 TCP 연결하는 클라이언트 커넥션 팩토리
-    @Bean
+    @Bean(name = "sseRedisConnectionFactory")
     public RedisConnectionFactory redisConnectionFactory() {
         return new LettuceConnectionFactory(host, port);
     }
 
     // RedisTemplate Bean : 데이터를 저장하고 조회하는 주요 도구
-    @Bean
-    public RedisTemplate<String, Object> redisTemplate(RedisConnectionFactory factory) {
+    @Bean(name = "sseRedisTemplate")
+    public RedisTemplate<String, Object> redisTemplate(@Qualifier("sseRedisConnectionFactory") RedisConnectionFactory factory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(factory);
 

@@ -5,6 +5,7 @@ import com.beyond.jellyorder.sseRequest.dto.RequestCreateDto;
 import com.beyond.jellyorder.sseRequest.repository.RequestRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
@@ -14,15 +15,20 @@ import java.util.List;
 import java.util.UUID;
 
 @Service
-@RequiredArgsConstructor
 // Redis에 실시간 요청 저장,조회,삭제
 public class RedisRequestService {
+    @Qualifier("sseRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     private final StoreRepository storeRepository;
 
     // 필드 및 Redis 키 정의(순서와 데이터 조회를 동시에 보장)
     private static final String REQUEST_LIST_KEY = "request:list";  // 요청 ID들을 순서대로 저장하는 List 구조의 키
     private static final String REQUEST_HASH_KEY = "request:data";  // 각 요청 ID별로 상세 데이터를 저장하는 Hash 구조의 키
+
+    public RedisRequestService(@Qualifier("sseRedisTemplate") RedisTemplate<String, Object> redisTemplate, StoreRepository storeRepository) {
+        this.redisTemplate = redisTemplate;
+        this.storeRepository = storeRepository;
+    }
 
     // 고객 요청을 redis에 저장
     public void save(RequestCreateDto dto) {
