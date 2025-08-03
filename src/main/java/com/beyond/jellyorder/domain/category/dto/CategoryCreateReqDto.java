@@ -4,6 +4,8 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.Size;
 import lombok.*;
 
+import java.util.UUID;
+
 /**
  * 카테고리 생성 요청을 위한 DTO 클래스.
  * 클라이언트가 카테고리를 생성할 때 전달해야 할 필드들을 정의하며,
