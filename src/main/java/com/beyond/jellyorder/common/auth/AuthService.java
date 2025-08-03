@@ -37,8 +37,8 @@ public class AuthService {
 
 //        redis의 값과 비교하는 검증
         String redisRt = redisTemplate.opsForValue().get(store.getLoginId());
-        if (!redisRt.equals(refreshToken)) {
-            throw new IllegalArgumentException("잘못된 토큰값입니다.");
+        if (redisRt == null || !redisRt.equals(refreshToken)) { /* 현지님 의견 반영, redisRt null인 경우 추가 */
+            throw new IllegalArgumentException("토큰값이 유효하지 않습니다.");
         }
         return store;
     }
