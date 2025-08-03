@@ -26,37 +26,33 @@ public class RedisRequestService {
 
     // 고객 요청을 redis에 저장
     public void save(RequestCreateDto dto) {
-        // UUID pull 이후 수정
-//        // storeId 입력 여부 판단
-//        if (dto.getStoreId() == null || dto.getStoreId().isBlank()) {
-//            throw new IllegalArgumentException("storeId는 비어 있을 수 없습니다.");
-//        }
-//
-//        // storeId 존재 여부 판단
-////        boolean storeExists = storeRepository.existsById(UUID.fromString(dto.getStoreId()));  // UUID pull 이후 수정
-//        boolean storeExists = storeRepository.existsById(dto.getStoreId());
-//
-//        if (!storeExists) {
-//            throw new EntityNotFoundException("해당 storeId는 존재하지 않습니다.");
-//        }
-//
-//        // 중복된 요청 ID 확인
-//        if (dto.getId() != null) {
-//            boolean isRequestIdDuplicate = redisTemplate.opsForHash()
-//                    .hasKey(REQUEST_HASH_KEY, dto.getId().toString());
-//            if (isRequestIdDuplicate) {
-//                throw new IllegalArgumentException("중복된 요청 ID입니다.");
-//            }
-//        }
 
-//        UUID id = UUID.randomUUID();
-//        dto.setId(id);   // UUID pull 이후 수정
+        // storeId 입력 여부 판단
+        if (dto.getStoreId() == null || dto.getStoreId().isBlank()) {
+            throw new IllegalArgumentException("storeId는 비어 있을 수 없습니다.");
+        }
+
+        // storeId 존재 여부 판단
+        boolean storeExists = storeRepository.existsById(UUID.fromString(dto.getStoreId()));
+
+        if (!storeExists) {
+            throw new EntityNotFoundException("해당 storeId는 존재하지 않습니다.");
+        }
+
+        // 중복된 요청 ID 확인
+        if (dto.getId() != null) {
+            boolean isRequestIdDuplicate = redisTemplate.opsForHash()
+                    .hasKey(REQUEST_HASH_KEY, dto.getId().toString());
+            if (isRequestIdDuplicate) {
+                throw new IllegalArgumentException("중복된 요청 ID입니다.");
+            }
+        }
+
+        UUID id = UUID.randomUUID();
+        dto.setId(id);
         // redis에 저장
-        redisTemplate.opsForHash().put(REQUEST_HASH_KEY, dto.getId(), dto);  // 요청 데이터를 Hash에 저장 (id -> dto)
-        redisTemplate.opsForList().rightPush(REQUEST_LIST_KEY, dto.getId()); // 요청 ID를 List에 추가 (순서 보장)
-        // UUID pull 이후 수정
-//        redisTemplate.opsForHash().put(REQUEST_HASH_KEY, String.valueOf(id), dto);  // 요청 데이터를 Hash에 저장 (id -> dto)
-//        redisTemplate.opsForList().rightPush(REQUEST_LIST_KEY, String.valueOf(id)); // 요청 ID를 List에 추가 (순서 보장)
+        redisTemplate.opsForHash().put(REQUEST_HASH_KEY, String.valueOf(id), dto);  // 요청 데이터를 Hash에 저장 (id -> dto)
+        redisTemplate.opsForList().rightPush(REQUEST_LIST_KEY, String.valueOf(id)); // 요청 ID를 List에 추가 (순서 보장)
     }
 
     // 점주가 현재 들어온 요청 목록을 조회
