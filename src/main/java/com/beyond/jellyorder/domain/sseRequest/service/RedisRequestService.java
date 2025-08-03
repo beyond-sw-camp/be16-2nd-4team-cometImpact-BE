@@ -1,12 +1,10 @@
-package com.beyond.jellyorder.sseRequest.service;
+package com.beyond.jellyorder.domain.sseRequest.service;
 
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
-import com.beyond.jellyorder.sseRequest.dto.RequestCreateDto;
-import com.beyond.jellyorder.sseRequest.repository.RequestRepository;
+import com.beyond.jellyorder.domain.sseRequest.dto.RequestCreateDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.RedisTemplate;
-import org.springframework.stereotype.Repository;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -25,7 +23,7 @@ public class RedisRequestService {
     private static final String REQUEST_HASH_KEY = "request:data";  // 각 요청 ID별로 상세 데이터를 저장하는 Hash 구조의 키
 
     // 고객 요청을 redis에 저장
-    public void save(RequestCreateDto dto) {
+    public void send(RequestCreateDto dto) {
 
         // storeId 입력 여부 판단
         if (dto.getStoreId() == null || dto.getStoreId().isBlank()) {
@@ -53,6 +51,9 @@ public class RedisRequestService {
         // redis에 저장
         redisTemplate.opsForHash().put(REQUEST_HASH_KEY, String.valueOf(id), dto);  // 요청 데이터를 Hash에 저장 (id -> dto)
         redisTemplate.opsForList().rightPush(REQUEST_LIST_KEY, String.valueOf(id)); // 요청 ID를 List에 추가 (순서 보장)
+
+        // 실시간 전달을 위한 redis pub
+        redisTemplate.convertAndSend("request-channel", dto);
     }
 
     // 점주가 현재 들어온 요청 목록을 조회
