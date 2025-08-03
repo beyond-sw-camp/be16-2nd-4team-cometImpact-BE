@@ -1,8 +1,6 @@
 package com.beyond.jellyorder.domain.category.service;
 
-import com.beyond.jellyorder.domain.category.dto.CategoryCreateReqDto;
-import com.beyond.jellyorder.domain.category.dto.CategoryCreateResDto;
-import com.beyond.jellyorder.domain.category.dto.GetCategoryResDto;
+import com.beyond.jellyorder.domain.category.dto.*;
 import com.beyond.jellyorder.domain.category.repository.CategoryRepository;
 import com.beyond.jellyorder.domain.category.domain.Category;
 import jakarta.persistence.EntityNotFoundException;
@@ -66,5 +64,27 @@ public class CategoryService {
         return categoryList.stream()
                 .map(category -> new GetCategoryResDto(category.getId(), category.getName()))
                 .collect(Collectors.toList());
+    }
+
+    public CategoryModifyResDto modifyByName(CategoryModifyReqDto reqDto) {
+        Category category = categoryRepository.findByStoreIdAndName(reqDto.getStoreId(), reqDto.getOriginalName())
+                .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
+
+        // 이름 변경이 실제로 필요한지 판단
+        boolean nameChanged = reqDto.getOriginalName().equals(reqDto.getNewName());
+        if (!nameChanged) {
+            // 동일한 storeId 내에 새 이름이 이미 존재하면 중복 예외
+            if (categoryRepository.existsByStoreIdAndName(reqDto.getStoreId(), reqDto.getNewName())) {
+                throw new DuplicateResourceException("이미 존재하는 카테고리명입니다: " + reqDto.getNewName());
+            }
+            category.setName(reqDto.getNewName());
+        }
+
+        category.setDescription(reqDto.getNewDescription());
+
+        return CategoryModifyResDto.builder()
+                .name(category.getName())
+                .description(category.getDescription())
+                .build();
     }
 }
