@@ -31,19 +31,19 @@ public class StoreController {
     /* Store 회원가입 Controller */
     @PostMapping("/create")
     public ResponseEntity<?> save(@RequestBody @Valid StoreCreateDTO storeCreateDto) {
-        UUID loginId = storeService.save(storeCreateDto);
-        return ApiResponse.created(loginId, "회원가입 완료되었습니다."); /* 리턴값 UUID로 수정 완료, 주석 삭제 하고 사용하세요! */
+        UUID storeLoginId = storeService.save(storeCreateDto);
+        return ApiResponse.created(storeLoginId, "회원가입 완료되었습니다."); /* 리턴값 UUID로 수정 완료, 주석 삭제 하고 사용하세요! */
     }
 
     @PostMapping("/doLogin")
-    public ResponseEntity<?> doLogin(@RequestBody @Valid StoreLoginReqDTO loginRequestDto) {
-        Store store = storeService.doLogin(loginRequestDto);
+    public ResponseEntity<?> doLogin(@RequestBody @Valid StoreLoginReqDTO storeLoginReqDTO) {
+        Store store = storeService.doLogin(storeLoginReqDTO);
         String storeAccessToken = jwtTokenProvider.createStoreAtToken(store);
         String storeRefreshToken = jwtTokenProvider.createStoreRtToken(store);
 
         StoreLoginResDTO loginResponseDto = StoreLoginResDTO.builder()
-                .accessToken(storeAccessToken)
-                .refreshToken(storeRefreshToken)
+                .storeAccessToken(storeAccessToken)
+                .storeRefreshToken(storeRefreshToken)
                 .build();
 
         return ApiResponse.ok(loginResponseDto, "로그인 완료");
@@ -53,9 +53,9 @@ public class StoreController {
     public ResponseEntity<?> generateNewAt(@RequestBody RefreshTokenDto refreshTokenDto) {
         Store store = authService.validateStoreRt(refreshTokenDto.getRefreshToken());
 
-        String accessToken = jwtTokenProvider.createStoreAtToken(store);
+        String storeAccessToken = jwtTokenProvider.createStoreAtToken(store);
         StoreLoginResDTO loginResponseDto = StoreLoginResDTO.builder()
-                .accessToken(accessToken)
+                .storeAccessToken(storeAccessToken)
                 .build();
 
         return ApiResponse.ok("StoreAccessToken 발급 성공"); /* 프론트 개발 후 리턴 값 변경 예정*/

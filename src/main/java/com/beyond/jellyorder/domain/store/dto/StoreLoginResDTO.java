@@ -11,6 +11,6 @@ import lombok.NoArgsConstructor;
 @Builder
 
 public class StoreLoginResDTO {
-    private String accessToken;
-    private String refreshToken;
+    private String storeAccessToken;
+    private String storeRefreshToken;
 }

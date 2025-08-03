@@ -47,4 +47,8 @@ public class StoreTableController {
         return ApiResponse.ok(resDTO, "구역이 수정되었습니다.");
     }
 
+    @PostMapping("/do-login")
+    public ResponseEntity<?> storeTableLogin() {
+
+    }
 }
