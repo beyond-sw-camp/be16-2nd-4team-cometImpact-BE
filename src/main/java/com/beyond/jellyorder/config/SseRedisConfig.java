@@ -26,15 +26,15 @@ public class SseRedisConfig {
         this.props = props;
     }
     // Redis 채널로부터 수신된 메시지를 처리할 리스너 등록
-    @Bean
+    @Bean(name = "messageListenerAdapter")
     public MessageListenerAdapter messageListenerAdapter(SseAlarmService sseAlarmService) {
         return new MessageListenerAdapter(sseAlarmService, "onMessage"); // onMessage() 호출
     }
 
     // Redis PubSub 리스너 컨테이너 등록
-    @Bean
+    @Bean(name = "redisMessageListenerContainer")
     public RedisMessageListenerContainer redisMessageListenerContainer(
-            RedisConnectionFactory redisConnectionFactory,
+            @Qualifier("ssePubSub") RedisConnectionFactory redisConnectionFactory,
             MessageListenerAdapter listenerAdapter
     ) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
@@ -44,8 +44,7 @@ public class SseRedisConfig {
     }
 
     // redis pub/sub을 위한 연결객체 생성
-    @Bean
-    @Qualifier("ssePubSub")
+    @Bean(name = "ssePubSub")
     public RedisConnectionFactory sseFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(props.getHost());
@@ -55,8 +54,7 @@ public class SseRedisConfig {
     }
 
     // ssePubSub 템플릿 객체
-    @Bean
-    @Qualifier("ssePubSub")
+    @Bean(name = "sseRedisTemplate")
     public RedisTemplate<String, Object> sseRedisTemplate(@Qualifier("ssePubSub") RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);

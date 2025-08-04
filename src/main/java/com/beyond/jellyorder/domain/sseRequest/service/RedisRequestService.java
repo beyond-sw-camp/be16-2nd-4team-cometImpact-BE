@@ -16,6 +16,7 @@ import java.util.UUID;
 // Redis에 실시간 요청 저장,조회,삭제
 public class RedisRequestService {
 
+    @Qualifier("sseRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
     private final StoreRepository storeRepository;
 

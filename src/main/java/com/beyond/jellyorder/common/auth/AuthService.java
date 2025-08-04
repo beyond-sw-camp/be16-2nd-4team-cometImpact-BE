@@ -14,13 +14,19 @@ import org.springframework.stereotype.Component;
 import java.security.Key;
 
 @Component
-@RequiredArgsConstructor
 public class AuthService {
 
     private final StoreRepository storeRepository;
 
-    @Qualifier("rtInventory")
     private final RedisTemplate<String, Object> redisTemplate;
+
+    public AuthService(
+            StoreRepository storeRepository,
+            @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplate
+    ) {
+        this.storeRepository = storeRepository;
+        this.redisTemplate = redisTemplate;
+    }
 
     @Value("${jwt.secretKeyRt}")
     private String secretKeyRt;
