@@ -49,7 +49,7 @@ public class SseRedisConfig {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
         configuration.setHostName(props.getHost());
         configuration.setPort(props.getPort());
-
+        configuration.setDatabase(7);
         return (new LettuceConnectionFactory(configuration));
     }
 
