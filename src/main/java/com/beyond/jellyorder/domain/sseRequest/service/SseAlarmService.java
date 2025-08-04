@@ -13,10 +13,11 @@ import java.io.IOException;
 @Component
 public class SseAlarmService implements MessageListener {
     private final SseEmitterRegistry sseEmitterRegistry;
+    @Qualifier("sseRedisTemplate")
     private final RedisTemplate<String, Object> redisTemplate;
 
     // Redis Pub/Sub 채널에 메시지를 발행
-    public SseAlarmService(SseEmitterRegistry sseEmitterRegistry, @Qualifier("ssePubSub") RedisTemplate<String, Object> redisTemplate) {
+    public SseAlarmService(SseEmitterRegistry sseEmitterRegistry, @Qualifier("sseRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
         this.sseEmitterRegistry = sseEmitterRegistry;
         this.redisTemplate = redisTemplate;
     }
