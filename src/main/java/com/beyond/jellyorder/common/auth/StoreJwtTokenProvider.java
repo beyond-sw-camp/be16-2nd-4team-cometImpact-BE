@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +18,7 @@ import java.util.Date;
 
 @Component
 
-public class JwtTokenProvider {
+public class StoreJwtTokenProvider {
     private final StoreRepository storeRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -37,7 +36,7 @@ public class JwtTokenProvider {
     private Key secret_rt_key;
 
     @Autowired
-    public JwtTokenProvider(StoreRepository storeRepository, @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplate) {
+    public StoreJwtTokenProvider(StoreRepository storeRepository, @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplate) {
         this.storeRepository = storeRepository;
         this.redisTemplate = redisTemplate;
     }
@@ -88,6 +87,8 @@ public class JwtTokenProvider {
 
         return refreshToken;
     }
+
+
 
 
 

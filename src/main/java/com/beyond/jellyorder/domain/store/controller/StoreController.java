@@ -2,7 +2,7 @@ package com.beyond.jellyorder.domain.store.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.common.auth.AuthService;
-import com.beyond.jellyorder.common.auth.JwtTokenProvider;
+import com.beyond.jellyorder.common.auth.StoreJwtTokenProvider;
 import com.beyond.jellyorder.common.auth.RefreshTokenDto;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginReqDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginResDTO;
@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class StoreController {
     private final StoreService storeService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final StoreJwtTokenProvider jwtTokenProvider;
     private final AuthService authService;
 
     /* Store 회원가입 Controller */
