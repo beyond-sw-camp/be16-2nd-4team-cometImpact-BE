@@ -1,8 +1,10 @@
 package com.beyond.jellyorder.config;
 
+import com.beyond.jellyorder.common.auth.RedisProperties;
 import com.beyond.jellyorder.domain.sseRequest.service.SseAlarmService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.data.redis.connection.RedisConnectionFactory;
@@ -16,12 +18,13 @@ import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-public class RedisConfig {
-    @Value("${spring.redis.host}")
-    private String host;
-    @Value("${spring.redis.port}")
-    private int port;
-    
+@EnableConfigurationProperties(RedisProperties.class)
+public class SseRedisConfig {
+    private final RedisProperties props;
+
+    public SseRedisConfig(RedisProperties props) {
+        this.props = props;
+    }
     // Redis 채널로부터 수신된 메시지를 처리할 리스너 등록
     @Bean
     public MessageListenerAdapter messageListenerAdapter(SseAlarmService sseAlarmService) {
@@ -45,8 +48,8 @@ public class RedisConfig {
     @Qualifier("ssePubSub")
     public RedisConnectionFactory sseFactory() {
         RedisStandaloneConfiguration configuration = new RedisStandaloneConfiguration();
-        configuration.setHostName(host);
-        configuration.setPort(port);
+        configuration.setHostName(props.getHost());
+        configuration.setPort(props.getPort());
 
         return (new LettuceConnectionFactory(configuration));
     }
@@ -54,7 +57,7 @@ public class RedisConfig {
     // ssePubSub 템플릿 객체
     @Bean
     @Qualifier("ssePubSub")
-    public RedisTemplate<String, Object> ssePubSubRedisTemplate(@Qualifier("ssePubSub") RedisConnectionFactory redisConnectionFactory) {
+    public RedisTemplate<String, Object> sseRedisTemplate(@Qualifier("ssePubSub") RedisConnectionFactory redisConnectionFactory) {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(redisConnectionFactory);
 
