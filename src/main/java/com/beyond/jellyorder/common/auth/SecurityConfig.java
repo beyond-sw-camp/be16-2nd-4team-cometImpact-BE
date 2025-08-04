@@ -1,12 +1,12 @@
 package com.beyond.jellyorder.common.auth;
 
+import com.beyond.jellyorder.common.auth.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.factory.PasswordEncoderFactories;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -33,12 +33,12 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // 비브라우저, 토큰로그인을 위한 csrf disable
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/doLogin", "/storetable/doLogin", "/store/refresh-at", "sse/**").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/doLogin", "/storetable/doLogin", "/store/refresh-at", "/sse/**", "/request/**").permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
                                 .accessDeniedHandler(jwtAuthorizationHandler))
                 .build();
-                }
+    }
 
     @Bean
     public PasswordEncoder passwordEncoder() {
