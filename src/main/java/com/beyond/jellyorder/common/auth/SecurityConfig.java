@@ -23,6 +23,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
+    private final JwtAuthorizationHandler jwtAuthorizationHandler;
+    private final JwtAuthenticationHandler jwtAuthenticationHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -32,6 +34,9 @@ public class SecurityConfig {
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/doLogin", "/storetable/doLogin", "/store/refresh-at", "sse/**").permitAll().anyRequest().authenticated())
+                .exceptionHandling(e ->
+                        e.authenticationEntryPoint(jwtAuthenticationHandler)
+                                .accessDeniedHandler(jwtAuthorizationHandler))
                 .build();
                 }
 
