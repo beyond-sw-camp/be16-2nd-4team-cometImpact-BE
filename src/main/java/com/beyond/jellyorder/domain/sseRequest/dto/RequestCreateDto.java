@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.sseRequest.dto;
+package com.beyond.jellyorder.domain.sseRequest.dto;
 
 import lombok.AllArgsConstructor;
 import lombok.Data;
