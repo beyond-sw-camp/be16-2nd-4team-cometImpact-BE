@@ -113,11 +113,7 @@ public class StoreTableService {
 
         StoreTable storeTable = storeTableRepository.findByStoreAndName(store, storeTableLoginReqDTO.getName())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 테이블입니다."));
-
-        System.out.println("store.loginId: " + store.getLoginId());
-        System.out.println("store.id: " + store.getId());
-        System.out.println("storeTableLoginReqDTO.name: " + storeTableLoginReqDTO.getName());
-
+        
         return storeTable;
     }
 
