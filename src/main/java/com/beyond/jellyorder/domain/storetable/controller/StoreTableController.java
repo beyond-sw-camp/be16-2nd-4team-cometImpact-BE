@@ -53,7 +53,7 @@ public class StoreTableController {
     @PreAuthorize("hasRole('STORE')")
     public ResponseEntity<?> storeTableLogin(@Valid @RequestBody StoreTableLoginReqDTO storeTableLoginReqDTO) {
         StoreTable storeTable = storeTableService.doLogin(storeTableLoginReqDTO);
-        return ApiResponse.ok("로그인 완료!"); /* At, Rt 로직 도입 후 리턴 타입 변경 예정 */
+        return ApiResponse.ok("테이블 로그인 완료!"); /* At, Rt 로직 도입 후 리턴 타입 변경 예정 */
 
     }
 }
