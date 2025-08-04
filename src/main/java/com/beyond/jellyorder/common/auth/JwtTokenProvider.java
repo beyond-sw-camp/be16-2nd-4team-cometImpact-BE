@@ -21,7 +21,7 @@ import java.util.Date;
 
 public class JwtTokenProvider {
     private final StoreRepository storeRepository;
-    private final RedisTemplate<String, String> redisTemplate;
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${jwt.expirationAt}")
     private int expirationAt;
@@ -37,7 +37,7 @@ public class JwtTokenProvider {
     private Key secret_rt_key;
 
     @Autowired
-    public JwtTokenProvider(StoreRepository storeRepository, @Qualifier("rtInventory") RedisTemplate<String, String> redisTemplate) {
+    public JwtTokenProvider(StoreRepository storeRepository, @Qualifier("rtInventory") RedisTemplate<String, Object> redisTemplate) {
         this.storeRepository = storeRepository;
         this.redisTemplate = redisTemplate;
     }

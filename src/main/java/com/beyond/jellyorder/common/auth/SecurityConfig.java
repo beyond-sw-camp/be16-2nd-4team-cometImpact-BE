@@ -29,9 +29,7 @@ public class SecurityConfig {
         return httpSecurity
                 .cors(c -> c.configurationSource(corsConfiguration()))
                 .csrf(AbstractHttpConfigurer::disable) // 비브라우저, 토큰로그인을 위한 csrf disable
-                .httpBasic(AbstractHttpConfigurer::disable)
-                .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/doLogin", "/storetable/doLogin", "/store/refresh-at", "sse/**").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/doLogin", "/storetable/doLogin", "/store/refresh-at", "/sse/**", "/request/**").permitAll().anyRequest().authenticated())
                 .build();
                 }
 

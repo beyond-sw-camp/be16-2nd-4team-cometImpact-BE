@@ -6,7 +6,7 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
-import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.stereotype.Component;
@@ -18,7 +18,9 @@ import java.security.Key;
 public class AuthService {
 
     private final StoreRepository storeRepository;
-    private final RedisTemplate<String, String> redisTemplate;
+
+    @Qualifier("rtInventory")
+    private final RedisTemplate<String, Object> redisTemplate;
 
     @Value("${jwt.secretKeyRt}")
     private String secretKeyRt;
@@ -36,7 +38,8 @@ public class AuthService {
                 .orElseThrow(() -> new EntityNotFoundException("찾고자 하는 아이디가 없음"));
 
 //        redis의 값과 비교하는 검증
-        String redisRt = redisTemplate.opsForValue().get(store.getLoginId());
+        String redisRt = (String) redisTemplate.opsForValue().get(store.getLoginId());
+
         if (redisRt == null || !redisRt.equals(refreshToken)) { /* 현지님 의견 반영, redisRt null인 경우 추가 */
             throw new IllegalArgumentException("토큰값이 유효하지 않습니다.");
         }

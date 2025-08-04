@@ -1,6 +1,6 @@
-package com.beyond.jellyorder.sseRequest.sse;
+package com.beyond.jellyorder.domain.sseRequest.sse;
 
-import com.beyond.jellyorder.sseRequest.dto.RequestCreateDto;
+import com.beyond.jellyorder.domain.sseRequest.dto.RequestCreateDto;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 

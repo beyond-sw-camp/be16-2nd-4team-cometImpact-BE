@@ -1,10 +1,9 @@
-package com.beyond.jellyorder.sseRequest.controller;
+package com.beyond.jellyorder.domain.sseRequest.controller;
 
 import com.beyond.jellyorder.common.apiResponse.CommonDTO;
-import com.beyond.jellyorder.sseRequest.dto.RequestCreateDto;
-import com.beyond.jellyorder.sseRequest.service.RedisRequestService;
-import com.beyond.jellyorder.sseRequest.sse.SseEmitters;
-import com.beyond.jellyorder.sseRequest.sse.SseEmitters;
+import com.beyond.jellyorder.domain.sseRequest.dto.RequestCreateDto;
+import com.beyond.jellyorder.domain.sseRequest.service.RedisRequestService;
+import com.beyond.jellyorder.domain.sseRequest.sse.SseEmitters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -18,9 +17,9 @@ public class RequestController {
     private final RedisRequestService requestService;
     private final SseEmitters emitters;
 
-    @PostMapping("/create")
-    public ResponseEntity<?> create(@RequestBody RequestCreateDto dto) {
-        requestService.save(dto);
+    @PostMapping("/send")
+    public ResponseEntity<?> send(@RequestBody RequestCreateDto dto) {
+        requestService.send(dto);
         emitters.notifyStore(dto.getStoreId().toString(), dto);
 
         return new ResponseEntity<>(
