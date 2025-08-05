@@ -50,7 +50,7 @@ public class StoreController {
     }
 
     @PostMapping("/refresh-at")
-    public ResponseEntity<?> generateNewAt(@RequestBody RefreshTokenDto refreshTokenDto) {
+    public ResponseEntity<?> storeNewAt(@RequestBody RefreshTokenDto refreshTokenDto) {
         Store store = authService.validateStoreRt(refreshTokenDto.getRefreshToken());
 
         String storeAccessToken = jwtTokenProvider.createStoreAtToken(store);

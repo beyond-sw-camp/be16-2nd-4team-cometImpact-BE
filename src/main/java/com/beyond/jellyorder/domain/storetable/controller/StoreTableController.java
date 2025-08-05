@@ -67,4 +67,9 @@ public class StoreTableController {
 
         return ApiResponse.ok(loginResDTO, "테이블 로그인 완료!");
     }
+
+    @PostMapping("/refresh-at")
+    public ResponseEntity<?> storeTableNewAt() {
+
+    }
 }
