@@ -96,5 +96,39 @@ public class MenuService {
                 .imageUrl(menu.getImageUrl())
                 .build();
     }
+
+    public MenuCreateResDto getMenuByStoreIdAndName(String storeId, String name) { // 추후 name 대신 UUID로 수정 예정
+
+        // TODO [2025-08-02]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
+        // Auth 도입 후 검증 로직 추가 예정
+
+        Menu menu = menuRepository.findByCategory_StoreIdAndName(storeId, name)
+                .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다: name=" + name + ", storeId=" + storeId));
+
+        return MenuCreateResDto.builder()
+                .id(menu.getId())
+                .name(menu.getName())
+                .price(menu.getPrice())
+                .imageUrl(menu.getImageUrl())
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public List<MenuCreateResDto> getMenusByStoreId(String storeId) {
+        List<Menu> menus = menuRepository.findAllByCategory_StoreId(storeId);
+
+        if (menus.isEmpty()) {
+            throw new EntityNotFoundException("해당 storeId에 대한 메뉴가 존재하지 않습니다: " + storeId);
+        }
+
+        return menus.stream()
+                .map(menu -> MenuCreateResDto.builder()
+                        .id(menu.getId())
+                        .name(menu.getName())
+                        .price(menu.getPrice())
+                        .imageUrl(menu.getImageUrl())
+                        .build())
+                .toList();
+    }
 }
 
