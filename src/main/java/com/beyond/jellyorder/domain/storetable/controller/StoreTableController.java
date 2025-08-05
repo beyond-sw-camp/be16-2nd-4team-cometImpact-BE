@@ -16,6 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/store-table")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('STORE')")
 //    @PreAuthorize("hasRole('STORE')") 토큰 발급 시 추가 예정
 public class StoreTableController {
 
@@ -50,7 +51,6 @@ public class StoreTableController {
     }
 
     @PostMapping("/do-login")
-    @PreAuthorize("hasRole('STORE')")
     public ResponseEntity<?> storeTableLogin(@Valid @RequestBody StoreTableLoginReqDTO storeTableLoginReqDTO) {
         StoreTable storeTable = storeTableService.doLogin(storeTableLoginReqDTO);
         return ApiResponse.ok("테이블 로그인 완료!"); /* At, Rt 로직 도입 후 리턴 타입 변경 예정 */

@@ -58,7 +58,7 @@ public class StoreController {
                 .storeAccessToken(storeAccessToken)
                 .build();
 
-        return ApiResponse.ok("StoreAccessToken 발급 성공"); /* 프론트 개발 후 리턴 값 변경 예정*/
+        return ApiResponse.ok(loginResponseDto, "토큰 재발급 완료!"); /* 프론트 개발 후 리턴 값 변경 예정*/
     }
 
 

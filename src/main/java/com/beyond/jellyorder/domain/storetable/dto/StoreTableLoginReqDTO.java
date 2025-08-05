@@ -1,7 +1,6 @@
 package com.beyond.jellyorder.domain.storetable.dto;
 
 import com.beyond.jellyorder.domain.store.entity.Store;
-import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import jakarta.validation.constraints.NotBlank;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
