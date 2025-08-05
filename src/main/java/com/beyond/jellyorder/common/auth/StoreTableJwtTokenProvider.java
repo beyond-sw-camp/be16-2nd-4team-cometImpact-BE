@@ -62,7 +62,7 @@ import java.util.Date;
     public String createStoreTableAtToken(StoreTable table) {
         String loginId = table.getStore().getLoginId();
         String tableName = table.getName();
-        String role = "STORE_TABLE";
+        String role = table.getRole().toString();
 
         Claims claims = Jwts.claims().setSubject(loginId);
         claims.put("role", role);
