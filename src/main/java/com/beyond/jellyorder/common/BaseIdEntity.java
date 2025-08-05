@@ -10,6 +10,6 @@ import java.util.UUID;
 public abstract class BaseIdEntity {
     @Id
     @GeneratedValue
-    @Column(name = "id", nullable = false, updatable = false, length = 36)
+    @Column(name = "id", nullable = false, updatable = false)
     private UUID id;
 }
