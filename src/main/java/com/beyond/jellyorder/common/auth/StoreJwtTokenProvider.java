@@ -58,6 +58,7 @@ public class StoreJwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(loginId); // filter에서 claims.getSubject와 싱크, loginId
         claims.put("role", role);
         Date now = new Date();
+
         String storeAccessToken = Jwts.builder() // 토큰 제작
                 .setClaims(claims) // loginId + role STORE
                 .setIssuedAt(now) // 발행시간

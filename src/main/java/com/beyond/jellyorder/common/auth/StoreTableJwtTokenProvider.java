@@ -69,19 +69,21 @@ import java.util.Date;
         claims.put("tableName", tableName);
 
         Date now = new Date();
-        return Jwts.builder()
+        String storeTableAccessToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now)
                 .setExpiration(new Date(now.getTime() + expirationAt * 60 * 1000L))
                 .signWith(secret_at_key)
                 .compact();
+
+        return storeTableAccessToken;
     }
 
     // Refresh Token 발급 + Redis 저장
     public String createStoreTableRtToken(StoreTable table) {
         String loginId = table.getStore().getLoginId();
         String tableName = table.getName();
-        String role = "STORE_TABLE";
+        String role = table.getRole().toString();
 
         Claims claims = Jwts.claims().setSubject(loginId);
         claims.put("role", role);
@@ -94,8 +96,11 @@ import java.util.Date;
                 .setExpiration(new Date(now.getTime() + expirationRt * 60 * 1000L))
                 .signWith(secret_rt_key)
                 .compact();
-
-        // Redis에 저장: key = loginId:tableName
+        /* Redis에 저장: key = loginId:tableName
+        * 만약 ':'을 사용하지 않고 loginId만 Redis에 저장하게 된다면 유니크함을 잃음
+        * loginId: jellyorder1이고, tableName이 :로 구분이 되지 않는다면 1번 테이블, 2번 테이블 모두 같은 loginId 키값으로 구성됨
+        * loginId : tableName -> jellyorder1:1번테이블, jellyorder1:2번테이블 -> 유니크함 보장
+        */
         String redisKey = loginId + ":" + tableName;
         redisTemplate.opsForValue().set(redisKey, refreshToken);
 

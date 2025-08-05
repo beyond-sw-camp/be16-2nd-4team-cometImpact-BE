@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
+import com.beyond.jellyorder.common.auth.StoreTableJwtTokenProvider;
 import com.beyond.jellyorder.domain.storetable.dto.*;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
@@ -21,6 +22,7 @@ import java.util.UUID;
 public class StoreTableController {
 
     private final StoreTableService storeTableService;
+    private final StoreTableJwtTokenProvider jwtTokenProvider;
 
     @PostMapping("/create/{storeLoginId}")
     public ResponseEntity<?> createStoreTable(
@@ -52,8 +54,17 @@ public class StoreTableController {
 
     @PostMapping("/do-login")
     public ResponseEntity<?> storeTableLogin(@Valid @RequestBody StoreTableLoginReqDTO storeTableLoginReqDTO) {
-        StoreTable storeTable = storeTableService.doLogin(storeTableLoginReqDTO);
-        return ApiResponse.ok("테이블 로그인 완료!"); /* At, Rt 로직 도입 후 리턴 타입 변경 예정 */
 
+        StoreTable storeTable = storeTableService.doLogin(storeTableLoginReqDTO);
+        String accessToken = jwtTokenProvider.createStoreTableAtToken(storeTable);
+        String refreshToken = jwtTokenProvider.createStoreTableRtToken(storeTable);
+
+        StoreTableLoginResDTO loginResDTO = StoreTableLoginResDTO
+                .builder()
+                .storeTableAccessToken(accessToken)
+                .storeTableRefreshToken(refreshToken)
+                .build();
+
+        return ApiResponse.ok(loginResDTO, "테이블 로그인 완료!");
     }
 }
