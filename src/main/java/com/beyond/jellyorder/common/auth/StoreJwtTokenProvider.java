@@ -36,7 +36,7 @@ public class StoreJwtTokenProvider {
     private Key secret_rt_key;
 
     @Autowired
-    public StoreJwtTokenProvider(StoreRepository storeRepository, @Qualifier("storeAuthRedisConnectionFactory") RedisTemplate<String, Object> redisTemplate) {
+    public StoreJwtTokenProvider(StoreRepository storeRepository, @Qualifier("storeRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
         this.storeRepository = storeRepository;
         this.redisTemplate = redisTemplate;
     }
