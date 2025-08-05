@@ -1,10 +1,8 @@
 package com.beyond.jellyorder.domain.store.entity;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import com.beyond.jellyorder.common.auth.Role;
+import jakarta.persistence.*;
 import jakarta.validation.constraints.NotEmpty;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
@@ -35,5 +33,8 @@ public class Store extends BaseIdAndTimeEntity {
     private String password;
     @Column(nullable = false)
     private String ownerEmail;
+    @Builder.Default
+    @Enumerated(EnumType.STRING)
+    private Role role = Role.STORE;
 
 }

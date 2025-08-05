@@ -12,7 +12,7 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 
-public class StoreCreateDto {
+public class StoreCreateDTO {
     @NotEmpty
     private String loginId;
     @NotEmpty
