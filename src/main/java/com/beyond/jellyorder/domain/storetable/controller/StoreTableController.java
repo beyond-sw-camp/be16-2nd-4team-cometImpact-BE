@@ -1,7 +1,11 @@
 package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
+import com.beyond.jellyorder.common.auth.AuthService;
+import com.beyond.jellyorder.common.auth.RefreshTokenDto;
 import com.beyond.jellyorder.common.auth.StoreTableJwtTokenProvider;
+import com.beyond.jellyorder.domain.store.dto.StoreLoginResDTO;
+import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.storetable.dto.*;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
@@ -23,6 +27,7 @@ public class StoreTableController {
 
     private final StoreTableService storeTableService;
     private final StoreTableJwtTokenProvider jwtTokenProvider;
+    private final AuthService authService;
 
     @PostMapping("/create/{storeLoginId}")
     public ResponseEntity<?> createStoreTable(
@@ -69,7 +74,14 @@ public class StoreTableController {
     }
 
     @PostMapping("/refresh-at")
-    public ResponseEntity<?> storeTableNewAt() {
+    public ResponseEntity<?> storeTableNewAt(@RequestBody RefreshTokenDto refreshTokenDto) {
+        StoreTable storeTable = authService.validateStoreTableRt(refreshTokenDto.getRefreshToken());
 
+        String storeTableAccessToken = jwtTokenProvider.createStoreTableAtToken(storeTable);
+        StoreLoginResDTO loginResponseDto = StoreLoginResDTO.builder()
+                .storeAccessToken(storeTableAccessToken)
+                .build();
+
+        return ApiResponse.ok(loginResponseDto, "테이블 토큰 재발급 완료!"); /* 프론트 개발 후 리턴 값 변경 예정*/
     }
 }

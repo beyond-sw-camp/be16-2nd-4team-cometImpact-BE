@@ -39,7 +39,6 @@ public class StoreTableAuthRtValidator {
         this.redisTemplate = redisTemplate;
     }
 
-
     /* setSigningKey에서 요구하는 secretKey 객체로 변환 != String */
     @PostConstruct
     public void init() {
@@ -72,7 +71,8 @@ public class StoreTableAuthRtValidator {
                 .orElseThrow(() -> new EntityNotFoundException("store = " + storeLoginId +
                                                                ", tableName = " + tableName + " 에 해당하는 테이블이 존재하지 않습니다."));
 
-        String redisRt = (String) redisTemplate.opsForValue().get(storeTable.getId().toString());
+        String redisKey = store.getLoginId() + ":" + tableName;
+        String redisRt = (String) redisTemplate.opsForValue().get(redisKey);
 
         if (redisRt == null || !redisRt.equals(refreshToken)) {
             throw new IllegalArgumentException("토큰값이 유효하지 않습니다.");
