@@ -11,7 +11,7 @@ import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
-public class StoreTableRedisConfig {
+public class StoreTableAuthRedisConfig {
 
     @Value("${spring.redis.host}")
     private String host;
