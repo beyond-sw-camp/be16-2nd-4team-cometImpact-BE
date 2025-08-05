@@ -2,10 +2,12 @@ package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.storetable.dto.*;
+import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -14,6 +16,7 @@ import java.util.UUID;
 @RestController
 @RequestMapping("/store-table")
 @RequiredArgsConstructor
+@PreAuthorize("hasRole('STORE')")
 //    @PreAuthorize("hasRole('STORE')") 토큰 발급 시 추가 예정
 public class StoreTableController {
 
@@ -47,4 +50,10 @@ public class StoreTableController {
         return ApiResponse.ok(resDTO, "구역이 수정되었습니다.");
     }
 
+    @PostMapping("/do-login")
+    public ResponseEntity<?> storeTableLogin(@Valid @RequestBody StoreTableLoginReqDTO storeTableLoginReqDTO) {
+        StoreTable storeTable = storeTableService.doLogin(storeTableLoginReqDTO);
+        return ApiResponse.ok("테이블 로그인 완료!"); /* At, Rt 로직 도입 후 리턴 타입 변경 예정 */
+
+    }
 }
