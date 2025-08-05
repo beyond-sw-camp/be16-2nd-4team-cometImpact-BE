@@ -68,6 +68,7 @@ public class CategoryService {
     }
 
     public CategoryModifyResDto modifyCategory(CategoryModifyReqDto reqDto) {
+        // 이후 Authentication 객체 내에서 storeId 검증 추가 예정
         Category category = categoryRepository.findByIdAndStoreId(reqDto.getCategoryId(), reqDto.getStoreId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
 
