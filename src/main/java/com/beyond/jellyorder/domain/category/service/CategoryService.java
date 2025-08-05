@@ -67,20 +67,23 @@ public class CategoryService {
     }
 
     public CategoryModifyResDto modifyByName(CategoryModifyReqDto reqDto) {
-        Category category = categoryRepository.findByStoreIdAndName(reqDto.getStoreId(), reqDto.getOriginalName())
+        Category category = categoryRepository.findByIdAndStoreId(reqDto.getCategoryId(), reqDto.getStoreId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
 
-        // 이름 변경이 실제로 필요한지 판단
-        boolean nameChanged = reqDto.getOriginalName().equals(reqDto.getNewName());
-        if (!nameChanged) {
-            // 동일한 storeId 내에 새 이름이 이미 존재하면 중복 예외
+        if(category.getDescription().equals(reqDto.getNewDescription()) && category.getName().equals(reqDto.getNewName())) {
+            throw new IllegalArgumentException("카테고리 혹은 설명 중 수정된 사안이 있어야 합니다.");
+        }
+
+        if (!category.getName().equals(reqDto.getNewName())) {
             if (categoryRepository.existsByStoreIdAndName(reqDto.getStoreId(), reqDto.getNewName())) {
                 throw new DuplicateResourceException("이미 존재하는 카테고리명입니다: " + reqDto.getNewName());
             }
             category.setName(reqDto.getNewName());
         }
 
-        category.setDescription(reqDto.getNewDescription());
+        if (!category.getDescription().equals(reqDto.getNewDescription())) {
+            category.setDescription(reqDto.getNewDescription());
+        }
 
         return CategoryModifyResDto.builder()
                 .name(category.getName())
