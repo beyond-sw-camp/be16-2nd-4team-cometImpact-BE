@@ -43,6 +43,12 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // JSON 처리에 필요
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
+//	redis 관련 의존성 추가
+	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
+    // redis에 연동하기 위한 의존성
+    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+
 
 }
 
