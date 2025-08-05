@@ -1,6 +1,5 @@
-package com.beyond.jellyorder.config;
+package com.beyond.jellyorder.common.redis;
 
-import com.beyond.jellyorder.common.redis.RedisProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

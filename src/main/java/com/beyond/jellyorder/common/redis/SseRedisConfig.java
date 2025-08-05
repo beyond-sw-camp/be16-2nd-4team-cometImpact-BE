@@ -1,6 +1,5 @@
-package com.beyond.jellyorder.config;
+package com.beyond.jellyorder.common.redis;
 
-import com.beyond.jellyorder.common.redis.RedisProperties;
 import com.beyond.jellyorder.domain.sseRequest.service.SseAlarmService;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;

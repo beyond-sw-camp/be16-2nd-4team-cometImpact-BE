@@ -48,4 +48,5 @@ public class StoreTable extends BaseIdAndTimeEntity {
         this.name = dto.getName();
         this.seatCount = dto.getSeatCount();
     }
+
 }

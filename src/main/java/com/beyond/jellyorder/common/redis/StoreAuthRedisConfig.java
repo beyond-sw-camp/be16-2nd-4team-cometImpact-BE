@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.config;
+package com.beyond.jellyorder.common.redis;
 
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
