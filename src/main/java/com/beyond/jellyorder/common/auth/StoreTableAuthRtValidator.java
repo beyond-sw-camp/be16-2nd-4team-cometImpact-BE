@@ -49,7 +49,6 @@ public class StoreTableAuthRtValidator {
     }
 
     public StoreTable validate(String refreshToken) {
-
         Claims claims;
         try {
             claims = Jwts.parserBuilder()
@@ -62,7 +61,8 @@ public class StoreTableAuthRtValidator {
         }
 
         String storeLoginId = claims.getSubject();
-        String tableName = claims.get("tableName", String.class); /* "tableName":"1번 테이블" String 형식  */
+        /* "tableName":"1번 테이블" String 형식  */
+        String tableName = claims.get("tableName", String.class);
 
         Store store = storeRepository.findByLoginId(storeLoginId)
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 Store 로그인 아이디 입니다: " + storeLoginId));
@@ -70,6 +70,14 @@ public class StoreTableAuthRtValidator {
         StoreTable storeTable = storeTableRepository.findByStoreAndName(store, tableName)
                 .orElseThrow(() -> new EntityNotFoundException("store = " + storeLoginId +
                                                                ", tableName = " + tableName + " 에 해당하는 테이블이 존재하지 않습니다."));
+
+        /*
+          Redis에서 사용되는 Key: "<storeLoginId>:<tableName>"
+          해당 Key에 매핑된 Value는 StoreTable의 RefreshToken(String)
+          예:
+            Key: beyondcafe:1번테이블
+            Value: eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9... (RefreshToken)
+        */
 
         String redisKey = store.getLoginId() + ":" + tableName;
         String redisRt = (String) redisTemplate.opsForValue().get(redisKey);
