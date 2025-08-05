@@ -103,17 +103,16 @@ public class StoreTableService {
     }
 
     public StoreTable doLogin(StoreTableLoginReqDTO storeTableLoginReqDTO) {
-        /* 토큰 발급 이후 리턴 메세지 "로그인 정보가 일치하지 않습니다." 수정 예정 */
-        Store store = storeRepository.findByLoginId(storeTableLoginReqDTO.getStore().getLoginId())
-                .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 틀립니다.")); /* "로그인 정보가 일치하지 않습니다." 수정 예정, 로그인 + AT, RT 전부 개발 후 */
-
-        if (!passwordEncoder.matches(storeTableLoginReqDTO.getStore().getPassword(), store.getPassword())) {
-            throw new IllegalArgumentException("아이디 또는 비밀번호!!가 틀립니다."); /* "로그인 정보가 일치하지 않습니다." 수정 예정, 로그인 + AT, RT 전부 개발 후 */
-        }
+        Store store = storeRepository.findByLoginId(storeTableLoginReqDTO.getLoginId())
+                .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 틀렸습니다."));
 
         StoreTable storeTable = storeTableRepository.findByStoreAndName(store, storeTableLoginReqDTO.getName())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 테이블입니다."));
-        
+
+        if (!passwordEncoder.matches(storeTableLoginReqDTO.getPassword(), store.getPassword())) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호!!가 틀렸습니다.");
+        }
+
         return storeTable;
     }
 
