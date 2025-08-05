@@ -53,8 +53,8 @@ public class CategoryController {
     }
 
     @PutMapping("/modify")
-    public ResponseEntity<?> modifyCategoryByName(@RequestBody @Valid CategoryModifyReqDto reqDto) {
-        CategoryModifyResDto resDto = categoryService.modifyByName(reqDto);
+    public ResponseEntity<?> modifyCategory(@RequestBody @Valid CategoryModifyReqDto reqDto) {
+        CategoryModifyResDto resDto = categoryService.modifyCategory(reqDto);
         return ApiResponse.ok(resDto, "카테고리가 정상적으로 수정되었습니다.");
     }
 }

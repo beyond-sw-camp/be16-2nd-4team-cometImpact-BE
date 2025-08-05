@@ -10,6 +10,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -66,7 +67,7 @@ public class CategoryService {
                 .collect(Collectors.toList());
     }
 
-    public CategoryModifyResDto modifyByName(CategoryModifyReqDto reqDto) {
+    public CategoryModifyResDto modifyCategory(CategoryModifyReqDto reqDto) {
         Category category = categoryRepository.findByIdAndStoreId(reqDto.getCategoryId(), reqDto.getStoreId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
 
