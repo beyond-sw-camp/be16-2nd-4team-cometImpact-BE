@@ -78,8 +78,8 @@ public class StoreTableController {
         StoreTable storeTable = authService.validateStoreTableRt(refreshTokenDto.getRefreshToken());
 
         String storeTableAccessToken = jwtTokenProvider.createStoreTableAtToken(storeTable);
-        StoreLoginResDTO loginResponseDto = StoreLoginResDTO.builder()
-                .storeAccessToken(storeTableAccessToken)
+        StoreTableLoginResDTO loginResponseDto = StoreTableLoginResDTO.builder()
+                .storeTableAccessToken(storeTableAccessToken)
                 .build();
 
         return ApiResponse.ok(loginResponseDto, "테이블 토큰 재발급 완료!"); /* 프론트 개발 후 리턴 값 변경 예정*/
