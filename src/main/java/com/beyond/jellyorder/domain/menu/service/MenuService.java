@@ -11,6 +11,10 @@ import com.beyond.jellyorder.domain.menu.domain.MenuIngredientId;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateReqDto;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateResDto;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
+import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
+import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
+import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
+import com.beyond.jellyorder.domain.option.subOption.dto.SubOptionDto;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -18,8 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.multipart.MultipartFile;
 import com.beyond.jellyorder.domain.menu.repository.MenuIngredientRepository;
 
-import java.util.Collections;
-import java.util.List;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
@@ -87,6 +90,52 @@ public class MenuService {
                 s3Manager.delete(imageUrl);
             }
             throw e;
+        }
+
+        List<MainOptionDto> mainOptionDtos = reqDto.getMainOptions();
+        if (mainOptionDtos != null && !mainOptionDtos.isEmpty()) {
+            List<MainOption> mainOptions = new ArrayList<>();
+            Set<String> mainOptionNames = new HashSet<>();
+
+            for (MainOptionDto mainDto : mainOptionDtos) {
+                String mainName = mainDto.getName();
+
+                // MainOption 이름 중복 체크
+                if (!mainOptionNames.add(mainName)) {
+                    throw new IllegalArgumentException("중복된 메인 옵션 이름이 존재합니다: " + mainName);
+                }
+
+                MainOption mainOption = MainOption.builder()
+                        .menu(menu)
+                        .name(mainName)
+                        .build();
+
+                List<SubOption> subOptions = new ArrayList<>();
+                Set<String> subOptionNames = new HashSet<>();
+
+                if (mainDto.getSubOptions() != null) {
+                    for (SubOptionDto subDto : mainDto.getSubOptions()) {
+                        String subName = subDto.getName();
+
+                        // SubOption 이름 중복 체크
+                        if (!subOptionNames.add(subName)) {
+                            throw new IllegalArgumentException("메인 옵션 '" + mainName + "'에 중복된 서브 옵션이 존재합니다: " + subName);
+                        }
+
+                        SubOption sub = SubOption.builder()
+                                .mainOption(mainOption)
+                                .name(subName)
+                                .build();
+
+                        subOptions.add(sub);
+                    }
+                }
+
+                mainOption.setSubOptions(subOptions);
+                mainOptions.add(mainOption);
+            }
+
+            menu.setMainOptions(mainOptions);
         }
 
         return MenuCreateResDto.builder()
