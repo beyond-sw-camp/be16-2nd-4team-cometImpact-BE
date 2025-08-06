@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.storetable.entity;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
+import com.beyond.jellyorder.common.auth.Role;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.storetable.dto.StoreTableUpdateReqDTO;
 import jakarta.persistence.*;
@@ -42,10 +43,15 @@ public class StoreTable extends BaseIdAndTimeEntity {
     @Column(name = "seat_count", nullable = false)
     private Integer seatCount = 4;
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private Role role = Role.STORE_TABLE;
+
     //==테이블 수정 메서드==//
     public void updateStoreTableInfo(Zone zone, StoreTableUpdateReqDTO dto) {
         this.zone = zone;
         this.name = dto.getName();
         this.seatCount = dto.getSeatCount();
     }
+
 }

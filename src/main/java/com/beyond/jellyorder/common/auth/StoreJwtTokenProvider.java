@@ -6,7 +6,6 @@ import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import jakarta.annotation.PostConstruct;
-import jakarta.persistence.EntityNotFoundException;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,7 +18,7 @@ import java.util.Date;
 
 @Component
 
-public class JwtTokenProvider {
+public class StoreJwtTokenProvider {
     private final StoreRepository storeRepository;
     private final RedisTemplate<String, Object> redisTemplate;
 
@@ -37,7 +36,7 @@ public class JwtTokenProvider {
     private Key secret_rt_key;
 
     @Autowired
-    public JwtTokenProvider(StoreRepository storeRepository, @Qualifier("redisTemplate") RedisTemplate<String, Object> redisTemplate) {
+    public StoreJwtTokenProvider(StoreRepository storeRepository, @Qualifier("storeRedisTemplate") RedisTemplate<String, Object> redisTemplate) {
         this.storeRepository = storeRepository;
         this.redisTemplate = redisTemplate;
     }
@@ -59,14 +58,15 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(loginId); // filter에서 claims.getSubject와 싱크, loginId
         claims.put("role", role);
         Date now = new Date();
-        String accessToken = Jwts.builder() // 토큰 제작
+
+        String storeAccessToken = Jwts.builder() // 토큰 제작
                 .setClaims(claims) // loginId + role STORE
                 .setIssuedAt(now) // 발행시간
                 .setExpiration(new Date(now.getTime() + expirationAt*60*1000L)) // 만료시간, 1000분
                 .signWith(secret_at_key)
                 .compact();
 
-        return accessToken;
+        return storeAccessToken;
 }
 
     public String createStoreRtToken(Store store) {
@@ -77,17 +77,19 @@ public class JwtTokenProvider {
         Claims claims = Jwts.claims().setSubject(loginId); // filter에서 claims.getSubject와 싱크, loginId
         claims.put("role", role);
         Date now = new Date();
-        String refreshToken = Jwts.builder()
+        String storeRefreshToken = Jwts.builder()
                 .setClaims(claims)
                 .setIssuedAt(now) // 발행시간
                 .setExpiration(new Date(now.getTime() + expirationRt*60*1000L)) // 만료시간, 10000분 설정
                 .signWith(secret_rt_key)
                 .compact();
 
-        redisTemplate.opsForValue().set(store.getLoginId(), refreshToken);
+        redisTemplate.opsForValue().set(store.getLoginId(), storeRefreshToken);
 
-        return refreshToken;
+        return storeRefreshToken;
     }
+
+
 
 
 

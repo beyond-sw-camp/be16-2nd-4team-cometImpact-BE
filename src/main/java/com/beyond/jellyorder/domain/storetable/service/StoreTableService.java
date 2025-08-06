@@ -12,11 +12,13 @@ import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -28,6 +30,7 @@ public class StoreTableService {
     private final StoreTableRepository storeTableRepository;
     private final StoreRepository storeRepository;
     private final ZoneRepository zoneRepository;
+    private final PasswordEncoder passwordEncoder;
 
     // 테이블 생성
     @Transactional
@@ -106,6 +109,21 @@ public class StoreTableService {
 
         storeTable.updateStoreTableInfo(zone, dto);
         return StoreTableResDTO.from(storeTable);
+    }
+
+
+    public StoreTable doLogin(StoreTableLoginReqDTO storeTableLoginReqDTO) {
+        Store store = storeRepository.findByLoginId(storeTableLoginReqDTO.getLoginId())
+                .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 틀렸습니다."));
+
+        StoreTable storeTable = storeTableRepository.findByStoreAndName(store, storeTableLoginReqDTO.getName())
+                .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 테이블입니다."));
+
+        if (!passwordEncoder.matches(storeTableLoginReqDTO.getPassword(), store.getPassword())) {
+            throw new IllegalArgumentException("아이디 또는 비밀번호!!가 틀렸습니다.");
+        }
+
+        return storeTable;
     }
 
     /**

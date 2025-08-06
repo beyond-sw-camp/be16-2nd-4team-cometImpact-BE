@@ -2,6 +2,7 @@ package com.beyond.jellyorder.common.auth;
 
 import io.jsonwebtoken.Claims;
 import io.jsonwebtoken.Jwts;
+import jakarta.annotation.PostConstruct;
 import jakarta.servlet.*;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
@@ -13,7 +14,9 @@ import org.springframework.security.core.authority.SimpleGrantedAuthority;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
 
+import javax.crypto.spec.SecretKeySpec;
 import java.io.IOException;
+import java.security.Key;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -23,7 +26,17 @@ public class JwtTokenFilter extends GenericFilter {
 
     @Value("${jwt.secretKeyAt}")
     private String secretKey;
-    //    token이 없는 경우 그냥 진행 시켜
+
+    private Key secret_at_key;
+
+    @PostConstruct
+    public void init() {
+        this.secret_at_key = new SecretKeySpec(
+                java.util.Base64.getDecoder().decode(secretKey),
+                io.jsonwebtoken.SignatureAlgorithm.HS512.getJcaName()
+        );
+    }
+
     @Override
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         try {
@@ -35,7 +48,7 @@ public class JwtTokenFilter extends GenericFilter {
             }
             String token = bearerToken.substring(7);
             Claims claims = Jwts.parserBuilder()
-                    .setSigningKey(secretKey)
+                    .setSigningKey(secret_at_key)
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
