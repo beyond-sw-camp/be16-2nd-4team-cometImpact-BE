@@ -9,11 +9,14 @@ import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.order.repository.UnitOrderRepository;
 import com.beyond.jellyorder.domain.storetable.dto.orderTableStatus.OrderMenuDetail;
+import com.beyond.jellyorder.domain.storetable.dto.orderTableStatus.OrderMenuDetailPrice;
+import com.beyond.jellyorder.domain.storetable.dto.orderTableStatus.OrderTableDetailResDTO;
 import com.beyond.jellyorder.domain.storetable.dto.orderTableStatus.OrderTableResDTO;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
 import com.beyond.jellyorder.domain.storetable.repository.ZoneRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -46,7 +49,7 @@ public class OrderTableStatusService {
                     Optional<TotalOrder> totalOrderOpt =
                             totalOrderRepository.findTopByStoreTableOrderByOrderedAtDesc(table);
 
-                    // 테이블에 주문이 없거나 테이블 상태가 EATING이 아니면 NULL값만 넘김.
+                    // 테이블에 주문이 없거나 테이블 상태가 EATING이 아니면 null값 만 넘김.
                     if (totalOrderOpt.isEmpty()
                             || table.getStatus() != TableStatus.EATING) {
                         return OrderTableResDTO.from(table, null, Collections.emptyList());
@@ -65,33 +68,46 @@ public class OrderTableStatusService {
                         );
                     });
 
-                    // 4. 활성 UnitOrder의 OrderMenu 스트림으로 수집
+                    // 4. UnitOrder의 OrderMenu 스트림으로 수집
                     List<OrderMenu> orderMenus = unitOrderList.stream()
                             .flatMap(uo -> uo.getOrderMenus().stream())
                             .toList();
 
-                    // 5. 메뉴 엔티티별로 quantity 합산 (menu id와 name 포함)
-                    Map<Menu, Integer> menuCounts = orderMenus.stream()
+                    // 5. flatMap + groupingBy 로 중복 메뉴 개수 계산
+                    Map<String, Long> menuCounts = orderMenus.stream()
+                            .flatMap(om -> Collections.nCopies(
+                                    om.getQuantity(), om.getMenu().getName()).stream())
                             .collect(Collectors.groupingBy(
-                                    OrderMenu::getMenu,
-                                    Collectors.summingInt(OrderMenu::getQuantity)
-                            ));
+                                    Function.identity(), Collectors.counting()));
 
-                    // 6. Map 엔트리 → OrderMenuDetail DTO 리스트 변환 (menu id 포함)
+                    // 6. Map 엔트리 → OrderMenuDetail 리스트 변환
                     List<OrderMenuDetail> details = menuCounts.entrySet().stream()
-                            .map(entry -> OrderMenuDetail.builder()
-                                    .id(entry.getKey().getId())       // 메뉴 ID 추가
-                                    .name(entry.getKey().getName())       // 메뉴 이름
-                                    .quantity(entry.getValue())           // 합산된 수량
-                                    .build()
-                            )
-                            .toList();
-
+                            .map(e -> OrderMenuDetail.builder()
+                                    .name(e.getKey())
+                                    .quantity(e.getValue().intValue())
+                                    .build())
+                            .collect(Collectors.toList());
 
                     // 7. DTO 변환 및 반환
                     return OrderTableResDTO.from(table, totalOrder, details);
                 })
                 .toList();
+    }
+
+    public List<OrderTableDetailResDTO> getTableOrderDetail(UUID totalOrderId) {
+        TotalOrder totalOrder = totalOrderRepository.findById(totalOrderId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 전체 주문이 없습니다."));
+
+        return totalOrder.getUnitOrderList().stream()
+                .map(
+                        unitOrder -> {
+                            // OrderMenuDetailPrice 생성 로직
+                            List<OrderMenuDetailPrice> orderMenuList = unitOrder.getOrderMenus().stream()
+                                    .map(OrderMenuDetailPrice::from).toList();
+
+                            return OrderTableDetailResDTO.from(unitOrder, orderMenuList);
+                        }
+                ).toList();
     }
 
 

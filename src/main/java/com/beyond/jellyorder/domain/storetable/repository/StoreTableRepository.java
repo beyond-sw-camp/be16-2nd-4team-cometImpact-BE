@@ -32,18 +32,4 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
 
     Optional<StoreTable> findByStoreAndName(Store store, String name);
 
-
-
-
-
-//    추후 fetch join을 위한 메서드 구현. 08.02에 구현 예정
-//    @Query("""
-//    SELECT st FROM StoreTable st
-//    JOIN FETCH st.zone z
-//    JOIN FETCH st.store s
-//    WHERE s.loginId = :storeLoginId
-//""")
-//    List<StoreTable> findAllByStoreLoginIdWithZoneAndStore(@Param("storeLoginId") String storeLoginId);
-
-
 }

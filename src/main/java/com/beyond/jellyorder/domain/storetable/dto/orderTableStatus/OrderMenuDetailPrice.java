@@ -6,20 +6,21 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
-import java.util.UUID;
-
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
-public class OrderMenuDetail {
+public class OrderMenuDetailPrice {
     private String name;
     private Integer quantity;
+    private Integer price;
 
-    public static OrderMenuDetail from(OrderMenu orderMenu) {
-        return OrderMenuDetail.builder()
+
+    public static OrderMenuDetailPrice from(OrderMenu orderMenu) {
+        return OrderMenuDetailPrice.builder()
                 .name(orderMenu.getMenu().getName())
                 .quantity(orderMenu.getQuantity())
+                .price(orderMenu.getMenu().getPrice() * orderMenu.getQuantity())
                 .build();
     }
 }

@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.domain.storetable.dto;
+package com.beyond.jellyorder.domain.storetable.dto.zone;
 
 import jakarta.validation.constraints.NotBlank;
 import lombok.Getter;

@@ -1,10 +1,10 @@
 package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneCreateReqDTO;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneListResDTO;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneResDTO;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneUpdateReqDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneCreateReqDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneListResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneUpdateReqDTO;
 import com.beyond.jellyorder.domain.storetable.service.ZoneService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;

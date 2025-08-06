@@ -1,7 +1,8 @@
 package com.beyond.jellyorder.domain.storetable.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneListResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.orderTableStatus.OrderTableDetailResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneListResDTO;
 import com.beyond.jellyorder.domain.storetable.dto.orderTableStatus.OrderTableResDTO;
 import com.beyond.jellyorder.domain.storetable.service.OrderTableStatusService;
 import com.beyond.jellyorder.domain.storetable.service.ZoneService;
@@ -31,11 +32,21 @@ public class OrderTableStatusController {
         return ApiResponse.ok(resDTOs);
     }
 
-    @GetMapping("/zoneList/{zoneId}/table/orders")
+    @GetMapping("/zoneList/{zoneId}/table-orders")
     public ResponseEntity<?> getTablesByZone(
             @PathVariable UUID zoneId
             ) {
         List<OrderTableResDTO> resDTOs = orderTableStatusService.getTablesByZone(zoneId);
         return ApiResponse.ok(resDTOs);
     }
+
+    @GetMapping("/{totalOrderId}")
+    public ResponseEntity<?> getTableOrderDetail(
+            @PathVariable UUID totalOrderId
+    ) {
+        List<OrderTableDetailResDTO> resDTOs = orderTableStatusService.getTableOrderDetail(totalOrderId);
+        return ApiResponse.ok(resDTOs);
+    }
+
+
 }

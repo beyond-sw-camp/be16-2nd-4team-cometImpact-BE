@@ -3,7 +3,7 @@ package com.beyond.jellyorder.domain.storetable.service;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
-import com.beyond.jellyorder.domain.storetable.dto.*;
+import com.beyond.jellyorder.domain.storetable.dto.storeTable.*;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 

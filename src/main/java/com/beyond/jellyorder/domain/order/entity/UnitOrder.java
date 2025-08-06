@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.*;
 
 import java.time.LocalDateTime;
+import java.time.LocalTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -24,6 +25,10 @@ public class UnitOrder extends BaseIdEntity {
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
     private OrderStatus status;
+
+    @Column(name = "order_number")
+    @Builder.Default
+    private Integer orderNumber = 0; // Redis에서 증가시킨 값
 
     @Column(name = "total_count", nullable = false)
     private Integer totalCount;
@@ -46,5 +51,15 @@ public class UnitOrder extends BaseIdEntity {
     protected void onCreate() {
         this.acceptedAt = LocalDateTime.now();
     }
+
+    // 주문 상태의 따라 시간 값 추출 메서드
+    public LocalTime getRelevantTime() {
+        return switch (status) {
+            case ACCEPT   -> LocalTime.from(getAcceptedAt());
+            case COMPLETE -> LocalTime.from(getCompletedAt());
+            case CANCEL   -> LocalTime.from(getCancelledAt());
+        };
+    }
+
 }
 

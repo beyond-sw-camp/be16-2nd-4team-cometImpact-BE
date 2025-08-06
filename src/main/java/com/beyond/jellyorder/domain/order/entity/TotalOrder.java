@@ -21,10 +21,6 @@ public class TotalOrder extends BaseIdEntity {
     @JoinColumn(name = "store_table_id", nullable = false)
     private StoreTable storeTable;
 
-    @Column(name = "order_number")
-    @Builder.Default
-    private Integer orderNumber = 0; // Redis에서 증가시킨 값
-
     @Column(name = "ended_at")
     private LocalDateTime endedAt;
 

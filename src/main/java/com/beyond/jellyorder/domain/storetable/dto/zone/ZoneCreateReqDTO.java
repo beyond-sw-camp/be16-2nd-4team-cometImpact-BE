@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.domain.storetable.dto;
+package com.beyond.jellyorder.domain.storetable.dto.zone;
 
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
