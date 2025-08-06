@@ -2,7 +2,7 @@ package com.beyond.jellyorder.domain.store.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.common.auth.AuthService;
-import com.beyond.jellyorder.common.auth.JwtTokenProvider;
+import com.beyond.jellyorder.common.auth.StoreJwtTokenProvider;
 import com.beyond.jellyorder.common.auth.RefreshTokenDto;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginReqDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginResDTO;
@@ -25,7 +25,7 @@ import java.util.UUID;
 
 public class StoreController {
     private final StoreService storeService;
-    private final JwtTokenProvider jwtTokenProvider;
+    private final StoreJwtTokenProvider jwtTokenProvider;
     private final AuthService authService;
 
     /* Store 회원가입 Controller */
@@ -50,7 +50,7 @@ public class StoreController {
     }
 
     @PostMapping("/refresh-at")
-    public ResponseEntity<?> generateNewAt(@RequestBody RefreshTokenDto refreshTokenDto) {
+    public ResponseEntity<?> storeNewAt(@RequestBody RefreshTokenDto refreshTokenDto) {
         Store store = authService.validateStoreRt(refreshTokenDto.getRefreshToken());
 
         String storeAccessToken = jwtTokenProvider.createStoreAtToken(store);
@@ -58,7 +58,7 @@ public class StoreController {
                 .storeAccessToken(storeAccessToken)
                 .build();
 
-        return ApiResponse.ok(loginResponseDto, "토큰 재발급 완료!"); /* 프론트 개발 후 리턴 값 변경 예정*/
+        return ApiResponse.ok(loginResponseDto, "점주 토큰 재발급 완료!"); /* 프론트 개발 후 리턴 값 변경 예정*/
     }
 
 

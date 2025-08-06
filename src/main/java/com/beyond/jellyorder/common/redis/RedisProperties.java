@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.common.auth;
+package com.beyond.jellyorder.common.redis;
 
 import lombok.Getter;
 import lombok.Setter;

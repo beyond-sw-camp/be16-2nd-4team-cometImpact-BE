@@ -10,6 +10,7 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
+@Builder
 
 public class StoreTableLoginReqDTO {
 //    점주의 로그인 아이디
@@ -20,4 +21,7 @@ public class StoreTableLoginReqDTO {
     private String password;
     @NotBlank(message = "테이블 이름은 필수 입력값입니다.")
     private String name;
+
 }
+
+
