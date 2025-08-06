@@ -21,6 +21,7 @@ import java.util.UUID;
 public class StoreService {
     private final StoreRepository storeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BusinessVerificationService businessVerificationService;
 
     /* Store 회원가입 Serivce */
     public UUID save(StoreCreateDTO storeCreateDto) {
@@ -34,6 +35,8 @@ public class StoreService {
             String businessNumber = store.get().getBusinessNumber();
             throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + businessNumber);
         }
+
+
 
         String encodedPassword = passwordEncoder.encode(storeCreateDto.getPassword());
         Store store = storeRepository.save(storeCreateDto.toEntity(encodedPassword));
