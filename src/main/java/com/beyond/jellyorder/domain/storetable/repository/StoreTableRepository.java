@@ -16,6 +16,7 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
     List<String> findNamesByStoreAndNames(@Param("store") Store store, @Param("names") List<String> names);
 
     List<StoreTable> findAllByZone(Zone zone);
+    List<StoreTable> findAllByZoneId(UUID zoneId);
 
     @Query("""
     SELECT COUNT(st) > 0
