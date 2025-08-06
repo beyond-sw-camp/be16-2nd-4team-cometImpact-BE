@@ -32,7 +32,7 @@ public class StoreAuthRedisConfig {
     /* RefreshToken RedisTemplate */
     /* Store (점주) RefreshToken RedisTemplate */
     @Bean(name = "storeRedisTemplate")
-    public RedisTemplate<String, Object> redisTemplate(@Qualifier("storeAuthRedisConnectionFactory") RedisConnectionFactory redisConnectionFactory) { // 0번 팩토리 (Bean)싱글톤 객체로 주입 받겠다
+    public RedisTemplate<String, Object> storeAuthRedisTemplate(@Qualifier("storeAuthRedisConnectionFactory") RedisConnectionFactory redisConnectionFactory) { // 0번 팩토리 (Bean)싱글톤 객체로 주입 받겠다
         RedisTemplate<String, Object> redisTemplate = new RedisTemplate<>();
         redisTemplate.setKeySerializer(new StringRedisSerializer());
         redisTemplate.setValueSerializer(new StringRedisSerializer());

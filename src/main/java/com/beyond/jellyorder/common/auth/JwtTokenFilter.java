@@ -26,7 +26,6 @@ public class JwtTokenFilter extends GenericFilter {
 
     @Value("${jwt.secretKeyAt}")
     private String secretKey;
-    //    token이 없는 경우 그냥 진행 시켜
 
     private Key secret_at_key;
 
