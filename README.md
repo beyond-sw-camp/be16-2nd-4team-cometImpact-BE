@@ -51,16 +51,16 @@
 ## 2. 📐 분석 및 설계
 
 ### ✅ 요구사항 명세서
-- 
+- https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1037534638#gid=1037534638
 
 ### 🎨 화면 설계서
 - 
 
 ### 🧾 ERD
-- 
+- https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW
 
 ### 📆 WBS (Work Breakdown Structure)
-
+- https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=0#gid=0
 
 ---
 
