@@ -58,10 +58,11 @@ public class CategoryController {
     public ResponseEntity<?> modifyCategory(@RequestBody @Valid CategoryModifyReqDto reqDto) {
         CategoryModifyResDto resDto = categoryService.modifyCategory(reqDto);
         return ApiResponse.ok(resDto, "카테고리가 정상적으로 수정되었습니다.");
-
-    @DeleteMapping("/delete/{storeId}/{categoryName}")
-    public ResponseEntity<?> deleteCategory(@PathVariable String storeId, @PathVariable String categoryName) {
-        categoryService.deleteCategory(storeId, categoryName);
-        return ApiResponse.ok(null, "카테고리가 정상적으로 삭제되었습니다.");
     }
+
+        @DeleteMapping("/delete/{storeId}/{categoryName}")
+        public ResponseEntity<?> deleteCategory (@PathVariable String storeId, @PathVariable String categoryName){
+            categoryService.deleteCategory(storeId, categoryName);
+            return ApiResponse.ok(null, "카테고리가 정상적으로 삭제되었습니다.");
+        }
 }

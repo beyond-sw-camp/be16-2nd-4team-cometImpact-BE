@@ -97,7 +97,6 @@ public class CategoryService {
                 .description(category.getDescription())
                 .build();
     }
-}
 
     public void deleteCategory(String storeId, String categoryName) {
         // TODO [2025-08-02]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
