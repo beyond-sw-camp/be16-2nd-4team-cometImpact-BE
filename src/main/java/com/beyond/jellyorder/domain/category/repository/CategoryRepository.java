@@ -2,6 +2,9 @@ package com.beyond.jellyorder.domain.category.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.beyond.jellyorder.domain.category.domain.Category;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
@@ -13,4 +16,9 @@ public interface CategoryRepository extends JpaRepository<Category, UUID>, Categ
     Optional<Category> findByStoreIdAndName(String storeId, String name);
     List<Category> findAllByStoreId(String storeId);
     Optional<Category> findByIdAndStoreId(UUID id, String storeId);
+
+    @Modifying
+    @Query("DELETE FROM Category c WHERE c.storeId = :storeId AND c.name = :name")
+    int deleteByStoreIdAndName(@Param("storeId") String storeId, @Param("name") String name);
+
 }

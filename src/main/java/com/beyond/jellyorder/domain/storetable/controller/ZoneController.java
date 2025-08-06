@@ -9,6 +9,7 @@ import com.beyond.jellyorder.domain.storetable.service.ZoneService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -23,6 +24,7 @@ public class ZoneController {
     private final ZoneService zoneService;
 
     @PostMapping("/create/{storeLoginId}")
+    @PreAuthorize("hasRole('STORE')")
     public ResponseEntity<?> createZone(
             @RequestBody @Valid ZoneCreateReqDTO reqDTO,
             @PathVariable String storeLoginId

@@ -3,7 +3,10 @@ package com.beyond.jellyorder.domain.category.service;
 import com.beyond.jellyorder.domain.category.dto.*;
 import com.beyond.jellyorder.domain.category.repository.CategoryRepository;
 import com.beyond.jellyorder.domain.category.domain.Category;
+import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -21,8 +24,10 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class CategoryService {
-
+    @PersistenceContext
+    private EntityManager entityManager;
     private final CategoryRepository categoryRepository;
+    private final MenuRepository menuRepository;
 
     /**
      * 새로운 카테고리를 생성한다.
@@ -91,5 +96,22 @@ public class CategoryService {
                 .name(category.getName())
                 .description(category.getDescription())
                 .build();
+    }
+}
+
+    public void deleteCategory(String storeId, String categoryName) {
+        // TODO [2025-08-02]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
+
+        validateNoMenusExist(storeId, categoryName);
+        int deleted = categoryRepository.deleteByStoreIdAndName(storeId, categoryName);
+        if (deleted == 0) {
+            throw new EntityNotFoundException("삭제 대상 카테고리를 찾을 수 없습니다.");
+        }
+    }
+
+    private void validateNoMenusExist(String storeId, String categoryName) {
+        if (menuRepository.existsByCategory_StoreIdAndCategory_Name(storeId, categoryName)) {
+            throw new IllegalArgumentException("해당 카테고리에 소속된 메뉴가 존재하여 삭제할 수 없습니다.");
+        }
     }
 }
