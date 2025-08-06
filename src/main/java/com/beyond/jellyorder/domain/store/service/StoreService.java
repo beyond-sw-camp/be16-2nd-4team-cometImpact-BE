@@ -29,10 +29,10 @@ public class StoreService {
             String loginId = store.get().getLoginId();
             throw new DuplicateResourceException("이미 가입된 아이디 입니다. " + loginId);
         }
-        if (storeRepository.findByRegisteredNumber(storeCreateDto.getRegisteredNumber()).isPresent()) {
-            Optional<Store> store = storeRepository.findByRegisteredNumber(storeCreateDto.getRegisteredNumber());
-            String registeredNumber = store.get().getRegisteredNumber();
-            throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + registeredNumber);
+        if (storeRepository.findBybusinessNumber(storeCreateDto.getBusinessNumber()).isPresent()) {
+            Optional<Store> store = storeRepository.findBybusinessNumber(storeCreateDto.getBusinessNumber());
+            String businessNumber = store.get().getBusinessNumber();
+            throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + businessNumber);
         }
 
         String encodedPassword = passwordEncoder.encode(storeCreateDto.getPassword());

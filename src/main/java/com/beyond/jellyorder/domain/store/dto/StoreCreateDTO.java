@@ -18,7 +18,7 @@ public class StoreCreateDTO {
     @NotEmpty
     private String storeName;
     @NotEmpty
-    private String registeredNumber;
+    private String businessNumber;
     @NotEmpty
     private String ownerName;
     @NotEmpty
@@ -32,7 +32,7 @@ public class StoreCreateDTO {
         return Store.builder()
                 .loginId(this.loginId)
                 .storeName(this.storeName)
-                .registeredNumber(this.registeredNumber)
+                .businessNumber(this.businessNumber)
                 .ownerName(this.ownerName)
                 .phoneNumber(this.phoneNumber)
                 .password(encodedPassword)

@@ -24,7 +24,7 @@ public class Store extends BaseIdAndTimeEntity {
     @Column(nullable = false)
     private String storeName;
     @Column(nullable = false, unique = true)
-    private String registeredNumber;
+    private String businessNumber;
     @Column(nullable = false)
     private String ownerName;
     @Column(nullable = false)
