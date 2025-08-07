@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.domain.storetable.dto;
+package com.beyond.jellyorder.domain.storetable.dto.storeTable;
 
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import lombok.Builder;

@@ -1,4 +1,4 @@
-package com.beyond.jellyorder.domain.storetable.dto;
+package com.beyond.jellyorder.domain.storetable.dto.zone;
 
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import lombok.Builder;
@@ -8,14 +8,17 @@ import java.util.UUID;
 
 @Getter
 @Builder
-public class ZoneListResDTO {
+public class ZoneResDTO {
     private UUID zoneId;
     private String zoneName;
+    private UUID storeId;
 
-    public static ZoneListResDTO from(Zone zone) {
-        return ZoneListResDTO.builder()
+    public static ZoneResDTO from(Zone zone) {
+        return ZoneResDTO.builder()
                 .zoneId(zone.getId())
                 .zoneName(zone.getName())
+                .storeId(zone.getStore().getId())
                 .build();
     }
+
 }

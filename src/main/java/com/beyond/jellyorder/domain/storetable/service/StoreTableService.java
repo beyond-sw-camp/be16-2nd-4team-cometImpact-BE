@@ -3,20 +3,21 @@ package com.beyond.jellyorder.domain.storetable.service;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
-import com.beyond.jellyorder.domain.storetable.dto.*;
+import com.beyond.jellyorder.domain.storetable.dto.storeTable.*;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
 import com.beyond.jellyorder.domain.storetable.repository.ZoneRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 import java.util.UUID;
 import java.util.stream.Collectors;
 
@@ -32,13 +33,16 @@ public class StoreTableService {
 
     // 테이블 생성
     @Transactional
-    public List<StoreTableResDTO> createTables(StoreTableCreateReqDTO dto, String storeLoginId) {
+    public List<StoreTableResDTO> createTables(StoreTableCreateReqDTO dto) {
+        String storeLoginId = getStoreLoginIdByAuth();
+
         Store store = storeRepository.findByLoginId(storeLoginId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장을 찾을 수 없습니다."));
 
         Zone zone = zoneRepository.findById(dto.getZoneId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 구역을 찾을 수 없습니다."));
 
+        System.out.println(zone.getId());
         if (!zone.getStore().getId().equals(store.getId())) {
             throw new IllegalArgumentException("해당 매장에 속하지 않은 구역입니다.");
         }
@@ -58,14 +62,15 @@ public class StoreTableService {
         // 중복 없으면 저장
         List<StoreTable> storeTables = dto.toEntityList(store, zone);
         storeTableRepository.saveAll(storeTables);
-
         return storeTables.stream().map(StoreTableResDTO::from).collect(Collectors.toList());
     }
 
 
     // 구역별 전체 테이블 조회
     @Transactional(readOnly = true)
-    public List<StoreTableListResDTO> getStoreTableList(String storeLoginId) {
+    public List<StoreTableListResDTO> getStoreTableList() {
+        String storeLoginId = getStoreLoginIdByAuth();
+
         Store store = storeRepository.findByLoginId(storeLoginId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장을 찾을 수 없습니다."));
 
@@ -81,7 +86,9 @@ public class StoreTableService {
     }
 
     // 테이블 수정
-    public StoreTableResDTO updateStoreTable(StoreTableUpdateReqDTO dto, UUID storeTableId, String storeLoginId) {
+    public StoreTableResDTO updateStoreTable(StoreTableUpdateReqDTO dto, UUID storeTableId) {
+        String storeLoginId = getStoreLoginIdByAuth();
+
         Store store = storeRepository.findByLoginId(storeLoginId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장을 찾을 수 없습니다."));
 
@@ -103,6 +110,7 @@ public class StoreTableService {
         return StoreTableResDTO.from(storeTable);
     }
 
+
     public StoreTable doLogin(StoreTableLoginReqDTO storeTableLoginReqDTO) {
         Store store = storeRepository.findByLoginId(storeTableLoginReqDTO.getLoginId())
                 .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 틀렸습니다."));
@@ -117,8 +125,16 @@ public class StoreTableService {
         return storeTable;
     }
 
+    /**
+     * === 내부 공통 메서드 정의 ===
+     * 아래는 공통적으로 사용되는 내부메서드를 정의했습니다.
+     */
 
-
+    // Authentication 객체에서 storeLoginId 추출 메서드
+    private String getStoreLoginIdByAuth() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
+    }
 
 }
 

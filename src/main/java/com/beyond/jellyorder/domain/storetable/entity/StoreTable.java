@@ -3,7 +3,7 @@ package com.beyond.jellyorder.domain.storetable.entity;
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.common.auth.Role;
 import com.beyond.jellyorder.domain.store.entity.Store;
-import com.beyond.jellyorder.domain.storetable.dto.StoreTableUpdateReqDTO;
+import com.beyond.jellyorder.domain.storetable.dto.storeTable.StoreTableUpdateReqDTO;
 import jakarta.persistence.*;
 import lombok.AllArgsConstructor;
 import lombok.Builder;

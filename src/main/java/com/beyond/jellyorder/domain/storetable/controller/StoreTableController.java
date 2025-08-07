@@ -4,9 +4,7 @@ import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.common.auth.AuthService;
 import com.beyond.jellyorder.common.auth.RefreshTokenDto;
 import com.beyond.jellyorder.common.auth.StoreTableJwtTokenProvider;
-import com.beyond.jellyorder.domain.store.dto.StoreLoginResDTO;
-import com.beyond.jellyorder.domain.store.entity.Store;
-import com.beyond.jellyorder.domain.storetable.dto.*;
+import com.beyond.jellyorder.domain.storetable.dto.storeTable.*;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
 import jakarta.validation.Valid;
@@ -22,38 +20,34 @@ import java.util.UUID;
 @RequestMapping("/store-table")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('STORE')")
-//    @PreAuthorize("hasRole('STORE')") 토큰 발급 시 추가 예정
 public class StoreTableController {
 
     private final StoreTableService storeTableService;
     private final StoreTableJwtTokenProvider jwtTokenProvider;
     private final AuthService authService;
 
-    @PostMapping("/create/{storeLoginId}")
+    @PostMapping("/create")
     public ResponseEntity<?> createStoreTable(
-            @PathVariable String storeLoginId,
             @RequestBody @Valid StoreTableCreateReqDTO reqDTO
     ) {
         reqDTO.validate();
-        List<StoreTableResDTO> resDTO = storeTableService.createTables(reqDTO, storeLoginId);
+        List<StoreTableResDTO> resDTO = storeTableService.createTables(reqDTO);
         return ApiResponse.created(resDTO, "테이블이 생성되었습니다.");
     }
 
-    @GetMapping("/list/{storeLoginId}")
+    @GetMapping("/list")
     public ResponseEntity<?> getStoreTableList(
-            @PathVariable String storeLoginId
     ) {
-        List<StoreTableListResDTO> resDTOs = storeTableService.getStoreTableList(storeLoginId);
+        List<StoreTableListResDTO> resDTOs = storeTableService.getStoreTableList();
         return ApiResponse.ok(resDTOs);
     }
 
-    @PutMapping("/update/{storeTableId}/{storeLoginId}")
+    @PutMapping("/update/{storeTableId}")
     public ResponseEntity<?> updateStoreTable(
             @RequestBody @Valid StoreTableUpdateReqDTO reqDTO,
-            @PathVariable UUID storeTableId,
-            @PathVariable String storeLoginId
+            @PathVariable UUID storeTableId
     ) {
-        StoreTableResDTO resDTO = storeTableService.updateStoreTable(reqDTO, storeTableId, storeLoginId);
+        StoreTableResDTO resDTO = storeTableService.updateStoreTable(reqDTO, storeTableId);
         return ApiResponse.ok(resDTO, "구역이 수정되었습니다.");
     }
 
