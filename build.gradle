@@ -45,9 +45,8 @@ dependencies {
 
 //	redis 관련 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
+	implementation 'org.springframework.boot:spring-boot-starter-cache' // 캐싱처리를 위한 의존성
 
-    // redis에 연동하기 위한 의존성
-    implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 
 
 }

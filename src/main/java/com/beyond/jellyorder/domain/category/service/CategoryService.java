@@ -1,8 +1,6 @@
 package com.beyond.jellyorder.domain.category.service;
 
-import com.beyond.jellyorder.domain.category.dto.CategoryCreateReqDto;
-import com.beyond.jellyorder.domain.category.dto.CategoryCreateResDto;
-import com.beyond.jellyorder.domain.category.dto.GetCategoryResDto;
+import com.beyond.jellyorder.domain.category.dto.*;
 import com.beyond.jellyorder.domain.category.repository.CategoryRepository;
 import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
@@ -15,6 +13,7 @@ import org.springframework.transaction.annotation.Transactional;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 
 import java.util.List;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 /**
@@ -71,6 +70,32 @@ public class CategoryService {
         return categoryList.stream()
                 .map(category -> new GetCategoryResDto(category.getId(), category.getName()))
                 .collect(Collectors.toList());
+    }
+
+    public CategoryModifyResDto modifyCategory(CategoryModifyReqDto reqDto) {
+        // 이후 Authentication 객체 내에서 storeId 검증 추가 예정
+        Category category = categoryRepository.findByIdAndStoreId(reqDto.getCategoryId(), reqDto.getStoreId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
+
+        if(category.getDescription().equals(reqDto.getNewDescription()) && category.getName().equals(reqDto.getNewName())) {
+            throw new IllegalArgumentException("카테고리 혹은 설명 중 수정된 사안이 있어야 합니다.");
+        }
+
+        if (!category.getName().equals(reqDto.getNewName())) {
+            if (categoryRepository.existsByStoreIdAndName(reqDto.getStoreId(), reqDto.getNewName())) {
+                throw new DuplicateResourceException("이미 존재하는 카테고리명입니다: " + reqDto.getNewName());
+            }
+            category.setName(reqDto.getNewName());
+        }
+
+        if (!category.getDescription().equals(reqDto.getNewDescription())) {
+            category.setDescription(reqDto.getNewDescription());
+        }
+
+        return CategoryModifyResDto.builder()
+                .name(category.getName())
+                .description(category.getDescription())
+                .build();
     }
 
     public void deleteCategory(String storeId, String categoryName) {

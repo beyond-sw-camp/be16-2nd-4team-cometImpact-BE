@@ -3,13 +3,11 @@ package com.beyond.jellyorder.domain.storetable.entity;
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Getter;
-import lombok.NoArgsConstructor;
+import lombok.*;
 
 @Entity
 @Getter @AllArgsConstructor @NoArgsConstructor @Builder
+@ToString
 @Table(
         name = "zone",
         uniqueConstraints = {
