@@ -3,6 +3,7 @@ package com.beyond.jellyorder.domain.menu.controller;
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateReqDto;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateResDto;
+import com.beyond.jellyorder.domain.menu.dto.MenuDeleteReqDto;
 import com.beyond.jellyorder.domain.menu.service.MenuService;
 import com.beyond.jellyorder.domain.option.dto.OptionAddReqDto;
 import com.beyond.jellyorder.domain.option.dto.OptionAddResDto;
@@ -57,4 +58,9 @@ public class MenuController {
         return ApiResponse.ok(resDto, "옵션이 정상적으로 추가되었습니다.");
     }
 
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteMenu(@RequestBody @Valid MenuDeleteReqDto reqDto) {
+        menuService.deleteMenuById(reqDto.getMenuId());
+        return ApiResponse.ok(null, "메뉴가 정상적으로 삭제되었습니다.");
+    }
 }
