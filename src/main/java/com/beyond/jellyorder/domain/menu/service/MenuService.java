@@ -345,5 +345,17 @@ public class MenuService {
                 .addedSubOptionCount(createdSubCount)
                 .build();
     }
+
+    public void deleteMenuById(UUID menuId) {
+        Menu menu = menuRepository.findById(menuId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다."));
+
+        // S3 이미지 삭제
+        if (menu.getImageUrl() != null) {
+            s3Manager.delete(menu.getImageUrl());
+        }
+
+        menuRepository.delete(menu); // cascade로 관련 옵션들 자동 삭제
+    }
 }
 
