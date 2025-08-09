@@ -10,4 +10,5 @@ import lombok.*;
 public class OptionAddResDto {
     private String menuId;
     private int addedMainOptionCount;
+    private int addedSubOptionCount;
 }
