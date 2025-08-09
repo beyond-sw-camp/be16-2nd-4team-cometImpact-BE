@@ -271,57 +271,78 @@ public class MenuService {
         Menu menu = menuRepository.findById(UUID.fromString(reqDto.getMenuId()))
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다."));
 
-        // 현재 메뉴에 이미 등록된 MainOption 이름 집합
-        Set<String> existingMainOptionNames = menu.getMainOptions().stream()
-                .map(MainOption::getName)
-                .collect(Collectors.toSet());
+        // 1) 기존 메인옵션 맵과 서브옵션 이름 집합 구성
+        Map<String, MainOption> mainMap = menu.getMainOptions().stream()
+                .collect(Collectors.toMap(MainOption::getName, mo -> mo, (a, b) -> a));
 
-        List<MainOption> mainOptionsToAdd = new ArrayList<>();
+        Map<String, Set<String>> subNameSetByMain = new HashMap<>();
+        for (MainOption mo : menu.getMainOptions()) {
+            Set<String> subs = mo.getSubOptions() == null ? new HashSet<>() :
+                    mo.getSubOptions().stream().map(SubOption::getName).collect(Collectors.toSet());
+            subNameSetByMain.put(mo.getName(), subs);
+        }
+
+        int createdMainCount = 0;
+        int createdSubCount = 0;
 
         for (MainOptionDto mainDto : reqDto.getMainOptions()) {
             String mainName = mainDto.getName();
+            MainOption targetMain = mainMap.get(mainName);
 
-            if (existingMainOptionNames.contains(mainName)) {
-                throw new IllegalArgumentException("이미 등록된 메인 옵션 이름입니다: " + mainName);
+            // 요청 내에서의 서브옵션 중복도 방지
+            Set<String> reqSubNamesDedup = new HashSet<>();
+
+            // 2) 동일 메인옵션이 없으면 새로 생성
+            if (targetMain == null) {
+                targetMain = MainOption.builder()
+                        .menu(menu)
+                        .name(mainName)
+                        .build();
+                targetMain.setSubOptions(new ArrayList<>());
+                menu.getMainOptions().add(targetMain);
+                mainMap.put(mainName, targetMain);
+                subNameSetByMain.put(mainName, new HashSet<>());
+                createdMainCount++;
             }
 
-            MainOption mainOption = MainOption.builder()
-                    .menu(menu)
-                    .name(mainName)
-                    .build();
-
-            List<SubOption> subOptions = new ArrayList<>();
-            Set<String> subOptionNames = new HashSet<>();
+            // 3) 동일 메인옵션이 있으면 그 아래에 서브옵션 추가.
+            Set<String> existingSubNames = subNameSetByMain.get(mainName);
 
             if (mainDto.getSubOptions() != null) {
                 for (SubOptionDto subDto : mainDto.getSubOptions()) {
                     String subName = subDto.getName();
 
-                    if (!subOptionNames.add(subName)) {
-                        throw new IllegalArgumentException("메인 옵션 '" + mainName + "'에 중복된 서브 옵션 이름이 있습니다: " + subName);
+                    // (검증) 이미 "메인옵션명 + 서브옵션명" 쌍이 존재하면 거부
+                    if (existingSubNames.contains(subName)) {
+                        throw new IllegalArgumentException(
+                                "이미 존재하는 옵션입니다. main='" + mainName + "', sub='" + subName + "'"
+                        );
+                    }
+                    // (검증) 동일 요청 본문 안에서의 서브옵션명 중복 방지
+                    if (!reqSubNamesDedup.add(subName)) {
+                        throw new IllegalArgumentException(
+                                "요청 내 중복된 서브 옵션 이름이 있습니다. main='" + mainName + "', sub='" + subName + "'"
+                        );
                     }
 
+                    // 추가
                     SubOption sub = SubOption.builder()
-                            .mainOption(mainOption)
+                            .mainOption(targetMain)
                             .name(subName)
                             .price(subDto.getPrice())
                             .build();
 
-                    subOptions.add(sub);
+                    targetMain.getSubOptions().add(sub);
+                    existingSubNames.add(subName);
+                    createdSubCount++;
                 }
             }
-
-            mainOption.setSubOptions(subOptions);
-            mainOptionsToAdd.add(mainOption);
-            existingMainOptionNames.add(mainName);
         }
-
-        // 실제 저장
-        menu.getMainOptions().addAll(mainOptionsToAdd);
 
         return OptionAddResDto.builder()
                 .menuId(menu.getId().toString())
-                .addedMainOptionCount(mainOptionsToAdd.size())
+                .addedMainOptionCount(createdMainCount) // 새로 생성된 MainOption 개수
+                .addedSubOptionCount(createdSubCount)
                 .build();
     }
 }
