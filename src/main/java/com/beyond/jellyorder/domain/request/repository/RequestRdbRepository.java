@@ -10,7 +10,9 @@ import java.util.UUID;
 
 @Repository
 public interface RequestRdbRepository extends JpaRepository<Request, UUID> {
-    List<Request> findAllByStoreId(Store store);
-    // 테스트용
+    // 요청사항 목록 조회용
     List<Request> findAllByStore(Store store);
+
+    // 요청사항 삭제용
+    long deleteByIdAndStore_Id(UUID requestId, UUID storeId);
 }
