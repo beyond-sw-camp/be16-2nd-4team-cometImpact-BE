@@ -47,6 +47,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-cache' // 캐싱처리를 위한 의존성
 
+//	gmail 인증번호를 받기 위한 의존성 추가
+	implementation 'org.springframework.boot:spring-boot-starter-mail'
+
 
 
 }
