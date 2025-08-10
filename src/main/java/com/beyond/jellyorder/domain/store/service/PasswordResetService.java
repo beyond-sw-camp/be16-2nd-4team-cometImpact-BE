@@ -29,7 +29,7 @@ public class PasswordResetService {
 
     private static final String PREFIX_CODE  = "email:verify:";     // 인증코드 저장 키
     private static final String PREFIX_TOKEN = "password:reset:";    // 재설정 토큰 저장 키
-    private static final long CODE_TTL_MINUTES  = 3;                 // 인증코드 유효시간(분)
+    private static final long CODE_TTL_MINUTES  = 10;                 // 인증코드 유효시간(분)
     private static final long TOKEN_TTL_MINUTES = 10;                // 재설정 토큰 유효시간(분)
 
     public PasswordResetService(JavaMailSender mailSender, StoreRepository storeRepository, PasswordEncoder passwordEncoder, @Qualifier("passwordResetRedisTemplate") RedisTemplate<String, String> redisTemplate) {
@@ -41,14 +41,14 @@ public class PasswordResetService {
 
     /** 1) 인증코드 발송 */
     public void sendVerificationCode(String email) {
-        Optional<Store> storeOpt = storeRepository.findByOwnerEmail(email);
-        if (storeOpt.isEmpty()) {
+        Optional<Store> optionalStore = storeRepository.findByOwnerEmail(email);
+        if (optionalStore.isEmpty()) {
             throw new IllegalArgumentException("존재하지 않는 이메일입니다.");
         }
 
         String code = String.format("%06d", new Random().nextInt(1_000_000));
 
-        // 📌 로그로 발신자/수신자/코드 확인
+        // 로그로 발신자/수신자/코드 확인
         log.info("[비밀번호 재설정] 발신자: {}, 수신자: {}, 인증코드: {}",
                 "jellyorder.biz@gmail.com",  // yml의 spring.mail.username 값
                 email,
