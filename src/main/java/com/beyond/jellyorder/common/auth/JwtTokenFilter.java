@@ -28,6 +28,7 @@ public class JwtTokenFilter extends GenericFilter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         try {
             HttpServletRequest req = (HttpServletRequest) servletRequest;
+
             String bearerToken = req.getHeader("Authorization");
             if (bearerToken == null) {
                 filterChain.doFilter(servletRequest, servletResponse);
