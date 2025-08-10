@@ -24,23 +24,40 @@ public class StoreService {
     private final BusinessVerificationService businessVerificationService;
 
     /* Store 회원가입 Serivce */
-    public UUID save(StoreCreateDTO storeCreateDto) {
-        if (storeRepository.findByLoginId(storeCreateDto.getLoginId()).isPresent()) {
-            Optional<Store> store = storeRepository.findByLoginId(storeCreateDto.getLoginId());
-            String loginId = store.get().getLoginId();
+    public UUID save(StoreCreateDTO dto) {
+        // 0) 입력 정규화
+        final String loginId = dto.getLoginId();
+        final String bNo = normalizeBizNo(dto.getBusinessNumber());
+
+        // 1) 중복검사
+        if (storeRepository.findByLoginId(loginId).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 아이디 입니다. " + loginId);
         }
-        if (storeRepository.findBybusinessNumber(storeCreateDto.getBusinessNumber()).isPresent()) {
-            Optional<Store> store = storeRepository.findBybusinessNumber(storeCreateDto.getBusinessNumber());
-            String businessNumber = store.get().getBusinessNumber();
-            throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + businessNumber);
+        // 메서드명이 잘못되어 있으면 Repository에서 findByBusinessNumber로 정정 권장
+        if (storeRepository.findBybusinessNumber(bNo).isPresent()) {
+            throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + bNo);
         }
 
+        // 2) 국세청 진위 + 상태 확인 (비정상 시 IllegalArgumentException 발생)
+        businessVerificationService.verify(bNo, dto.getStartDate(), dto.getOwnerName());
 
+        // 3) 저장
+        Store store = Store.builder()
+                .loginId(loginId)
+                .storeName(dto.getStoreName())
+                .businessNumber(bNo)
+                .ownerName(dto.getOwnerName())
+                .ownerEmail(dto.getOwnerEmail())
+                .phoneNumber(dto.getPhoneNumber())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .build();
 
-        String encodedPassword = passwordEncoder.encode(storeCreateDto.getPassword());
-        Store store = storeRepository.save(storeCreateDto.toEntity(encodedPassword));
-        return store.getId(); /* 리턴값 UUID로 수정 완료, 주석 삭제 하고 사용하세요! */
+        storeRepository.save(store);
+        return store.getId();
+    }
+
+    private String normalizeBizNo(String raw) {
+        return raw == null ? null : raw.replaceAll("-", "").trim();
     }
 
     /* Store 로그인 Service*/

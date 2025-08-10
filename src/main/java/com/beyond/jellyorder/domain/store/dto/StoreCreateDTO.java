@@ -22,6 +22,8 @@ public class StoreCreateDTO {
     @NotEmpty
     private String ownerName;
     @NotEmpty
+    private String startDate;
+    @NotEmpty
     private String phoneNumber;
     @NotEmpty
     private String password;
