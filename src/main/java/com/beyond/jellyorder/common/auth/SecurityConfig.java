@@ -4,6 +4,7 @@ import com.beyond.jellyorder.common.auth.JwtTokenFilter;
 import lombok.RequiredArgsConstructor;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.http.HttpMethod;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
@@ -23,6 +24,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
+    private final JwtAuthorizationHandler jwtAuthorizationHandler;
+    private final JwtAuthenticationHandler jwtAuthenticationHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -37,12 +40,16 @@ public class SecurityConfig {
                         "/storetable/doLogin",
                         "/store/refresh-at",
                         "/sse/**",
-                        "/request/**",
                         "/payment/**",
                         "/v3/api-docs/**",  // swagger 추가
                         "/swagger-ui/**",   // swagger 추가
                         "/swagger-ui.html"  // swagger 추가
-                                 ).permitAll().anyRequest().authenticated())
+                                 ).permitAll()
+                        .requestMatchers(HttpMethod.POST, "/request/create").hasRole("STORE")
+                        .anyRequest().authenticated())
+                .exceptionHandling(e ->
+                        e.authenticationEntryPoint(jwtAuthenticationHandler)
+                                .accessDeniedHandler(jwtAuthorizationHandler))
                 .build();
     }
 
