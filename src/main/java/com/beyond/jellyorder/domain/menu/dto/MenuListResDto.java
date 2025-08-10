@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.menu.dto;
 
+import com.beyond.jellyorder.domain.ingredient.dto.IngredientDto;
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import lombok.*;
 
@@ -17,5 +18,5 @@ public class MenuListResDto {
     private Integer price;
     private String imageUrl;
     private List<MainOptionDto> mainOptions;
-    private List<String> ingredients;
+    private List<IngredientDto> ingredients;
 }
