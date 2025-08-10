@@ -1,9 +1,7 @@
 package com.beyond.jellyorder.domain.ingredient.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateReqDto;
-import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateResDto;
-import com.beyond.jellyorder.domain.ingredient.dto.IngredientListResDto;
+import com.beyond.jellyorder.domain.ingredient.dto.*;
 import com.beyond.jellyorder.domain.ingredient.service.IngredientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -35,5 +33,11 @@ public class IngredientController {
     public ResponseEntity<?> getIngredients(@PathVariable String storeId) {
         IngredientListResDto res = ingredientService.getIngredientsByStoreId(storeId);
         return ResponseEntity.ok(ApiResponse.ok(res, "원재료 목록이 정상적으로 조회되었습니다."));
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteIngredient(@RequestBody @Valid IngredientDeleteReqDto reqDto) {
+        IngredientDeleteResDto res = ingredientService.delete(reqDto);
+        return ResponseEntity.ok(ApiResponse.ok(res, "식자재가 정상적으로 삭제되었습니다."));
     }
 }
