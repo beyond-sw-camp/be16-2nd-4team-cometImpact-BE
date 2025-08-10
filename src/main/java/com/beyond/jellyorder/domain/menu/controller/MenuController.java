@@ -3,12 +3,14 @@ package com.beyond.jellyorder.domain.menu.controller;
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateReqDto;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateResDto;
+import com.beyond.jellyorder.domain.menu.dto.MenuDeleteReqDto;
 import com.beyond.jellyorder.domain.menu.service.MenuService;
+import com.beyond.jellyorder.domain.option.dto.OptionAddReqDto;
+import com.beyond.jellyorder.domain.option.dto.OptionAddResDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
 
 import java.util.List;
 
@@ -46,5 +48,19 @@ public class MenuController {
     public ResponseEntity<?> getMenusByStoreId(@PathVariable String storeId) {
         List<MenuCreateResDto> resDtos = menuService.getMenusByStoreId(storeId);
         return ApiResponse.ok(resDtos, "메뉴 목록이 정상적으로 조회되었습니다.");
+    }
+
+    @PostMapping("/option/add")
+    public ResponseEntity<?> addOptionsToMenu(
+            @RequestBody @Valid OptionAddReqDto reqDto) {
+
+        OptionAddResDto resDto = menuService.addOptionsToMenu(reqDto);
+        return ApiResponse.ok(resDto, "옵션이 정상적으로 추가되었습니다.");
+    }
+
+    @DeleteMapping("/delete")
+    public ResponseEntity<?> deleteMenu(@RequestBody @Valid MenuDeleteReqDto reqDto) {
+        menuService.deleteMenuById(reqDto.getMenuId());
+        return ApiResponse.ok(null, "메뉴가 정상적으로 삭제되었습니다.");
     }
 }
