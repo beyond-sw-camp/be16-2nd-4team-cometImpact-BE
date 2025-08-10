@@ -4,6 +4,7 @@ import com.beyond.jellyorder.common.s3.S3Manager;
 import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.category.repository.CategoryRepository;
 import com.beyond.jellyorder.domain.ingredient.domain.Ingredient;
+import com.beyond.jellyorder.domain.ingredient.dto.IngredientDto;
 import com.beyond.jellyorder.domain.ingredient.repository.IngredientRepository;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.domain.MenuIngredient;
@@ -256,32 +257,44 @@ public class MenuService {
                         .price(menu.getPrice())
                         .imageUrl(menu.getImageUrl())
                         .mainOptions(
-                                menu.getMainOptions() != null ?
-                                        menu.getMainOptions().stream().map(main -> MainOptionDto.builder()
+                                menu.getMainOptions() != null
+                                        ? menu.getMainOptions().stream()
+                                        .map(main -> MainOptionDto.builder()
                                                 .name(main.getName())
                                                 .subOptions(
-                                                        main.getSubOptions() != null ?
-                                                                main.getSubOptions().stream().map(sub -> SubOptionDto.builder()
+                                                        main.getSubOptions() != null
+                                                                ? main.getSubOptions().stream()
+                                                                .map(sub -> SubOptionDto.builder()
                                                                         .name(sub.getName())
                                                                         .price(sub.getPrice())
-                                                                        .build()).toList()
+                                                                        .build())
+                                                                .toList()
                                                                 : List.of()
                                                 )
-                                                .build()
-                                        ).toList()
+                                                .build())
+                                        .toList()
                                         : List.of()
                         )
                         .ingredients(
-                                menu.getMenuIngredients() != null ?
-                                        menu.getMenuIngredients().stream()
-                                                .map(mi -> mi.getIngredient().getName())
-                                                .toList()
+                                menu.getMenuIngredients() != null
+                                        ? menu.getMenuIngredients().stream()
+                                        .map(mi -> mi.getIngredient())
+                                        // (선택) 같은 재료 중복 제거
+                                        .collect(java.util.stream.Collectors.toMap(
+                                                ing -> ing.getId(), // key
+                                                ing -> IngredientDto.builder()
+                                                        .id(ing.getId())
+                                                        .name(ing.getName())
+                                                        .build(),
+                                                (a, b) -> a
+                                        ))
+                                        .values().stream().toList()
                                         : List.of()
                         )
                         .build())
                 .toList();
     }
-
+    
     public OptionAddResDto addOptionsToMenu(OptionAddReqDto reqDto) {
         Menu menu = menuRepository.findById(UUID.fromString(reqDto.getMenuId()))
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다."));
