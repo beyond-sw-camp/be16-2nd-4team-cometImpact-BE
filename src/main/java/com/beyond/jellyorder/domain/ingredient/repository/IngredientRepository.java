@@ -5,6 +5,7 @@ import com.beyond.jellyorder.domain.ingredient.domain.Ingredient;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
+import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -19,5 +20,5 @@ public interface IngredientRepository extends JpaRepository<Ingredient, UUID>, I
      */
     boolean existsByStoreIdAndName(String storeId, String name);  // TODO: UUID로 교체
     Optional<Ingredient> findByStoreIdAndName(String storeId, String name);
-
+    List<Ingredient> findAllByStoreId(String storeId);
 }

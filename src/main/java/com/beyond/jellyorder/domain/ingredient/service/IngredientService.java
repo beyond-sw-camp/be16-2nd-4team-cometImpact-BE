@@ -4,11 +4,18 @@ import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.ingredient.domain.Ingredient;
 import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateReqDto;
 import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateResDto;
+import com.beyond.jellyorder.domain.ingredient.dto.IngredientListResDto;
+import com.beyond.jellyorder.domain.ingredient.dto.IngredientResDto;
 import com.beyond.jellyorder.domain.ingredient.repository.IngredientRepository;
+import com.beyond.jellyorder.domain.store.repository.StoreRepository;
+import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.List;
+import java.util.UUID;
 
 /**
  * 식자재(Ingredient) 관련 비즈니스 로직을 담당하는 서비스 클래스.
@@ -22,6 +29,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
+    private final StoreRepository storeRepository;
 
     /**
      * 새로운 식자재를 생성한다.
@@ -63,5 +71,31 @@ public class IngredientService {
             // 동시성 문제로 인한 DB 중복 제약 위반 시 예외 변환
             throw new DuplicateResourceException("이미 존재하는 식자재입니다: " + reqDto.getName());
         }
+    }
+
+    @Transactional(readOnly = true)
+    public IngredientListResDto getIngredientsByStoreId(String storeId) {
+        // 1) storeId 유효성 검증 TODO: 추후 활성화 예정
+        //        boolean storeExists = storeRepository.existsById(UUID.fromString(storeId));
+        //        if (!storeExists) {
+        //            throw new EntityNotFoundException("존재하지 않는 storeId입니다: " + storeId);
+        //        }
+
+        // 2) 원재료 조회
+        List<Ingredient> ingredients = ingredientRepository.findAllByStoreId(storeId);
+
+        // 3) DTO 변환 (재료가 없으면 빈 리스트)
+        List<IngredientResDto> dtos = ingredients.stream()
+                .map(i -> IngredientResDto.builder()
+                        .id(i.getId())
+                        .name(i.getName())
+                        .status(i.getStatus())
+                        .build())
+                .toList();
+
+        // 4) 결과 반환
+        return IngredientListResDto.builder()
+                .ingredients(dtos)
+                .build();
     }
 }
