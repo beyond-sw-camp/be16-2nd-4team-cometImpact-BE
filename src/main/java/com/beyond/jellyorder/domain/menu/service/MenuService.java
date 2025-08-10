@@ -7,9 +7,9 @@ import com.beyond.jellyorder.domain.ingredient.domain.Ingredient;
 import com.beyond.jellyorder.domain.ingredient.repository.IngredientRepository;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.domain.MenuIngredient;
-import com.beyond.jellyorder.domain.menu.domain.MenuIngredientId;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateReqDto;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateResDto;
+import com.beyond.jellyorder.domain.menu.dto.MenuListResDto;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
 import com.beyond.jellyorder.domain.option.dto.OptionAddReqDto;
 import com.beyond.jellyorder.domain.option.dto.OptionAddResDto;
@@ -53,7 +53,6 @@ public class MenuService {
             for (int i = 0; i < mainOptionDtos.size(); i++) {
                 MainOptionDto mainDto = mainOptionDtos.get(i);
 
-                // 메인 옵션 이름 검증
                 String mainName = (mainDto.getName() == null) ? "" : mainDto.getName().trim();
                 if (mainName.isEmpty()) {
                     throw new IllegalArgumentException("메인 옵션 이름은 필수입니다. (index=" + i + ")");
@@ -83,7 +82,6 @@ public class MenuService {
                             throw new IllegalArgumentException("메인 옵션 '" + mainName + "'에 중복된 서브 옵션이 존재합니다: " + subName);
                         }
 
-                        // 가격 필수 및 하한 검증
                         Integer price = subDto.getPrice();
                         if (price == null) {
                             throw new IllegalArgumentException("서브 옵션 가격은 필수입니다. (main=" + mainName + ", sub=" + subName + ")");
@@ -104,29 +102,37 @@ public class MenuService {
             }
         }
 
-        // 2) 식자재 존재 검증 (DB 조회만)
-        List<String> ingredientNames = Optional.ofNullable(reqDto.getIngredients()).orElse(Collections.emptyList());
+        // 2) 식자재 존재 검증 (DB 조회만) + 입력값 정리(트림/빈값 제거/중복 제거)
+        List<String> ingredientNames = Optional.ofNullable(reqDto.getIngredients()).orElseGet(List::of)
+                .stream()
+                .filter(Objects::nonNull)
+                .map(String::trim)
+                .filter(s -> !s.isEmpty())
+                .distinct()
+                .toList();
+
         List<Ingredient> ingredients = new ArrayList<>(ingredientNames.size());
         for (String ingName : ingredientNames) {
             Ingredient ing = ingredientRepository.findByStoreIdAndName(reqDto.getStoreId(), ingName)
-                    .orElseThrow(() -> new EntityNotFoundException("식자재를 찾을 수 없습니다: name=" + ingName));
+                    .orElseThrow(() -> new EntityNotFoundException(
+                            "식자재를 찾을 수 없습니다: name=" + ingName + ", storeId=" + reqDto.getStoreId()));
             ingredients.add(ing);
         }
 
-        // 3) 이미지 검증 (최후순위)
+        // 3) 이미지 검증
         MultipartFile imageFile = reqDto.getImageFile();
         if (imageFile == null || imageFile.isEmpty()) {
             throw new IllegalArgumentException("메뉴 이미지 파일이 누락되었습니다.");
         }
 
         String imageUrl = null;
-        Menu menu = null;
+        Menu menu;
 
         try {
             // 4) 이미지 업로드 (검증 모두 통과 후)
             imageUrl = s3Manager.upload(imageFile, "menus");
 
-            // 5) 메뉴 저장
+            // 5) 메뉴 저장 (UUID 확보)
             menu = Menu.builder()
                     .category(category)
                     .name(reqDto.getName())
@@ -140,7 +146,7 @@ public class MenuService {
 
             menu = menuRepository.save(menu); // UUID 확보
 
-            // 6) 옵션 트리에 역참조 연결 후 세팅 (cascade = ALL 이라고 가정)
+            // 6) 옵션 트리에 역참조 연결 후 세팅 (cascade = ALL 가정)
             for (MainOption mo : preparedMainOptions) {
                 mo.setMenu(menu);
                 if (mo.getSubOptions() != null) {
@@ -151,14 +157,16 @@ public class MenuService {
             }
             menu.setMainOptions(preparedMainOptions); // cascade로 함께 persist
 
-            // 7) MenuIngredient 저장
+            // 7) MenuIngredient 저장 (※ 메뉴 저장 이후)
             if (!ingredients.isEmpty()) {
-                Menu finalMenu = menu;
-                List<MenuIngredient> menuIngredients = ingredients.stream()
-                        .map(ing -> MenuIngredient.builder()
-                                .id(new MenuIngredientId(finalMenu.getId(), ing.getId()))
-                                .build())
-                        .collect(Collectors.toList());
+                List<MenuIngredient> menuIngredients = new ArrayList<>();
+                for (Ingredient ing : ingredients) {
+                    MenuIngredient mi = MenuIngredient.builder()
+                            .menu(menu)
+                            .ingredient(ing)
+                            .build();
+                    menuIngredients.add(mi);
+                }
                 menuIngredientRepository.saveAll(menuIngredients);
             }
 
@@ -234,7 +242,7 @@ public class MenuService {
     }
 
     @Transactional(readOnly = true)
-    public List<MenuCreateResDto> getMenusByStoreId(String storeId) {
+    public List<MenuListResDto> getMenusByStoreId(String storeId) {
         List<Menu> menus = menuRepository.findAllByCategory_StoreId(storeId);
 
         if (menus.isEmpty()) {
@@ -242,7 +250,7 @@ public class MenuService {
         }
 
         return menus.stream()
-                .map(menu -> MenuCreateResDto.builder()
+                .map(menu -> MenuListResDto.builder()
                         .id(menu.getId())
                         .name(menu.getName())
                         .price(menu.getPrice())
@@ -261,6 +269,13 @@ public class MenuService {
                                                 )
                                                 .build()
                                         ).toList()
+                                        : List.of()
+                        )
+                        .ingredients(
+                                menu.getMenuIngredients() != null ?
+                                        menu.getMenuIngredients().stream()
+                                                .map(mi -> mi.getIngredient().getName())
+                                                .toList()
                                         : List.of()
                         )
                         .build())
