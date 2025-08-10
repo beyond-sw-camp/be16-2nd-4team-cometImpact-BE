@@ -58,11 +58,23 @@ public class PasswordResetService {
         // Redis 저장(기존 코드 덮어쓰기 + TTL)
         redisTemplate.opsForValue().set(PREFIX_CODE + email, code, CODE_TTL_MINUTES, TimeUnit.MINUTES);
 
+        String body = """
+        [JellyOrder] 비밀번호 재설정 안내
+        안녕하세요, JellyOrder를 이용해주셔서 감사합니다.
+        아래는 귀하께서 요청하신 '비밀번호 재설정' 인증코드입니다.
+        
+        아래 인증코드를 입력해 주세요.
+        인증코드: [  %s  ]%n%n
+        
+        유효시간: %d분
+        ※ 유효시간 내에 인증번호를 사용하여 '비밀번호 재설정'을 완료해 주세요.
+        """.formatted(code, CODE_TTL_MINUTES);
         // 메일 발송
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
         message.setSubject("[JellyOrder] 비밀번호 재설정 인증코드");
-        message.setText("인증코드: " + code + "\n유효시간: " + CODE_TTL_MINUTES + "분");
+//        message.setText("인증코드: " + code + "\n유효시간: " + CODE_TTL_MINUTES + "분" + "\n유효시간 내로 인증번호를 사용하여 '비밀번호 재설정'을 해주세요.");
+        message.setText(body);
         mailSender.send(message);
     }
 
