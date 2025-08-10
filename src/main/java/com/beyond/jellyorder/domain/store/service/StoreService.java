@@ -21,24 +21,46 @@ import java.util.UUID;
 public class StoreService {
     private final StoreRepository storeRepository;
     private final PasswordEncoder passwordEncoder;
+    private final BusinessVerificationService businessVerificationService;
 
     /* Store 회원가입 Serivce */
-    public UUID save(StoreCreateDTO storeCreateDto) {
-        if (storeRepository.findByLoginId(storeCreateDto.getLoginId()).isPresent()) {
-            Optional<Store> store = storeRepository.findByLoginId(storeCreateDto.getLoginId());
-            String loginId = store.get().getLoginId();
+    // 0) 입력 정규화, 사업자번호 하이픈 '-' 제거
+    private String normalizeBizNo(String raw) {
+        return raw == null ? null : raw.replaceAll("-", "").trim();
+    }
+    public UUID save(StoreCreateDTO dto) {
+
+        final String loginId = dto.getLoginId();
+        final String bNo = normalizeBizNo(dto.getBusinessNumber());
+
+        // 1) 중복검사
+        if (storeRepository.findByLoginId(loginId).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 아이디 입니다. " + loginId);
         }
-        if (storeRepository.findByRegisteredNumber(storeCreateDto.getRegisteredNumber()).isPresent()) {
-            Optional<Store> store = storeRepository.findByRegisteredNumber(storeCreateDto.getRegisteredNumber());
-            String registeredNumber = store.get().getRegisteredNumber();
-            throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + registeredNumber);
+        if (storeRepository.findBybusinessNumber(bNo).isPresent()) {
+            throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + bNo);
         }
 
-        String encodedPassword = passwordEncoder.encode(storeCreateDto.getPassword());
-        Store store = storeRepository.save(storeCreateDto.toEntity(encodedPassword));
-        return store.getId(); /* 리턴값 UUID로 수정 완료, 주석 삭제 하고 사용하세요! */
+//        // 2) 국세청 등록된 사업자번호 진위 + 상태 확인 (비정상 시 IllegalArgumentException 발생)
+        /* 사업자번호 진위 확인 때문에 회원가입이 막힙니다, 실구현시 주석 제거 후 사용 예정 */
+//        businessVerificationService.verify(bNo, dto.getStartDate(), dto.getOwnerName());
+
+        // 3) 저장
+        Store store = Store.builder()
+                .loginId(loginId)
+                .storeName(dto.getStoreName())
+                .businessNumber(bNo)
+                .ownerName(dto.getOwnerName())
+                .ownerEmail(dto.getOwnerEmail())
+                .phoneNumber(dto.getPhoneNumber())
+                .password(passwordEncoder.encode(dto.getPassword()))
+                .build();
+
+        storeRepository.save(store);
+        return store.getId();
     }
+
+
 
     /* Store 로그인 Service*/
     public Store doLogin(StoreLoginReqDTO storeLoginReqDTO) {

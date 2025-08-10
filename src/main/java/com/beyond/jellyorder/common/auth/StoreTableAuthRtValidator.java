@@ -88,5 +88,6 @@ public class StoreTableAuthRtValidator {
 
         return storeTable;
     }
+
 }
 
