@@ -3,6 +3,7 @@ package com.beyond.jellyorder.domain.ingredient.controller;
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateReqDto;
 import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateResDto;
+import com.beyond.jellyorder.domain.ingredient.dto.IngredientListResDto;
 import com.beyond.jellyorder.domain.ingredient.service.IngredientService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -28,5 +29,11 @@ public class IngredientController {
 
         IngredientCreateResDto resDto = ingredientService.create(reqDto);
         return ApiResponse.created(resDto, resDto.getName() + " 식자재가 정상적으로 저장되었습니다.");
+    }
+
+    @GetMapping("/{storeId}/ingredients")
+    public ResponseEntity<?> getIngredients(@PathVariable String storeId) {
+        IngredientListResDto res = ingredientService.getIngredientsByStoreId(storeId);
+        return ResponseEntity.ok(ApiResponse.ok(res, "원재료 목록이 정상적으로 조회되었습니다."));
     }
 }
