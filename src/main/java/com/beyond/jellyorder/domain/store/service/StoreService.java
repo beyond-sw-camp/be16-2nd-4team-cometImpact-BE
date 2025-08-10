@@ -24,8 +24,12 @@ public class StoreService {
     private final BusinessVerificationService businessVerificationService;
 
     /* Store 회원가입 Serivce */
+    // 0) 입력 정규화, 사업자번호 하이픈 '-' 제거
+    private String normalizeBizNo(String raw) {
+        return raw == null ? null : raw.replaceAll("-", "").trim();
+    }
     public UUID save(StoreCreateDTO dto) {
-        // 0) 입력 정규화
+
         final String loginId = dto.getLoginId();
         final String bNo = normalizeBizNo(dto.getBusinessNumber());
 
@@ -33,13 +37,13 @@ public class StoreService {
         if (storeRepository.findByLoginId(loginId).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 아이디 입니다. " + loginId);
         }
-        // 메서드명이 잘못되어 있으면 Repository에서 findByBusinessNumber로 정정 권장
         if (storeRepository.findBybusinessNumber(bNo).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + bNo);
         }
 
-        // 2) 국세청 진위 + 상태 확인 (비정상 시 IllegalArgumentException 발생)
-        businessVerificationService.verify(bNo, dto.getStartDate(), dto.getOwnerName());
+//        // 2) 국세청 등록된 사업자번호 진위 + 상태 확인 (비정상 시 IllegalArgumentException 발생)
+        /* 사업자번호 진위 확인 때문에 회원가입이 막힙니다, 실구현시 주석 제거 후 사용 예정 */
+//        businessVerificationService.verify(bNo, dto.getStartDate(), dto.getOwnerName());
 
         // 3) 저장
         Store store = Store.builder()
@@ -56,9 +60,7 @@ public class StoreService {
         return store.getId();
     }
 
-    private String normalizeBizNo(String raw) {
-        return raw == null ? null : raw.replaceAll("-", "").trim();
-    }
+
 
     /* Store 로그인 Service*/
     public Store doLogin(StoreLoginReqDTO storeLoginReqDTO) {
