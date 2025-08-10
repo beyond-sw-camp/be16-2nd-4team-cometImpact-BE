@@ -3,6 +3,7 @@ package com.beyond.jellyorder.domain.store.service;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.data.redis.core.RedisTemplate;
 import org.springframework.mail.SimpleMailMessage;
@@ -16,7 +17,7 @@ import java.util.UUID;
 import java.util.concurrent.TimeUnit;
 
 @Service
-@RequiredArgsConstructor
+@Slf4j
 public class PasswordResetService {
 
     private final JavaMailSender mailSender;
@@ -24,13 +25,19 @@ public class PasswordResetService {
     private final PasswordEncoder passwordEncoder;
 
     /** Redis DB=3 전용 템플릿(String, String) */
-    @Qualifier("passwordResetRedisTemplate")
     private final RedisTemplate<String, String> redisTemplate;
 
     private static final String PREFIX_CODE  = "email:verify:";     // 인증코드 저장 키
     private static final String PREFIX_TOKEN = "password:reset:";    // 재설정 토큰 저장 키
     private static final long CODE_TTL_MINUTES  = 3;                 // 인증코드 유효시간(분)
     private static final long TOKEN_TTL_MINUTES = 10;                // 재설정 토큰 유효시간(분)
+
+    public PasswordResetService(JavaMailSender mailSender, StoreRepository storeRepository, PasswordEncoder passwordEncoder, @Qualifier("passwordResetRedisTemplate") RedisTemplate<String, String> redisTemplate) {
+        this.mailSender = mailSender;
+        this.storeRepository = storeRepository;
+        this.passwordEncoder = passwordEncoder;
+        this.redisTemplate = redisTemplate;
+    }
 
     /** 1) 인증코드 발송 */
     public void sendVerificationCode(String email) {
@@ -40,6 +47,13 @@ public class PasswordResetService {
         }
 
         String code = String.format("%06d", new Random().nextInt(1_000_000));
+
+        // 📌 로그로 발신자/수신자/코드 확인
+        log.info("[비밀번호 재설정] 발신자: {}, 수신자: {}, 인증코드: {}",
+                "jellyorder.biz@gmail.com",  // yml의 spring.mail.username 값
+                email,
+                code
+        );
 
         // Redis 저장(기존 코드 덮어쓰기 + TTL)
         redisTemplate.opsForValue().set(PREFIX_CODE + email, code, CODE_TTL_MINUTES, TimeUnit.MINUTES);
