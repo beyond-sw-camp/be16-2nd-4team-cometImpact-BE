@@ -1,9 +1,11 @@
 package com.beyond.jellyorder.domain.store.controller;
 
+import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.store.dto.PwResetCodeReqDTO;
 import com.beyond.jellyorder.domain.store.dto.PwResetCodeVerifyReqDTO;
 import com.beyond.jellyorder.domain.store.dto.PwResetUpdateReqDTO;
 import com.beyond.jellyorder.domain.store.service.PasswordResetService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.PostMapping;
@@ -22,23 +24,23 @@ public class PasswordResetController {
     @PostMapping("/send")
     public ResponseEntity<?> sendCode(@RequestBody PwResetCodeReqDTO request) {
         passwordResetService.sendVerificationCode(request.getEmail());
-        return ResponseEntity.ok("인증코드 발송 완료");
+        return ApiResponse.ok("인증번호 발송 완료");
     }
 
     /** 2) 코드 검증 → ResetToken 발급 */
     @PostMapping("/verify")
-    public ResponseEntity<String> verifyCode(@RequestBody PwResetCodeVerifyReqDTO request) {
+    public ResponseEntity<?> verifyCode(@Valid @RequestBody PwResetCodeVerifyReqDTO request) {
         String resetToken = passwordResetService.verifyCodeAndGetResetToken(
                 request.getEmail(),
                 request.getCode()
         );
-        return ResponseEntity.ok(resetToken);
+        return ApiResponse.ok(resetToken, "인증번호 검증 완료");
     }
 
     /** 3) 비밀번호 재설정 */
     @PostMapping("/reset")
-    public ResponseEntity<String> resetPassword(@RequestBody PwResetUpdateReqDTO request) {
+    public ResponseEntity<?> resetPassword(@RequestBody PwResetUpdateReqDTO request) {
         passwordResetService.resetPassword(request.getToken(), request.getNewPassword());
-        return ResponseEntity.ok("비밀번호 재설정 완료");
+        return ApiResponse.ok("비밀번호 재설정 완료");
     }
 }

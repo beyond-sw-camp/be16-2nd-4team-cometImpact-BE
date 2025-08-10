@@ -47,7 +47,7 @@ public class PasswordResetService {
         // 메일 발송
         SimpleMailMessage message = new SimpleMailMessage();
         message.setTo(email);
-        message.setSubject("[멍멍냥냥] 비밀번호 재설정 인증코드");
+        message.setSubject("[JellyOrder] 비밀번호 재설정 인증코드");
         message.setText("인증코드: " + code + "\n유효시간: " + CODE_TTL_MINUTES + "분");
         mailSender.send(message);
     }
