@@ -1,9 +1,7 @@
 package com.beyond.jellyorder.domain.category.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.category.dto.CategoryCreateReqDto;
-import com.beyond.jellyorder.domain.category.dto.CategoryCreateResDto;
-import com.beyond.jellyorder.domain.category.dto.GetCategoryResDto;
+import com.beyond.jellyorder.domain.category.dto.*;
 import com.beyond.jellyorder.domain.category.service.CategoryService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -11,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 /**
  * 카테고리 관련 요청을 처리하는 REST 컨트롤러 클래스.
@@ -53,4 +52,17 @@ public class CategoryController {
         List<GetCategoryResDto> resDtoList = categoryService.getCategoriesByStore(storeId);
         return ApiResponse.ok(resDtoList, "카테고리 목록이 정상적으로 조회되었습니다.");
     }
+
+
+    @PutMapping("/modify")
+    public ResponseEntity<?> modifyCategory(@RequestBody @Valid CategoryModifyReqDto reqDto) {
+        CategoryModifyResDto resDto = categoryService.modifyCategory(reqDto);
+        return ApiResponse.ok(resDto, "카테고리가 정상적으로 수정되었습니다.");
+    }
+
+        @DeleteMapping("/delete/{storeId}/{categoryName}")
+        public ResponseEntity<?> deleteCategory (@PathVariable String storeId, @PathVariable String categoryName){
+            categoryService.deleteCategory(storeId, categoryName);
+            return ApiResponse.ok(null, "카테고리가 정상적으로 삭제되었습니다.");
+        }
 }
