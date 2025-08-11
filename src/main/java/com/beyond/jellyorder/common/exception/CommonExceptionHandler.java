@@ -5,9 +5,9 @@ import com.beyond.jellyorder.domain.ingredient.service.IngredientService;
 import io.swagger.v3.oas.annotations.Hidden;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.web.bind.MethodArgumentNotValidException;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 import org.springframework.web.bind.annotation.RestControllerAdvice;
@@ -91,4 +91,25 @@ public class CommonExceptionHandler {
                 );
     }
 
+    @ExceptionHandler(HttpMessageNotReadableException.class)
+    public ResponseEntity<?> handleInvalidUUID(HttpMessageNotReadableException e) {
+        String rootMessage = e.getMessage();
+
+        if (rootMessage != null && rootMessage.contains("UUID")) {
+            log.warn("[HttpMessageNotReadableException - UUID] {}", rootMessage);
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(CommonErrorDTO.builder()
+                            .status_code(HttpStatus.BAD_REQUEST.value())
+                            .status_message("요청 본문에 유효하지 않은 UUID가 포함되어 있습니다.")
+                            .build());
+        }
+
+        // UUID 관련이 아닌 다른 파싱 예외의 경우 일반 메시지 처리
+        log.warn("[HttpMessageNotReadableException - General] {}", rootMessage);
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(CommonErrorDTO.builder()
+                        .status_code(HttpStatus.BAD_REQUEST.value())
+                        .status_message("잘못된 요청 형식입니다.")
+                        .build());
+    }
 }

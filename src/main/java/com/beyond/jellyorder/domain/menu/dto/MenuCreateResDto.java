@@ -1,7 +1,9 @@
 package com.beyond.jellyorder.domain.menu.dto;
 
+import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import lombok.*;
 
+import java.util.List;
 import java.util.UUID;
 
 @Getter
@@ -14,4 +16,5 @@ public class MenuCreateResDto {
     private String name;
     private Integer price;
     private String imageUrl;
+    private List<MainOptionDto> mainOptions;
 }

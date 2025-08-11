@@ -23,6 +23,8 @@ import java.util.Arrays;
 public class SecurityConfig {
 
     private final JwtTokenFilter jwtTokenFilter;
+    private final JwtAuthorizationHandler jwtAuthorizationHandler;
+    private final JwtAuthenticationHandler jwtAuthenticationHandler;
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity httpSecurity) throws Exception {
@@ -43,6 +45,9 @@ public class SecurityConfig {
                         "/swagger-ui/**",   // swagger 추가
                         "/swagger-ui.html"  // swagger 추가
                                  ).permitAll().anyRequest().authenticated())
+                .exceptionHandling(e ->
+                        e.authenticationEntryPoint(jwtAuthenticationHandler)
+                                .accessDeniedHandler(jwtAuthorizationHandler))
                 .build();
     }
 

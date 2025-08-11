@@ -1,12 +1,12 @@
 package com.beyond.jellyorder.domain.menu.dto;
 
+import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.UUID;
 
 @Getter
 @Setter
@@ -44,4 +44,6 @@ public class MenuCreateReqDto {
 
     @NotNull(message = "이미지 파일(imageFile)은 필수입니다.")
     private MultipartFile imageFile;
+
+    private List<MainOptionDto> mainOptions;
 }
