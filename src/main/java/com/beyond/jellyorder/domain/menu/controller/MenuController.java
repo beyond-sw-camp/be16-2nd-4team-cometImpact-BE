@@ -4,6 +4,7 @@ import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateReqDto;
 import com.beyond.jellyorder.domain.menu.dto.MenuCreateResDto;
 import com.beyond.jellyorder.domain.menu.dto.MenuDeleteReqDto;
+import com.beyond.jellyorder.domain.menu.dto.MenuListResDto;
 import com.beyond.jellyorder.domain.menu.service.MenuService;
 import com.beyond.jellyorder.domain.option.dto.OptionAddReqDto;
 import com.beyond.jellyorder.domain.option.dto.OptionAddResDto;
@@ -46,7 +47,7 @@ public class MenuController {
 
     @GetMapping("/store/{storeId}")
     public ResponseEntity<?> getMenusByStoreId(@PathVariable String storeId) {
-        List<MenuCreateResDto> resDtos = menuService.getMenusByStoreId(storeId);
+        List<MenuListResDto> resDtos = menuService.getMenusByStoreId(storeId);
         return ApiResponse.ok(resDtos, "메뉴 목록이 정상적으로 조회되었습니다.");
     }
 
