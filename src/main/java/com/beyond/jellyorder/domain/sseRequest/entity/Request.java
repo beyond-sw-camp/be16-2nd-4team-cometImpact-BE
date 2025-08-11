@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.sseRequest.entity;
 
+import com.beyond.jellyorder.domain.request.dto.RequestUpdateDto;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
@@ -30,4 +31,9 @@ public class Request {  // extends 추가 하고 id 삭제
     @ManyToOne(fetch = FetchType.LAZY, optional = false)
     @JoinColumn(name = "store_id", nullable = false)
     private Store store;
+
+    // 요청사항 수정
+    public void updateRequest(RequestUpdateDto updatedto) {
+        this.name = updatedto.getName();
+    }
 }
