@@ -7,8 +7,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.util.List;
-import java.util.UUID;
+import java.util.*;
 
 public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
 
@@ -16,6 +15,7 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
     List<String> findNamesByStoreAndNames(@Param("store") Store store, @Param("names") List<String> names);
 
     List<StoreTable> findAllByZone(Zone zone);
+    List<StoreTable> findAllByZoneId(UUID zoneId);
 
     @Query("""
     SELECT COUNT(st) > 0
@@ -30,19 +30,6 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
             @Param("excludedId") UUID excludedId
     );
 
-
-
-
-
-
-//    추후 fetch join을 위한 메서드 구현. 08.02에 구현 예정
-//    @Query("""
-//    SELECT st FROM StoreTable st
-//    JOIN FETCH st.zone z
-//    JOIN FETCH st.store s
-//    WHERE s.loginId = :storeLoginId
-//""")
-//    List<StoreTable> findAllByStoreLoginIdWithZoneAndStore(@Param("storeLoginId") String storeLoginId);
-
+    Optional<StoreTable> findByStoreAndName(Store store, String name);
 
 }

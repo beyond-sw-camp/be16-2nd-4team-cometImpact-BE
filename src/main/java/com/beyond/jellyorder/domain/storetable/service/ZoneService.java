@@ -3,14 +3,16 @@ package com.beyond.jellyorder.domain.storetable.service;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneCreateReqDTO;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneListResDTO;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneResDTO;
-import com.beyond.jellyorder.domain.storetable.dto.ZoneUpdateReqDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneCreateReqDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneListResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneResDTO;
+import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneUpdateReqDTO;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import com.beyond.jellyorder.domain.storetable.repository.ZoneRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -26,12 +28,9 @@ public class ZoneService {
     private final ZoneRepository zoneRepository;
     private final StoreRepository storeRepository;
 
-    public ZoneResDTO createZone(ZoneCreateReqDTO dto, String storeLoginId) {
-        /*
-          추후 Authentication 도입 후 수정할 로직.
-          Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-          String storeLoginId = authentication.getName();
-         */
+    // 구역 생성
+    public ZoneResDTO createZone(ZoneCreateReqDTO dto) {
+        String storeLoginId = getStoreLoginIdByAuth();
 
         Store store = storeRepository.findByLoginId(storeLoginId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장이 존재하지 않습니다."));
@@ -45,25 +44,18 @@ public class ZoneService {
         return ZoneResDTO.from(zone);
     }
 
+
     @Transactional(readOnly = true)
-    public List<ZoneListResDTO> getZoneList(String storeLoginId) {
-        /*
-          추후 Authentication 도입 후 수정할 로직.
-          Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-          String storeLoginId = authentication.getName();
-         */
+    public List<ZoneListResDTO> getZoneList() {
+        String storeLoginId = getStoreLoginIdByAuth();
 
         List<Zone> zoneList = zoneRepository.findAllByStoreLoginId(storeLoginId);
         return zoneList.stream().map(ZoneListResDTO::from).collect(Collectors.toList());
     }
 
-
-    public ZoneResDTO updateZone(ZoneUpdateReqDTO dto, UUID zoneId, String storeLoginId) {
-        /*
-          추후 Authentication 도입 후 수정할 로직.
-          Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
-          String storeLoginId = authentication.getName();
-         */
+    // 구역 수정
+    public ZoneResDTO updateZone(ZoneUpdateReqDTO dto, UUID zoneId) {
+        String storeLoginId = getStoreLoginIdByAuth();
         Zone zone = zoneRepository.findById(zoneId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 구역이 존재하지 않습니다."));
 
@@ -80,5 +72,17 @@ public class ZoneService {
 
         zone.updateName(dto.getZoneName());
         return ZoneResDTO.from(zone);
+    }
+
+
+    /**
+     * === 내부 공통 메서드 정의 ===
+     * 아래는 공통적으로 사용되는 내부메서드를 정의했습니다.
+     */
+
+    // Authentication 객체에서 storeLoginId 추출 메서드
+    private String getStoreLoginIdByAuth() {
+        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        return authentication.getName();
     }
 }
