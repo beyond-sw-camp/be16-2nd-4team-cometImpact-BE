@@ -6,6 +6,7 @@ import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -46,4 +47,10 @@ public class Menu extends BaseIdAndTimeEntity {
 
     @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<MainOption> mainOptions;
+
+    @OneToMany(mappedBy = "menu",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @ToString.Exclude
+    private List<MenuIngredient> menuIngredients = new ArrayList<>();
 }

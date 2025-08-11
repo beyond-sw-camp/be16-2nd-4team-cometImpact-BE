@@ -2,10 +2,7 @@ package com.beyond.jellyorder.domain.ingredient.service;
 
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.ingredient.domain.Ingredient;
-import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateReqDto;
-import com.beyond.jellyorder.domain.ingredient.dto.IngredientCreateResDto;
-import com.beyond.jellyorder.domain.ingredient.dto.IngredientListResDto;
-import com.beyond.jellyorder.domain.ingredient.dto.IngredientResDto;
+import com.beyond.jellyorder.domain.ingredient.dto.*;
 import com.beyond.jellyorder.domain.ingredient.repository.IngredientRepository;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -96,6 +93,39 @@ public class IngredientService {
         // 4) 결과 반환
         return IngredientListResDto.builder()
                 .ingredients(dtos)
+                .build();
+    }
+
+    public IngredientDeleteResDto delete(IngredientDeleteReqDto req) {
+        // 1) 대상 조회
+        Ingredient ingredient = ingredientRepository.findById(req.getIngredientId())
+                .orElseThrow(() -> new EntityNotFoundException(
+                        "식자재를 찾을 수 없습니다. id=" + req.getIngredientId()));
+
+        // 2) 소속(storeId) 검증
+        if (!ingredient.getStoreId().equals(req.getStoreId())) {
+            throw new EntityNotFoundException(
+                    "요청한 매장에 속하지 않는 식자재입니다. id=" + req.getIngredientId()
+                            + ", storeId=" + req.getStoreId());
+        }
+
+        // 3) 영향받는 메뉴 사전 조회 (네이티브: BIN_TO_UUID → String)
+        var briefs = ingredientRepository.findAffectedMenus(ingredient.getId());
+        var affected = briefs.stream()
+                .map(b -> IngredientDeleteResDto.AffectedMenuDto.builder()
+                        .id(UUID.fromString(b.getId())) // String → UUID 변환
+                        .name(b.getName())
+                        .build())
+                .toList();
+
+        // 4) 삭제 (JPA orphanRemoval 또는 DB FK ON DELETE CASCADE로 연결행 정리)
+        ingredientRepository.delete(ingredient);
+
+        // 5) 응답 조립
+        return IngredientDeleteResDto.builder()
+                .ingredientId(ingredient.getId())
+                .ingredientName(ingredient.getName())
+                .affectedMenus(affected)
                 .build();
     }
 }

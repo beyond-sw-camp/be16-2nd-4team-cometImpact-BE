@@ -6,24 +6,23 @@ import lombok.*;
 
 @Entity
 @Table(name = "menu_ingredient")
-@Getter
-@Setter
+@Getter @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class MenuIngredient {
 
     @EmbeddedId
-    private MenuIngredientId id;
+    @Builder.Default
+    private MenuIngredientId id = new MenuIngredientId();
 
-    // FK 관계 제거: 주석 처리
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @MapsId("menuId")
-    // @JoinColumn(name = "menu_id", referencedColumnName = "id", insertable = false, updatable = false)
-    // private Menu menu;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("menuId")
+    @JoinColumn(name = "menu_id", nullable = false)
+    private Menu menu;
 
-    // @ManyToOne(fetch = FetchType.LAZY)
-    // @MapsId("ingredientId")
-    // @JoinColumn(name = "ingredient_id", referencedColumnName = "id", insertable = false, updatable = false)
-    // private Ingredient ingredient;
+    @ManyToOne(fetch = FetchType.LAZY)
+    @MapsId("ingredientId")
+    @JoinColumn(name = "ingredient_id", nullable = false)
+    private Ingredient ingredient;
 }
