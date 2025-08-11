@@ -48,6 +48,9 @@ dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-cache' // 캐싱처리를 위한 의존성
 
 
+	// 테스트용
+	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'
+
 
 }
 

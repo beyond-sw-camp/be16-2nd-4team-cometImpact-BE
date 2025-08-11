@@ -33,7 +33,18 @@ public class SecurityConfig {
                 .csrf(AbstractHttpConfigurer::disable) // 비브라우저, 토큰로그인을 위한 csrf disable
                 .httpBasic(AbstractHttpConfigurer::disable)
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
-                .authorizeHttpRequests(a -> a.requestMatchers("/store/create", "/store/do-login", "/storetable/do-login", "/store/refresh-at", "/sse/**", "/request/**").permitAll().anyRequest().authenticated())
+                .authorizeHttpRequests(a -> a.requestMatchers(
+                        "/store/create",
+                        "/store/doLogin",
+                        "/storetable/doLogin",
+                        "/store/refresh-at",
+                        "/sse/**",
+                        "/request/**",
+                        "/payment/**",
+                        "/v3/api-docs/**",  // swagger 추가
+                        "/swagger-ui/**",   // swagger 추가
+                        "/swagger-ui.html"  // swagger 추가
+                                 ).permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
                                 .accessDeniedHandler(jwtAuthorizationHandler))
@@ -47,7 +58,7 @@ public class SecurityConfig {
 
     private CorsConfigurationSource corsConfiguration(){
         CorsConfiguration configuration = new CorsConfiguration();
-        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000")); // 원하는 도메인 커스텀
+        configuration.setAllowedOrigins(Arrays.asList("http://localhost:3000", "http://localhost:8080")); // 원하는 도메인 커스텀
         configuration.setAllowedMethods(Arrays.asList("*")); // 모든 HTTP(get, post, patch 등) 메서드 허용
         configuration.setAllowedHeaders(Arrays.asList("*")); // 모든 헤더요소(Authorization 등) 허용
         configuration.setAllowCredentials(true); // 자격 증명 허용
