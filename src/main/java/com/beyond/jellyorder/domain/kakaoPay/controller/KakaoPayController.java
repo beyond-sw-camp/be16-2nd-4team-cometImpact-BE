@@ -20,13 +20,14 @@ public class KakaoPayController {
 
     /** 결제 요청 */
     @PostMapping("/ready")
-    public KakaoReadyResDto ready(@RequestBody KakaoReadyReqDto reqDto, HttpSession session) {
+    public ResponseEntity<KakaoReadyResDto> ready(@RequestBody KakaoReadyReqDto reqDto, HttpSession session) {
         KakaoReadyResDto resDto = kakaoPayService.kakaoPayReady(reqDto);
+
         session.setAttribute("tid", resDto.getTid());
         session.setAttribute("partner_order_id", reqDto.getPartner_order_id());
         session.setAttribute("partner_user_id", reqDto.getPartner_user_id());
 
-        return resDto;
+        return ResponseEntity.ok(resDto);
     }
 
     /** 결제 성공 */
