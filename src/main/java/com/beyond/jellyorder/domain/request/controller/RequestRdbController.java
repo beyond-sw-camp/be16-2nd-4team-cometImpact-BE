@@ -17,6 +17,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/request")
+@PreAuthorize("hasRole('STORE')")
 public class RequestRdbController {
     private final RdbRequestService requestService;
 
@@ -65,7 +66,6 @@ public class RequestRdbController {
 
     // 요청사항 삭제
     @DeleteMapping("/delete/{requestId}")
-    @PreAuthorize("hasRole('STORE')")
     public ResponseEntity<?> delete(@PathVariable UUID requestId) {
         requestService.deleteRequest(requestId);
 
