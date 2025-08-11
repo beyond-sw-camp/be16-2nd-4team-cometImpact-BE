@@ -36,8 +36,8 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(a -> a.requestMatchers(
                         "/store/create",
-                        "/store/doLogin",
-                        "/storetable/doLogin",
+                        "/store/do-login",
+                        "/storeTable/do-login",
                         "/store/refresh-at",
                         "/sse/**",
                         "/payment/**",
