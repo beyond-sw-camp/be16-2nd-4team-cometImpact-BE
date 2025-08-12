@@ -55,5 +55,6 @@ public class Ingredient extends BaseIdAndTimeEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     @ToString.Exclude
+    @Builder.Default
     private List<MenuIngredient> menuIngredients = new ArrayList<>();
 }

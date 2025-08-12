@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a.requestMatchers(
                         "/store/create",
                         "/store/do-login",
-                        "/storetable/do-login",
+                        "/storeTable/do-login",
                         "/store/refresh-at",
                         "/sse/**",
                         "/payment/**",
@@ -49,7 +49,9 @@ public class SecurityConfig {
                         "/zone/**",
                         "/v3/api-docs/**",  // swagger 추가
                         "/swagger-ui/**",   // swagger 추가
-                        "/swagger-ui.html"  // swagger 추가
+                        "/swagger-ui.html",  // swagger 추가
+                        "/request/**",
+                        "/password/**"
                                  ).permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
