@@ -36,11 +36,17 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(a -> a.requestMatchers(
                         "/store/create",
-                        "/store/doLogin",
-                        "/storetable/doLogin",
+                        "/store/do-login",
+                        "/storetable/do-login",
                         "/store/refresh-at",
                         "/sse/**",
                         "/payment/**",
+                        "/menu/**",
+                        "/orders/**",
+                        "/category/**",
+                        "/ingredient/**",
+                        "/store-table/**",
+                        "/zone/**",
                         "/v3/api-docs/**",  // swagger 추가
                         "/swagger-ui/**",   // swagger 추가
                         "/swagger-ui.html"  // swagger 추가
