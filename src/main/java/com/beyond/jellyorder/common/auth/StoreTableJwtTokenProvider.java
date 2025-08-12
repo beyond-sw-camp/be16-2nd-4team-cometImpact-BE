@@ -63,12 +63,14 @@ import java.util.Date;
         String loginId = table.getStore().getLoginId();
         String tableName = table.getName();
         String role = table.getRole().toString();
-        String storeTableUuid = table.getId().toString();
+        String storeId = table.getStore().getId().toString();
+        String storeTableId = table.getId().toString();
 
         Claims claims = Jwts.claims().setSubject(loginId);
         claims.put("role", role);
         claims.put("tableName", tableName);
-        claims.put("uuid", storeTableUuid);
+        claims.put("storeId", storeId);
+        claims.put("storeTableId", storeTableId);
 
 
         Date now = new Date();
@@ -87,12 +89,10 @@ import java.util.Date;
         String loginId = table.getStore().getLoginId();
         String tableName = table.getName();
         String role = table.getRole().toString();
-        String storeTableUuid = table.getId().toString();
 
         Claims claims = Jwts.claims().setSubject(loginId);
         claims.put("role", role);
         claims.put("tableName", tableName);
-        claims.put("uuid", storeTableUuid);
 
         Date now = new Date();
         String refreshToken = Jwts.builder()
