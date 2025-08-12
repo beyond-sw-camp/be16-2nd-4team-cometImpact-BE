@@ -37,4 +37,8 @@ public class Store extends BaseIdAndTimeEntity {
     @Enumerated(EnumType.STRING)
     private Role role = Role.STORE;
 
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
+
 }
