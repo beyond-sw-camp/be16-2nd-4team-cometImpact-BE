@@ -43,7 +43,9 @@ public class SecurityConfig {
                         "/payment/**",
                         "/v3/api-docs/**",  // swagger 추가
                         "/swagger-ui/**",   // swagger 추가
-                        "/swagger-ui.html"  // swagger 추가
+                        "/swagger-ui.html",  // swagger 추가
+                        "/request/**",
+                        "/password/**"
                                  ).permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)

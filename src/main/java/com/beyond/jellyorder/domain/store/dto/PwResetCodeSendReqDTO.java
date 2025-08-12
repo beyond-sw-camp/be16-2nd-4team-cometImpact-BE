@@ -9,7 +9,7 @@ import lombok.NoArgsConstructor;
 @Getter
 @NoArgsConstructor
 @AllArgsConstructor
-public class PwResetCodeReqDTO {
+public class PwResetCodeSendReqDTO {
     @NotBlank
     @Email
     private String email; // 인증코드를 받을 이메일
