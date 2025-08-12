@@ -1,7 +1,7 @@
 package com.beyond.jellyorder.domain.store.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
-import com.beyond.jellyorder.domain.store.dto.PwResetCodeReqDTO;
+import com.beyond.jellyorder.domain.store.dto.PwResetCodeSendReqDTO;
 import com.beyond.jellyorder.domain.store.dto.PwResetCodeVerifyReqDTO;
 import com.beyond.jellyorder.domain.store.dto.PwResetUpdateReqDTO;
 import com.beyond.jellyorder.domain.store.service.PasswordResetService;
@@ -22,7 +22,7 @@ public class PasswordResetController {
 
     /** 1) 인증코드 발송 */
     @PostMapping("/send")
-    public ResponseEntity<?> sendCode(@RequestBody PwResetCodeReqDTO request) {
+    public ResponseEntity<?> sendCode(@RequestBody PwResetCodeSendReqDTO request) {
         passwordResetService.sendVerificationCode(request.getEmail());
         return ApiResponse.ok("인증번호 발송 완료");
     }

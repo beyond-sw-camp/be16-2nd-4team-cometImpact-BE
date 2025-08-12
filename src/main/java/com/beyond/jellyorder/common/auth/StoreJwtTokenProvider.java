@@ -54,9 +54,11 @@ public class StoreJwtTokenProvider {
     public String createStoreAtToken(Store store) {
         String loginId = store.getLoginId();
         String role = store.getRole().toString();
+        String storeUuid = store.getId().toString();
 
         Claims claims = Jwts.claims().setSubject(loginId); // filter에서 claims.getSubject와 싱크, loginId
         claims.put("role", role);
+        claims.put("uuid", storeUuid);
         Date now = new Date();
 
         String storeAccessToken = Jwts.builder() // 토큰 제작
@@ -73,9 +75,11 @@ public class StoreJwtTokenProvider {
 //        유효기간이 긴 rt 토큰 생성
         String loginId = store.getLoginId();
         String role = store.getRole().toString();
+        String storeUuid = store.getId().toString();
 
         Claims claims = Jwts.claims().setSubject(loginId); // filter에서 claims.getSubject와 싱크, loginId
         claims.put("role", role);
+        claims.put("uuid", storeUuid);
         Date now = new Date();
         String storeRefreshToken = Jwts.builder()
                 .setClaims(claims)
