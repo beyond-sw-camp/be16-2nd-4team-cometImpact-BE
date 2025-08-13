@@ -43,6 +43,13 @@ dependencies {
 	runtimeOnly 'io.jsonwebtoken:jjwt-jackson:0.11.5'  // JSON 처리에 필요
 	implementation 'org.springframework.boot:spring-boot-starter-security'
 
+// Spring Security 리소스 서버 기능 활성화 (JWT 토큰을 Spring Security가 자동으로 파싱/검증하고 principal을 Jwt 객체로 제공)
+	implementation 'org.springframework.boot:spring-boot-starter-oauth2-resource-server'
+
+// Spring Security JWT 파싱·검증(JWS/JWE) 지원 라이브러리 (리소스 서버에서 JWT를 다루기 위해 반드시 필요)
+	implementation 'org.springframework.security:spring-security-oauth2-jose'
+
+
 //	redis 관련 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-data-redis'
 	implementation 'org.springframework.boot:spring-boot-starter-cache' // 캐싱처리를 위한 의존성
