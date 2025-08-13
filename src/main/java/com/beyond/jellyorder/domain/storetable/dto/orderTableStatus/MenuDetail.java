@@ -5,13 +5,14 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
 import java.util.UUID;
 
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 public class MenuDetail {
-    private UUID id;
-    private String name;
+    private UUID menuId;
     private Integer quantity;
+    private List<MenuOptionDetail> optionDetailList;
 }

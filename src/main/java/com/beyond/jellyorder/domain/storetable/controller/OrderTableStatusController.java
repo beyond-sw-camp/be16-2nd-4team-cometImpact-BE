@@ -50,7 +50,7 @@ public class OrderTableStatusController {
     }
 
     // 주문 테이블 주문 수정
-    @PatchMapping("/update")
+    @PutMapping("/update")
     public ResponseEntity<?> updateOrderTable(
             @RequestBody List<OrderTableUpdateReqDTO> reqDTOs
     ) {
