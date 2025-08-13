@@ -54,6 +54,9 @@ public class JwtTokenFilter extends GenericFilter {
                     .parseClaimsJws(token)
                     .getBody();
 
+            req.setAttribute("storeId", claims.get("storeId", String.class));
+            req.setAttribute("storeTableId", claims.get("storeTableId", String.class));
+
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));
             Authentication authentication = new UsernamePasswordAuthenticationToken(claims.getSubject(), "", authorities);
