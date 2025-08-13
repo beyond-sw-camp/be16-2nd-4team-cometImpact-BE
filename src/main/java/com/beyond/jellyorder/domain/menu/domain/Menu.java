@@ -17,7 +17,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Menu extends BaseIdAndTimeEntity {
-
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -52,5 +51,6 @@ public class Menu extends BaseIdAndTimeEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     @ToString.Exclude
+    @Builder.Default
     private List<MenuIngredient> menuIngredients = new ArrayList<>();
 }
