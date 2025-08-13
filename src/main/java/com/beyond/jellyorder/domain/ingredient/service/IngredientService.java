@@ -128,4 +128,45 @@ public class IngredientService {
                 .affectedMenus(affected)
                 .build();
     }
+
+    public IngredientModifyResDto modify(String storeId, UUID ingredientId, IngredientModifyReqDto req) {
+
+        if (req.getName() == null && req.getStatus() == null) {
+            throw new IllegalArgumentException("수정할 필드가 없습니다. name 또는 status 중 최소 한 개는 필요합니다.");
+        }
+
+        Ingredient ingredient = ingredientRepository.findByIdAndStoreId(ingredientId, storeId)
+                .orElseThrow(() -> new EntityNotFoundException("식자재를 찾을 수 없습니다. id=" + ingredientId + ", storeId=" + storeId));
+
+        // 이름 수정
+        if (req.getName() != null) {
+            String newName = req.getName().trim();
+            if (newName.isEmpty()) {
+                throw new IllegalArgumentException("식자재명은 공백일 수 없습니다.");
+            }
+            // 동일 매장 내 중복 방지
+            boolean duplicated = ingredientRepository
+                    .existsByStoreIdAndNameAndIdNot(storeId, newName, ingredientId);
+            if (duplicated) {
+                throw new IllegalArgumentException("동일 매장 내 이미 존재하는 식자재명입니다: " + newName);
+            }
+            ingredient.setName(newName);
+        }
+
+        // 상태 수정
+        if (req.getStatus() != null) {
+            ingredient.setStatus(req.getStatus());
+        }
+
+        Ingredient saved = ingredientRepository.save(ingredient);
+
+        return IngredientModifyResDto.builder()
+                .id(saved.getId())
+                .storeId(saved.getStoreId())
+                .name(saved.getName())
+                .status(saved.getStatus())
+                .createdAt(saved.getCreatedAt())
+                .updatedAt(saved.getUpdatedAt())
+                .build();
+    }
 }
