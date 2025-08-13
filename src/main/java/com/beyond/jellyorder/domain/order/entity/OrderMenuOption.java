@@ -3,11 +3,12 @@ package com.beyond.jellyorder.domain.order.entity;
 
 import com.beyond.jellyorder.common.BaseIdEntity;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
+import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import jakarta.persistence.*;
 import lombok.*;
 
 @Entity
-@Table(name = "order_menu")
+@Table(name = "order_menu_option")
 @Getter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
@@ -24,7 +25,6 @@ public class OrderMenuOption extends BaseIdEntity {
 
     @Column(name = "option_name", length = 20)
     private String optionName;
-
 
     @Column(name = "option_price")
     private Integer optionPrice;

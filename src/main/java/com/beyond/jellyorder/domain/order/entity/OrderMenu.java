@@ -5,6 +5,9 @@ import com.beyond.jellyorder.domain.menu.domain.Menu;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 
 @Entity
 @Table(name = "order_menu")
@@ -24,6 +27,15 @@ public class OrderMenu extends BaseIdEntity {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(name = "menu_name", length = 30)
+    private String menuName;
+
+    @Column(name = "menu_price")
+    private Integer menuPrice;
+
+    @OneToMany(mappedBy = "orderMenu", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<OrderMenuOption> orderMenuOptions = new ArrayList<>();
 
     // 주문 수량 변경 메서드
     public void updateQuantity(Integer quantity) {
