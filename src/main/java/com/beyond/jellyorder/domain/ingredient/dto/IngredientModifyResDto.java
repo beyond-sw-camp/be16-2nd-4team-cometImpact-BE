@@ -11,7 +11,6 @@ import java.util.UUID;
 @NoArgsConstructor @AllArgsConstructor @Builder
 public class IngredientModifyResDto {
     private UUID id;
-    private String storeId;
     private String name;
     private IngredientStatus status;
     private LocalDateTime createdAt;
