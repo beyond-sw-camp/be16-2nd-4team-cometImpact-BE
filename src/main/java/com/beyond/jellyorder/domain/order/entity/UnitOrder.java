@@ -61,5 +61,10 @@ public class UnitOrder extends BaseIdEntity {
         };
     }
 
+    // 주문 상태 수정 메서드
+    public void updateOrderStatus(OrderStatus status) {
+        this.status = status;
+    }
+
 }
 

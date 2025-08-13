@@ -24,4 +24,10 @@ public class OrderMenu extends BaseIdEntity {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    // 주문 수량 변경 메서드
+    public void updateQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
 }
