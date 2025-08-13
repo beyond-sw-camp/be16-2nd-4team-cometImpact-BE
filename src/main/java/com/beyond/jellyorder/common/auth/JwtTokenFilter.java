@@ -41,8 +41,9 @@ public class JwtTokenFilter extends GenericFilter {
     public void doFilter(ServletRequest servletRequest, ServletResponse servletResponse, FilterChain filterChain) throws IOException, ServletException {
         try {
             HttpServletRequest req = (HttpServletRequest) servletRequest;
+
             String bearerToken = req.getHeader("Authorization");
-            if (bearerToken == null) {
+            if (bearerToken == null || !bearerToken.startsWith("Bearer "))   {
                 filterChain.doFilter(servletRequest, servletResponse);
                 return;
             }
@@ -52,6 +53,9 @@ public class JwtTokenFilter extends GenericFilter {
                     .build()
                     .parseClaimsJws(token)
                     .getBody();
+
+            req.setAttribute("storeId", claims.get("storeId", String.class));
+            req.setAttribute("storeTableId", claims.get("storeTableId", String.class));
 
             List<GrantedAuthority> authorities = new ArrayList<>();
             authorities.add(new SimpleGrantedAuthority("ROLE_" + claims.get("role")));

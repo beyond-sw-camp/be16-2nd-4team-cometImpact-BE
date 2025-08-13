@@ -1,8 +1,12 @@
 package com.beyond.jellyorder.domain.ingredient.domain;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
+import com.beyond.jellyorder.domain.menu.domain.MenuIngredient;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * 재료(Ingredient) 엔티티.
@@ -16,6 +20,7 @@ import lombok.*;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Setter
 @Table(name = "ingredient")
 public class Ingredient extends BaseIdAndTimeEntity {
 
@@ -47,5 +52,10 @@ public class Ingredient extends BaseIdAndTimeEntity {
     @Column(length = 10, nullable = false)
     private IngredientStatus status = IngredientStatus.SUFFICIENT;
 
-    // 추후: 재고 상태 변경 메서드 등 도메인 로직 추가 가능 (e.g., updateStatus(IngredientStatus.INSUFFICIENT))
+    @OneToMany(mappedBy = "ingredient",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @ToString.Exclude
+    @Builder.Default
+    private List<MenuIngredient> menuIngredients = new ArrayList<>();
 }

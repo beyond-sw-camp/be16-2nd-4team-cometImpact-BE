@@ -2,9 +2,11 @@ package com.beyond.jellyorder.domain.menu.domain;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.domain.category.domain.Category;
+import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Entity
@@ -43,8 +45,15 @@ public class Menu extends BaseIdAndTimeEntity {
     @Column(name = "sales_today", nullable = false)
     private Integer salesToday = 0;
 
-//    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
-//    private List<MenuIngredient> menuIngredients;
+    @OneToMany(mappedBy = "menu", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<MainOption> mainOptions;
+
+    @OneToMany(mappedBy = "menu",
+            cascade = CascadeType.ALL,
+            orphanRemoval = true)
+    @ToString.Exclude
+    private List<MenuIngredient> menuIngredients = new ArrayList<>();
+
 
     // 메뉴 수량 증가 함수
     public void increaseSalesLimit(Long quantity) {

@@ -66,5 +66,10 @@ public class UnitOrder extends BaseIdEntity {
         this.status = status;
     }
 
+    // 단위주문 총 수량
+    public void setUnitCount(int totalCount) {
+        this.totalCount = totalCount;
+    }
+
 }
 
