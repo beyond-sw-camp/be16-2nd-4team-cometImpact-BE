@@ -35,4 +35,7 @@ public interface IngredientRepository extends JpaRepository<Ingredient, UUID>, I
         WHERE mi.ingredient_id = :ingredientId
         """, nativeQuery = true)
     List<AffectedMenu> findAffectedMenus(@Param("ingredientId") UUID ingredientId);
+
+    boolean existsByStoreIdAndNameAndIdNot(String storeId, String name, UUID id);
+    Optional<Ingredient> findByIdAndStoreId(UUID id, String storeId);
 }

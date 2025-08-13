@@ -20,6 +20,7 @@ import java.util.List;
 @ToString
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
+@Setter
 @Table(name = "ingredient")
 public class Ingredient extends BaseIdAndTimeEntity {
 

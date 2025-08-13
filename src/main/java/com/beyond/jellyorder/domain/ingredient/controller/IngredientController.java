@@ -40,4 +40,19 @@ public class IngredientController {
         IngredientDeleteResDto res = ingredientService.delete(reqDto);
         return ResponseEntity.ok(ApiResponse.ok(res, "식자재가 정상적으로 삭제되었습니다."));
     }
+
+    /**
+     * 부분 수정(PATCH): storeId, ingredientId, name, status를 모두 JSON Body로 받음
+     */
+    @PatchMapping("/modify")
+    public ResponseEntity<?> modifyIngredient(
+            @Valid @RequestBody IngredientModifyReqDto req
+    ) {
+        IngredientModifyResDto res = ingredientService.modify(
+                req.getStoreId(),
+                req.getIngredientId(),
+                req
+        );
+        return ResponseEntity.ok(res);
+    }
 }
