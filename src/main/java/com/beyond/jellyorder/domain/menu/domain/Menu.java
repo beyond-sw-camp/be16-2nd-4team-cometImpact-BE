@@ -39,7 +39,7 @@ public class Menu extends BaseIdAndTimeEntity {
 
     @Builder.Default
     @Column(name = "sales_limit", nullable = false)
-    private Long salesLimit = -1L;
+    private Integer salesLimit = -1;
 
     @Builder.Default
     @Column(name = "sales_today", nullable = false)
@@ -54,24 +54,24 @@ public class Menu extends BaseIdAndTimeEntity {
     @ToString.Exclude
     private List<MenuIngredient> menuIngredients = new ArrayList<>();
 
+    @Enumerated(EnumType.STRING)
+    @Builder.Default
+    private MenuStatus stockStatus = MenuStatus.ON_SALE;
 
-    // 메뉴 수량 증가 함수
-    public void increaseSalesLimit(Long quantity) {
-        this.salesLimit += quantity;
-    }
-
-    // 메뉴 수량 감소 함수
-    public void decreaseSalesLimit(Long quantity) {
-        this.salesLimit -= quantity;
-    }
 
     // 하루판매 수량 증가 함수
     public void increaseSalesToday(Integer quantity) {
-        this.salesLimit += quantity;
+        this.salesToday += quantity;
+        if (this.salesToday.equals(this.salesLimit)) {
+            this.stockStatus = MenuStatus.OUT_OF_STOCK;
+        }
     }
 
     // 하루판매 수량 감소 함수
     public void decreaseSalesToday(Integer quantity) {
-        this.salesLimit -= quantity;
+        this.salesToday -= quantity;
+        if (!this.salesToday.equals(this.salesLimit)) {
+            this.stockStatus = MenuStatus.ON_SALE;
+        }
     }
 }

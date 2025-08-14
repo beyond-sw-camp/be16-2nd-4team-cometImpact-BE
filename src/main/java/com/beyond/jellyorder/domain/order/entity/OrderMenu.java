@@ -35,7 +35,8 @@ public class OrderMenu extends BaseIdEntity {
     private Integer menuPrice;
 
     @OneToMany(mappedBy = "orderMenu", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<OrderMenuOption> orderMenuOptions = new ArrayList<>();
+    @Builder.Default
+    private List<OrderMenuOption> orderMenuOptionList = new ArrayList<>();
 
     // 주문 수량 변경 메서드
     public void updateQuantity(Integer quantity) {

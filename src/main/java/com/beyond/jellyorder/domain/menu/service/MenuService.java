@@ -141,7 +141,7 @@ public class MenuService {
                     .description(reqDto.getDescription())
                     .imageUrl(imageUrl)
                     .origin(reqDto.getOrigin())
-                    .salesLimit(reqDto.getSalesLimit() != null ? reqDto.getSalesLimit() : -1L)
+                    .salesLimit(reqDto.getSalesLimit() != null ? reqDto.getSalesLimit() : -1)
                     .salesToday(0)
                     .build();
 

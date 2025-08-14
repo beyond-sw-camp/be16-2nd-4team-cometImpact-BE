@@ -49,15 +49,15 @@ public class OrderTableStatusController {
         return ApiResponse.ok(resDTOs);
     }
 
-//    // 주문 테이블 주문 수정
-//    @PutMapping("/update")
-//    public ResponseEntity<?> updateOrderTable(
-//            @RequestBody List<OrderTableUpdateReqDTO> reqDTOs
-//    ) {
-//        orderTableStatusService.updateOrderTable(reqDTOs);
-//
-//        return ApiResponse.ok(null, "주문 수정 완료");
-//    }
+    // 주문 테이블 주문 수정
+    @PutMapping("/update")
+    public ResponseEntity<?> updateOrderTable(
+            @RequestBody List<OrderTableUpdateReqDTO> reqDTOs
+    ) {
+        orderTableStatusService.updateOrderTable(reqDTOs);
+
+        return ApiResponse.ok(null, "주문 수정 완료");
+    }
 
 
 }

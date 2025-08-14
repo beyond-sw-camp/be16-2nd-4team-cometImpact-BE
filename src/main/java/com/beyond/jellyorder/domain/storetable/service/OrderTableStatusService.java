@@ -1,11 +1,11 @@
 package com.beyond.jellyorder.domain.storetable.service;
 
 import com.beyond.jellyorder.domain.menu.domain.Menu;
+import com.beyond.jellyorder.domain.menu.domain.MenuStatus;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
-import com.beyond.jellyorder.domain.order.entity.OrderMenu;
-import com.beyond.jellyorder.domain.order.entity.OrderStatus;
-import com.beyond.jellyorder.domain.order.entity.TotalOrder;
-import com.beyond.jellyorder.domain.order.entity.UnitOrder;
+import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
+import com.beyond.jellyorder.domain.option.subOption.repository.SubOptionRepository;
+import com.beyond.jellyorder.domain.order.entity.*;
 import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.order.repository.UnitOrderRepository;
@@ -35,6 +35,7 @@ public class OrderTableStatusService {
     private final UnitOrderRepository unitOrderRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final MenuRepository menuRepository;
+    private final SubOptionRepository subOptionRepository;
 
     /**
      * 추후 N+1을 해결하는 fetch join, 프로젝션 도입 예정
@@ -110,107 +111,114 @@ public class OrderTableStatusService {
                 ).toList();
     }
 
-//    /**
-//     * 필수 로직 변환 작업
-//     * 추후 redis 재고 도입으로 인한 리팩토링 필요함.
-//     */
-//    @Transactional
-//    public void updateOrderTable(List<OrderTableUpdateReqDTO> dtoList) {
-//        for (OrderTableUpdateReqDTO dto : dtoList) {
-//            UnitOrder unitOrder = unitOrderRepository.findById(dto.getUnitOrderId())
-//                    .orElseThrow(() -> new EntityNotFoundException("해당 단건 주문이 없습니다."));
-//
-//            if (!unitOrder.getStatus().equals(OrderStatus.COMPLETE)) {
-//                throw new IllegalArgumentException("주문 완료되지 않은 단건 주문입니다.");
-//            }
-//
-//            // 1) 현재 라인(+옵션) 로드
-//            List<OrderMenu> currentRows = orderMenuRepository.findAllByUnitOrderIdWithOptions(unitOrder.getId());
-//
-//            // 2) 재고/오늘판매량 '복구' 후 기존 라인 삭제 (하드 딜리트)
-//            for (OrderMenu row : currentRows) {
-//                int qty = row.getQuantity();
-//                Menu menu = row.getMenu();
-//                menu.increaseSalesLimit((long) qty);
-//                menu.decreaseSalesToday(qty);
-//            }
-//            // 자식 먼저 삭제(스키마/연관관계에 따라 cascade면 생략 가능)
-//            List<OrderMenuOption> currentOptions = currentRows.stream()
-//                    .filter(r -> r.getOrderMenuOptions() != null)
-//                    .flatMap(r -> r.getOrderMenuOptions().stream())
-//                    .toList();
-//            if (!currentOptions.isEmpty()) {
-//                orderMenuOptionRepository.deleteAllInBatch(currentOptions);
-//            }
-//            if (!currentRows.isEmpty()) {
-//                orderMenuRepository.deleteAllInBatch(currentRows);
-//            }
-//
-//            // 3) 요청 본문대로 신규 라인 생성
-//            if (dto.getMenuDetailList() == null) continue; // 빈 주문으로 교체하는 경우
-//
-//            List<OrderMenu> created = new ArrayList<>();
-//
-//            for (MenuDetail md : dto.getMenuDetailList()) {
-//                if (md.getQuantity() == null || md.getQuantity() <= 0) {
-//                    throw new IllegalArgumentException("메뉴 수량은 1 이상이어야 합니다.");
-//                }
-//
-//                Menu menu = menuRepository.findById(md.getMenuId())
-//                        .orElseThrow(() -> new IllegalArgumentException("메뉴를 찾을 수 없습니다."));
-//
-//                // 재고 체크
-//                int addQty = md.getQuantity();
-//                if (menu.getSalesLimit() < addQty) {
-//                    throw new IllegalArgumentException("해당 품목의 재고가 부족합니다.");
-//                }
-//
-//                // order_menu 생성
-//                OrderMenu newRow = OrderMenu.builder()
-//                        .unitOrder(unitOrder)
-//                        .menu(menu)
-//                        .quantity(addQty)
-//                        .build();
-//                orderMenuRepository.save(newRow);
-//
-//                // 옵션이 여러 번 동일 id로 들어오면 합쳐서 저장(멀티셋)
-//                if (md.getOptionDetailList() != null && !md.getOptionDetailList().isEmpty()) {
-//                    Map<UUID, Integer> optionAgg = new HashMap<>();
-//                    for (MenuOptionDetail opt : md.getOptionDetailList()) {
-//                        optionAgg.merge(opt.getMenuOptionId(), 1, Integer::sum);
-//                    }
-//
-//                    for (Map.Entry<UUID, Integer> e : optionAgg.entrySet()) {
-//                        OptionItem item = optionItemRepository.findById(e.getKey())
-//                                .orElseThrow(() -> new IllegalArgumentException("옵션 아이템을 찾을 수 없습니다."));
-//
-//                        OrderMenuOption omo = OrderMenuOption.builder()
-//                                .orderMenu(newRow)
-//                                .optionItem(item)
-//                                .quantity(e.getValue())
-//                                // 스냅샷 컬럼을 쓰는 경우에만
-//                                .optionNameSnapshot(item.getName())
-//                                .priceDeltaSnapshot(item.getPriceDelta())
-//                                .build();
-//                        orderMenuOptionRepository.save(omo);
-//                    }
-//                }
-//
-//                // 재고/오늘판매량 반영
-//                menu.decreaseSalesLimit((long) addQty);
-//                menu.increaseSalesToday(addQty);
-//
-//                created.add(newRow);
-//            }
-//
-//            // 4) unitOrder에 신규 라인 갈아끼우기 (양방향 컬렉션 유지 시)
-//            if (unitOrder.getOrderMenus() != null) {
-//                unitOrder.getOrderMenus().clear();
-//                unitOrder.getOrderMenus().addAll(created);
-//            }
-//            // 단방향이거나 cascade 설정이면 위 블록은 생략 가능
-//        }
-//    }
+    /**
+     * 필수 로직 변환 작업
+     * 추후 redis 재고 도입으로 인한 리팩토링 필요함.
+     */
+    @Transactional
+    public void updateOrderTable(List<OrderTableUpdateReqDTO> dtoList) {
+//        Integer deleteCount = 0;
+//        Integer addCount = 0;
+
+        for (OrderTableUpdateReqDTO dto : dtoList) {
+            UnitOrder unitOrder = unitOrderRepository.findById(dto.getUnitOrderId())
+                    .orElseThrow(() -> new EntityNotFoundException("해당 단건 주문이 없습니다."));
+            if (!unitOrder.getStatus().equals(OrderStatus.COMPLETE)) {
+                throw new IllegalArgumentException("주문 완료되지 않은 단건 주문입니다.");
+            }
+
+//            deleteCount += unitOrder.getTotalCount();
+
+            // 1) 기존 주문메뉴(+옵션) 가져오기
+            List<OrderMenu> currentOrderMenus = orderMenuRepository.findAllByUnitOrderId(unitOrder.getId());
+
+            // 2-1) 재고/오늘판매량 '복구'
+            for (OrderMenu om : currentOrderMenus) {
+                int qty = om.getQuantity();
+                Menu menu = om.getMenu();
+                // 추후 redis도입으로 인한 동시성 이슈 해결
+                menu.decreaseSalesToday(qty);
+            }
+
+            // 2-2) orderMenuOption(자식)삭제, orderMenu(부모)삭제
+            if (!currentOrderMenus.isEmpty()) {
+                for (OrderMenu om : currentOrderMenus) {
+                    om.getOrderMenuOptionList().clear(); // orphanRemoval = true라면 자식 먼저 DELETE
+                }
+                orderMenuRepository.deleteAll(currentOrderMenus); // 부모 삭제
+            }
+
+            // 추가없이 전체 삭제 시 상태값 'CANCEL' 로 변경.
+            if (dto.getMenuDetailList() == null || dto.getMenuDetailList().isEmpty()) {
+                // 값들이 null값이면 취소로 변경
+                unitOrder.updateOrderStatus(OrderStatus.CANCEL);
+                continue;
+            }
+
+            // 3) 요청 dto 대로 신규 주문 생성
+            List<OrderMenu> newOrderMenuList = new ArrayList<>();
+            // 각 menu별 주문 생성
+            for (MenuDetail md : dto.getMenuDetailList()) {
+                if (md.getQuantity() == null || md.getQuantity() <= 0) {
+                    throw new IllegalArgumentException("메뉴 수량은 1 이상이어야 합니다.");
+                }
+
+                Menu menu = menuRepository.findById(md.getMenuId())
+                        .orElseThrow(() -> new EntityNotFoundException("메뉴를 찾을 수 없습니다."));
+
+                //==재고 체크==// - 추후 redis도입으로 인한 동시성 이슈 해결
+                int addQty = md.getQuantity();
+//                addCount += addQty;
+
+                // 1. 품절 여부 확인
+                if (!menu.getStockStatus().equals(MenuStatus.ON_SALE)) {
+                    throw new IllegalArgumentException("품절 처리된 메뉴를 주문하셨습니다.");
+                }
+
+                // 2. 주문 수량 제한 여부 확인
+                if (menu.getSalesLimit().equals(-1) || (menu.getSalesLimit() - menu.getSalesToday()) >= addQty) {
+                    menu.increaseSalesToday(addQty);
+                } else {
+                    throw new IllegalArgumentException(menu.getName() + "의 재고가 부족합니다.");
+                }
+
+                // order_menu 생성
+                OrderMenu newOrderMenu = OrderMenu.builder()
+                        .unitOrder(unitOrder)
+                        .menu(menu)
+                        .quantity(addQty)
+                        .build();
+                orderMenuRepository.save(newOrderMenu);
+
+                // 메뉴에 대한 옵션 값 저장
+                // 옵션이 여러 번 동일 id로 들어와도 "그 수만큼" 개별 행으로 저장
+                if (md.getOptionDetailList() != null && !md.getOptionDetailList().isEmpty()) {
+                    for (MenuOptionDetail opt : md.getOptionDetailList()) {
+                        SubOption sub = subOptionRepository.findById(opt.getMenuOptionId())
+                                .orElseThrow(() -> new EntityNotFoundException("옵션(서브옵션)을 찾을 수 없습니다."));
+
+                        OrderMenuOption omo = OrderMenuOption.builder()
+                                .orderMenu(newOrderMenu)             // 부모 연결
+                                .subOption(sub)
+                                .optionName(sub.getName())     // 스냅샷 저장
+                                .optionPrice(sub.getPrice())   // 스냅샷 저장
+                                .build();
+
+                        // cascade로 함께 저장
+                        newOrderMenu.getOrderMenuOptionList().add(omo);
+                    }
+                }
+
+                newOrderMenuList.add(newOrderMenu);
+            }
+
+            // 4) unitOrder에 신규 라인 갈아끼우기
+            if (unitOrder.getOrderMenus() != null) {
+                unitOrder.getOrderMenus().clear();
+                unitOrder.getOrderMenus().addAll(newOrderMenuList);
+            }
+        }
+    }
 
 
 
