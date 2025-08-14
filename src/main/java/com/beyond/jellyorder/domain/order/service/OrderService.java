@@ -89,7 +89,7 @@ public class OrderService {
         }
 
         /* 집계 반영 */
-        unitOrder.setUnitCount(unitCount);
+        unitOrder.updateUnitCount(unitCount);
         totalOrder.addUnitTotal(unitPrice, unitCount);
 
         return UnitOrderResDto.builder()

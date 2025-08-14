@@ -117,8 +117,6 @@ public class OrderTableStatusService {
      */
     @Transactional
     public void updateOrderTable(List<OrderTableUpdateReqDTO> dtoList) {
-//        Integer deleteCount = 0;
-//        Integer addCount = 0;
 
         for (OrderTableUpdateReqDTO dto : dtoList) {
             UnitOrder unitOrder = unitOrderRepository.findById(dto.getUnitOrderId())
@@ -127,10 +125,13 @@ public class OrderTableStatusService {
                 throw new IllegalArgumentException("주문 완료되지 않은 단건 주문입니다.");
             }
 
-//            deleteCount += unitOrder.getTotalCount();
-
             // 1) 기존 주문메뉴(+옵션) 가져오기
             List<OrderMenu> currentOrderMenus = orderMenuRepository.findAllByUnitOrderId(unitOrder.getId());
+
+            // 기존 totalCount 합계 계산
+            Integer oldTotalCount = currentOrderMenus.stream()
+                    .mapToInt(OrderMenu::getQuantity)
+                    .sum();
 
             // 2-1) 재고/오늘판매량 '복구'
             for (OrderMenu om : currentOrderMenus) {
@@ -152,6 +153,7 @@ public class OrderTableStatusService {
             if (dto.getMenuDetailList() == null || dto.getMenuDetailList().isEmpty()) {
                 // 값들이 null값이면 취소로 변경
                 unitOrder.updateOrderStatus(OrderStatus.CANCEL);
+                unitOrder.getTotalOrder().updateCount(-oldTotalCount);
                 continue;
             }
 
@@ -168,7 +170,6 @@ public class OrderTableStatusService {
 
                 //==재고 체크==// - 추후 redis도입으로 인한 동시성 이슈 해결
                 int addQty = md.getQuantity();
-//                addCount += addQty;
 
                 // 1. 품절 여부 확인
                 if (!menu.getStockStatus().equals(MenuStatus.ON_SALE)) {
@@ -211,6 +212,13 @@ public class OrderTableStatusService {
 
                 newOrderMenuList.add(newOrderMenu);
             }
+
+            int newTotalCount = newOrderMenuList.stream()
+                    .mapToInt(OrderMenu::getQuantity)
+                    .sum();
+            int diff = newTotalCount - oldTotalCount;
+            unitOrder.updateUnitCount(newTotalCount);
+            unitOrder.getTotalOrder().updateCount(diff);
 
             // 4) unitOrder에 신규 라인 갈아끼우기
             if (unitOrder.getOrderMenus() != null) {
