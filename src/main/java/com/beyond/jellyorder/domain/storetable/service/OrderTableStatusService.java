@@ -133,7 +133,7 @@ public class OrderTableStatusService {
             }
 
             // 1) 기존 주문메뉴(+옵션) 가져오기
-            List<OrderMenu> currentOrderMenus = orderMenuRepository.findAllByUnitOrderId(unitOrder.getId());
+            List<OrderMenu> currentOrderMenus = orderMenuRepository.findAllByUnitOrderIdWithOptions(unitOrder.getId());
 
             // 기존 totalCount 합계 계산
             Integer oldTotalCount = currentOrderMenus.stream()
