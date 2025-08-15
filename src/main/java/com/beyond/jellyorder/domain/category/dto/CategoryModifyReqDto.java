@@ -12,9 +12,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class CategoryModifyReqDto {
-    @NotBlank
-    private String storeId;
-
     @NotNull
     private UUID categoryId;
 

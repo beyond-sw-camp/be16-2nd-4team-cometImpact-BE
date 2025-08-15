@@ -12,10 +12,6 @@ import java.util.UUID;
 @AllArgsConstructor
 @Builder
 public class IngredientModifyReqDto {
-
-    @NotNull(message = "storeId는 필수입니다.")
-    private String storeId;
-
     @NotNull(message = "ingredientId는 필수입니다.")
     private UUID ingredientId;
 

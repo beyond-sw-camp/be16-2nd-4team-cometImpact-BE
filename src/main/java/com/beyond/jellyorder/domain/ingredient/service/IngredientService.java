@@ -1,9 +1,11 @@
 package com.beyond.jellyorder.domain.ingredient.service;
 
+import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.ingredient.domain.Ingredient;
 import com.beyond.jellyorder.domain.ingredient.dto.*;
 import com.beyond.jellyorder.domain.ingredient.repository.IngredientRepository;
+import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -27,6 +29,7 @@ public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
     private final StoreRepository storeRepository;
+    private final StoreJwtClaimUtil storeJwtClaimUtil;
 
     /**
      * 새로운 식자재를 생성한다.
@@ -38,18 +41,17 @@ public class IngredientService {
      * @throws DuplicateResourceException 동일 매장 내에 이름이 중복되는 경우
      */
     public IngredientCreateResDto create(IngredientCreateReqDto reqDto) {
-    /*
-        TODO: [2025-07-31 기준] storeId에 대한 실제 매장 UUID 유효성 검증 로직 추가 예정
-    */
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        Store store = storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        if (ingredientRepository.existsByStoreIdAndName(reqDto.getStoreId(), reqDto.getName())) {
+        if (ingredientRepository.existsByStoreIdAndName(UUID.fromString(storeId), reqDto.getName())) {
             throw new DuplicateResourceException("이미 존재하는 식자재입니다: " + reqDto.getName());
         }
 
         try {
             // 식자재 엔티티 생성
             Ingredient ingredient = Ingredient.builder()
-                    .storeId(reqDto.getStoreId())
+                    .store(store)
                     .name(reqDto.getName())
                     .status(reqDto.getStatus())
                     .build();
@@ -71,15 +73,12 @@ public class IngredientService {
     }
 
     @Transactional(readOnly = true)
-    public IngredientListResDto getIngredientsByStoreId(String storeId) {
-        // 1) storeId 유효성 검증 TODO: 추후 활성화 예정
-        //        boolean storeExists = storeRepository.existsById(UUID.fromString(storeId));
-        //        if (!storeExists) {
-        //            throw new EntityNotFoundException("존재하지 않는 storeId입니다: " + storeId);
-        //        }
+    public IngredientListResDto getIngredientsByStoreId() {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
         // 2) 원재료 조회
-        List<Ingredient> ingredients = ingredientRepository.findAllByStoreId(storeId);
+        List<Ingredient> ingredients = ingredientRepository.findAllByStoreId(UUID.fromString(storeId));
 
         // 3) DTO 변환 (재료가 없으면 빈 리스트)
         List<IngredientResDto> dtos = ingredients.stream()
@@ -96,17 +95,20 @@ public class IngredientService {
                 .build();
     }
 
-    public IngredientDeleteResDto delete(IngredientDeleteReqDto req) {
+    public IngredientDeleteResDto delete(String ingredientId) {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
+
         // 1) 대상 조회
-        Ingredient ingredient = ingredientRepository.findById(req.getIngredientId())
+        Ingredient ingredient = ingredientRepository.findById(UUID.fromString(ingredientId))
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "식자재를 찾을 수 없습니다. id=" + req.getIngredientId()));
+                        "식자재를 찾을 수 없습니다. id=" + ingredientId));
 
         // 2) 소속(storeId) 검증
-        if (!ingredient.getStoreId().equals(req.getStoreId())) {
+        if (!ingredient.getStore().getId().equals(UUID.fromString(storeId))) {
             throw new EntityNotFoundException(
-                    "요청한 매장에 속하지 않는 식자재입니다. id=" + req.getIngredientId()
-                            + ", storeId=" + req.getStoreId());
+                    "요청한 매장에 속하지 않는 식자재입니다. id=" + ingredientId
+                            + ", storeId=" + storeId);
         }
 
         // 3) 영향받는 메뉴 사전 조회 (네이티브: BIN_TO_UUID → String)
@@ -129,14 +131,16 @@ public class IngredientService {
                 .build();
     }
 
-    public IngredientModifyResDto modify(String storeId, UUID ingredientId, IngredientModifyReqDto req) {
+    public IngredientModifyResDto modify(IngredientModifyReqDto req) {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
         if (req.getName() == null && req.getStatus() == null) {
             throw new IllegalArgumentException("수정할 필드가 없습니다. name 또는 status 중 최소 한 개는 필요합니다.");
         }
 
-        Ingredient ingredient = ingredientRepository.findByIdAndStoreId(ingredientId, storeId)
-                .orElseThrow(() -> new EntityNotFoundException("식자재를 찾을 수 없습니다. id=" + ingredientId + ", storeId=" + storeId));
+        Ingredient ingredient = ingredientRepository.findByIdAndStoreId(req.getIngredientId(), UUID.fromString(storeId))
+                .orElseThrow(() -> new EntityNotFoundException("식자재를 찾을 수 없습니다. id=" + req.getIngredientId() + ", storeId=" + storeId));
 
         // 이름 수정
         if (req.getName() != null) {
@@ -146,7 +150,7 @@ public class IngredientService {
             }
             // 동일 매장 내 중복 방지
             boolean duplicated = ingredientRepository
-                    .existsByStoreIdAndNameAndIdNot(storeId, newName, ingredientId);
+                    .existsByStoreIdAndNameAndIdNot(UUID.fromString(storeId), newName, req.getIngredientId());
             if (duplicated) {
                 throw new IllegalArgumentException("동일 매장 내 이미 존재하는 식자재명입니다: " + newName);
             }
@@ -162,7 +166,6 @@ public class IngredientService {
 
         return IngredientModifyResDto.builder()
                 .id(saved.getId())
-                .storeId(saved.getStoreId())
                 .name(saved.getName())
                 .status(saved.getStatus())
                 .createdAt(saved.getCreatedAt())

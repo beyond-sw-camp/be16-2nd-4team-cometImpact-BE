@@ -13,4 +13,5 @@ public interface StoreRepository extends JpaRepository<Store, UUID> {
     Optional<Store> findByLoginId(String loginId);
     Optional<Store> findBybusinessNumber(String businessNumber);
     Optional<Store> findByOwnerEmail(String email);
+    Optional<Store> findById(UUID id);
 }

@@ -1,12 +1,13 @@
 package com.beyond.jellyorder.domain.category.service;
 
+import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.domain.category.dto.*;
 import com.beyond.jellyorder.domain.category.repository.CategoryRepository;
 import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
-import jakarta.persistence.EntityManager;
+import com.beyond.jellyorder.domain.store.entity.Store;
+import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
-import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -24,10 +25,10 @@ import java.util.stream.Collectors;
 @Transactional
 @RequiredArgsConstructor
 public class CategoryService {
-    @PersistenceContext
-    private EntityManager entityManager;
     private final CategoryRepository categoryRepository;
     private final MenuRepository menuRepository;
+    private final StoreRepository storeRepository;
+    private final StoreJwtClaimUtil storeJwtClaimUtil;
 
     /**
      * 새로운 카테고리를 생성한다.
@@ -39,14 +40,15 @@ public class CategoryService {
      */
 
     public CategoryCreateResDto create(CategoryCreateReqDto reqDto) {
-        // TODO [2025-07-31]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        Store store = storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        if (categoryRepository.existsByStoreIdAndName(reqDto.getStoreId(), reqDto.getName())) {
+        if (categoryRepository.existsByStoreIdAndName(UUID.fromString(storeId), reqDto.getName())) {
             throw new DuplicateResourceException("이미 존재하는 카테고리입니다: " + reqDto.getName());
         }
 
         Category saved = categoryRepository.save(Category.builder()
-                .storeId(reqDto.getStoreId())
+                .store(store)
                 .name(reqDto.getName())
                 .description(reqDto.getDescription())
                 .build());
@@ -54,14 +56,11 @@ public class CategoryService {
         return new CategoryCreateResDto(saved.getId(), saved.getName(), saved.getDescription());
     }
 
-    public List<GetCategoryResDto> getCategoriesByStore(String storeId) {
-        // TODO [2025-08-02]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
+    public List<GetCategoryResDto> getCategoriesByStore() {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        if (storeId == null || storeId.trim().isEmpty()) {
-            throw new IllegalArgumentException("storeId는 null이거나 공백일 수 없습니다.");
-        }
-
-        List<Category> categoryList = categoryRepository.findAllByStoreId(storeId);
+        List<Category> categoryList = categoryRepository.findAllByStoreId(UUID.fromString(storeId));
 
         if (categoryList.isEmpty()) {
             throw new EntityNotFoundException("해당 storeId에 대한 카테고리가 존재하지 않습니다: " + storeId);
@@ -73,8 +72,10 @@ public class CategoryService {
     }
 
     public CategoryModifyResDto modifyCategory(CategoryModifyReqDto reqDto) {
-        // 이후 Authentication 객체 내에서 storeId 검증 추가 예정
-        Category category = categoryRepository.findByIdAndStoreId(reqDto.getCategoryId(), reqDto.getStoreId())
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
+
+        Category category = categoryRepository.findByIdAndStoreId(reqDto.getCategoryId(), UUID.fromString(storeId))
                 .orElseThrow(() -> new EntityNotFoundException("해당 카테고리를 찾을 수 없습니다."));
 
         if(category.getDescription().equals(reqDto.getNewDescription()) && category.getName().equals(reqDto.getNewName())) {
@@ -82,7 +83,7 @@ public class CategoryService {
         }
 
         if (!category.getName().equals(reqDto.getNewName())) {
-            if (categoryRepository.existsByStoreIdAndName(reqDto.getStoreId(), reqDto.getNewName())) {
+            if (categoryRepository.existsByStoreIdAndName(UUID.fromString(storeId), reqDto.getNewName())) {
                 throw new DuplicateResourceException("이미 존재하는 카테고리명입니다: " + reqDto.getNewName());
             }
             category.setName(reqDto.getNewName());
@@ -98,18 +99,22 @@ public class CategoryService {
                 .build();
     }
 
-    public void deleteCategory(String storeId, String categoryName) {
-        // TODO [2025-08-02]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
+    public void deleteCategory(String categoryName) {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        validateNoMenusExist(storeId, categoryName);
-        int deleted = categoryRepository.deleteByStoreIdAndName(storeId, categoryName);
+        validateNoMenusExist(categoryName);
+        int deleted = categoryRepository.deleteByStore_IdAndName(UUID.fromString(storeId), categoryName);
         if (deleted == 0) {
             throw new EntityNotFoundException("삭제 대상 카테고리를 찾을 수 없습니다.");
         }
     }
 
-    private void validateNoMenusExist(String storeId, String categoryName) {
-        if (menuRepository.existsByCategory_StoreIdAndCategory_Name(storeId, categoryName)) {
+    private void validateNoMenusExist(String categoryName) {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
+
+        if (menuRepository.existsByCategory_StoreIdAndCategory_Name(UUID.fromString(storeId), categoryName)) {
             throw new IllegalArgumentException("해당 카테고리에 소속된 메뉴가 존재하여 삭제할 수 없습니다.");
         }
     }

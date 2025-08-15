@@ -14,10 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class MenuCreateReqDto {
-
-    @NotNull(message = "매장 ID(storeId)는 필수입니다.")
-    private String storeId;
-
     @NotNull(message = "카테고리명은 필수입니다.")
     private String categoryName;
 
