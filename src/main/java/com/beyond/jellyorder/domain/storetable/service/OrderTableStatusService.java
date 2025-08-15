@@ -94,6 +94,7 @@ public class OrderTableStatusService {
                 .toList();
     }
 
+    // 주문 테이블 상세 조회
     @Transactional(readOnly = true)
     public List<OrderTableDetailResDTO> getTableOrderDetail(UUID totalOrderId) {
         TotalOrder totalOrder = totalOrderRepository.findById(totalOrderId)
@@ -101,7 +102,10 @@ public class OrderTableStatusService {
 
         return totalOrder.getUnitOrderList().stream()
                 .map(unitOrder -> {
-                    List<OrderMenuDetailPrice> orderMenuList = unitOrder.getOrderMenus().stream()
+                    List<OrderMenu> orderMenus =
+                            orderMenuRepository.findAllByUnitOrderIdWithOptions(unitOrder.getId());
+
+                    List<OrderMenuDetailPrice> orderMenuList = orderMenus.stream()
                             .map(orderMenu -> {
                                 List<OrderMenuOptionDetail> menuOptionList = orderMenu.getOrderMenuOptionList().stream()
                                         .map(OrderMenuOptionDetail::from)
