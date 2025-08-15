@@ -100,15 +100,18 @@ public class OrderTableStatusService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 전체 주문이 없습니다."));
 
         return totalOrder.getUnitOrderList().stream()
-                .map(
-                        unitOrder -> {
-                            // OrderMenuDetailPrice 생성 로직
-                            List<OrderMenuDetailPrice> orderMenuList = unitOrder.getOrderMenus().stream()
-                                    .map(OrderMenuDetailPrice::from).toList();
+                .map(unitOrder -> {
+                    List<OrderMenuDetailPrice> orderMenuList = unitOrder.getOrderMenus().stream()
+                            .map(orderMenu -> {
+                                List<OrderMenuOptionDetail> menuOptionList = orderMenu.getOrderMenuOptionList().stream()
+                                        .map(OrderMenuOptionDetail::from)
+                                        .toList();
 
-                            return OrderTableDetailResDTO.from(unitOrder, orderMenuList);
-                        }
-                ).toList();
+                                return OrderMenuDetailPrice.from(orderMenu, menuOptionList);
+                            }).toList();
+
+                    return OrderTableDetailResDTO.from(unitOrder, orderMenuList);
+                }).toList();
     }
 
     /**
