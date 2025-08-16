@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,6 +55,7 @@ public class StoreService {
                 .ownerEmail(dto.getOwnerEmail())
                 .phoneNumber(dto.getPhoneNumber())
                 .password(passwordEncoder.encode(dto.getPassword()))
+                .businessOpenedAt(LocalDateTime.now())
                 .build();
 
         storeRepository.save(store);
