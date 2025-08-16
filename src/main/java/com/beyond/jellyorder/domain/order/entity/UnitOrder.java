@@ -54,7 +54,7 @@ public class UnitOrder extends BaseIdEntity {
 
     // 주문 상태의 따라 시간 값 추출 메서드
     public LocalTime getRelevantTime() {
-        return switch (status) {
+        return switch (this.status) {
             case ACCEPT   -> LocalTime.from(getAcceptedAt());
             case COMPLETE -> LocalTime.from(getCompletedAt());
             case CANCEL   -> LocalTime.from(getCancelledAt());
