@@ -94,21 +94,28 @@ public class OrderTableStatusService {
                 .toList();
     }
 
+    // 주문 테이블 상세 조회
     @Transactional(readOnly = true)
     public List<OrderTableDetailResDTO> getTableOrderDetail(UUID totalOrderId) {
         TotalOrder totalOrder = totalOrderRepository.findById(totalOrderId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 전체 주문이 없습니다."));
 
         return totalOrder.getUnitOrderList().stream()
-                .map(
-                        unitOrder -> {
-                            // OrderMenuDetailPrice 생성 로직
-                            List<OrderMenuDetailPrice> orderMenuList = unitOrder.getOrderMenus().stream()
-                                    .map(OrderMenuDetailPrice::from).toList();
+                .map(unitOrder -> {
+                    List<OrderMenu> orderMenus =
+                            orderMenuRepository.findAllByUnitOrderIdWithOptions(unitOrder.getId());
 
-                            return OrderTableDetailResDTO.from(unitOrder, orderMenuList);
-                        }
-                ).toList();
+                    List<OrderMenuDetailPrice> orderMenuList = orderMenus.stream()
+                            .map(orderMenu -> {
+                                List<OrderMenuOptionDetail> menuOptionList = orderMenu.getOrderMenuOptionList().stream()
+                                        .map(OrderMenuOptionDetail::from)
+                                        .toList();
+
+                                return OrderMenuDetailPrice.from(orderMenu, menuOptionList);
+                            }).toList();
+
+                    return OrderTableDetailResDTO.from(unitOrder, orderMenuList);
+                }).toList();
     }
 
     /**
@@ -126,7 +133,7 @@ public class OrderTableStatusService {
             }
 
             // 1) 기존 주문메뉴(+옵션) 가져오기
-            List<OrderMenu> currentOrderMenus = orderMenuRepository.findAllByUnitOrderId(unitOrder.getId());
+            List<OrderMenu> currentOrderMenus = orderMenuRepository.findAllByUnitOrderIdWithOptions(unitOrder.getId());
 
             // 기존 totalCount 합계 계산
             Integer oldTotalCount = currentOrderMenus.stream()
