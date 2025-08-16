@@ -29,7 +29,7 @@ public class OrderStatusController {
     @GetMapping("/{orderStatus}")
     public ResponseEntity<?> getOrderListInOrderStatus(
             @PathVariable OrderStatus orderStatus,
-            @PageableDefault(size = 20, sort = "localtime", direction = Sort.Direction.ASC)Pageable pageable
+            @PageableDefault(size = 20, sort = "acceptedAt", direction = Sort.Direction.ASC)Pageable pageable
             ) {
         Page<OrderStatusResDTO> resDTOs = orderStatusService.getOrderListInOrderStatus(orderStatus, pageable);
         return ApiResponse.ok(resDTOs);
