@@ -2,6 +2,8 @@ package com.beyond.jellyorder.domain.order.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusResDTO;
+import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusUpdateReqDTO;
+import com.beyond.jellyorder.domain.order.dto.orderStatus.UnitOrderStatusResDTO;
 import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.order.service.OrderStatusService;
 import lombok.RequiredArgsConstructor;
@@ -11,12 +13,10 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.UUID;
 
 @RestController
 @RequiredArgsConstructor
@@ -33,6 +33,15 @@ public class OrderStatusController {
             ) {
         Page<OrderStatusResDTO> resDTOs = orderStatusService.getOrderListInOrderStatus(orderStatus, pageable);
         return ApiResponse.ok(resDTOs);
+    }
+
+    @PatchMapping("/{unitOrderId}/status")
+    public ResponseEntity<?> updateUnitOrderStatus(
+            @PathVariable UUID unitOrderId,
+            @RequestBody OrderStatusUpdateReqDTO reqDTO
+            ) {
+        UnitOrderStatusResDTO resDTO = orderStatusService.updateUnitOrderStatus(unitOrderId, reqDTO);
+        return ApiResponse.ok(resDTO);
     }
 
 
