@@ -112,4 +112,17 @@ public class CommonExceptionHandler {
                         .status_message("잘못된 요청 형식입니다.")
                         .build());
     }
+
+    @ExceptionHandler(IllegalStateException.class)
+    public ResponseEntity<?> illegalStateException(IllegalStateException e) {
+        log.error("[IllegalStateException] code = {}, message = {}", HttpStatus.BAD_REQUEST, e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(CommonErrorDTO.builder()
+                        .status_message(e.getMessage())
+                        .status_code(HttpStatus.BAD_REQUEST.value())
+                        .build()
+
+                );
+    }
+
 }
