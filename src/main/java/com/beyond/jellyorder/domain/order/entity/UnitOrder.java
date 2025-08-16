@@ -61,8 +61,17 @@ public class UnitOrder extends BaseIdEntity {
         };
     }
 
+    // 주문 상태 수정 메서드
+    public void updateOrderStatus(OrderStatus status) {
+        this.status = status;
+        switch (status) {
+            case COMPLETE -> this.completedAt = LocalDateTime.now();
+            case CANCEL -> this.cancelledAt = LocalDateTime.now();
+        }
+    }
+
     // 단위주문 총 수량
-    public void setUnitCount(int totalCount) {
+    public void updateUnitCount(int totalCount) {
         this.totalCount = totalCount;
     }
 

@@ -54,4 +54,9 @@ public class TotalOrder extends BaseIdEntity {
         this.totalPrice += price;
         this.count += count;
     }
+
+    // 총 주문 개수 변경 메서드
+    public void updateCount(Integer updateCount) {
+        this.count += updateCount;
+    }
 }
