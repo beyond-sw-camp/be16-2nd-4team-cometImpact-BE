@@ -13,11 +13,14 @@ import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.order.repository.UnitOrderRepository;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
+import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+
+import java.util.Optional;
 
 @Service
 @Transactional
@@ -56,15 +59,26 @@ public class UnitOrderService {
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장의 테이블이 없습니다."));
 
         /* 종료되지 않은 주문 확보 */
-        TotalOrder totalOrder = totalOrderRepository.findTopByStoreTableOrderByOrderedAtDesc(storeTable)
-                .filter(to -> to.getEndedAt() == null)  // 종료되지 않은 주문만 재사용
-                .orElseGet(() -> totalOrderRepository.save(
-                        TotalOrder.builder()
-                                .storeTable(storeTable)
-                                .totalPrice(0)  // 새로 시작하는 전체 주문의 초기값
-                                .count(0)       // 새로 시작하는 전체 주문의 초기값
-                                .build()
-                ));
+        boolean createdNewOrder = false;
+
+        Optional<TotalOrder> latestOrder =
+                totalOrderRepository.findTopByStoreTableOrderByOrderedAtDesc(storeTable);
+
+        TotalOrder totalOrder;
+        if (latestOrder.isPresent() && latestOrder.get().getEndedAt() == null) {
+            // 미종료 주문 재사용
+            totalOrder = latestOrder.get();
+        } else {
+            // 신규 전체주문 생성
+            totalOrder = totalOrderRepository.save(
+                    TotalOrder.builder()
+                            .storeTable(storeTable)
+                            .totalPrice(0)
+                            .count(0)
+                            .build()
+            );
+            createdNewOrder = true;
+        }
 
         /* 단위주문 전송 시 합계/수량 */
         int unitPrice = 0;      // 단위주문의 합계 금액
@@ -120,6 +134,11 @@ public class UnitOrderService {
         /* 집계 반영 */
         unitOrder.updateUnitCount(unitCount);
         totalOrder.addUnitTotal(unitPrice, unitCount);
+
+        /* 해당 테이블 상태 변환 : 새 전체주문일 때 */
+        if (createdNewOrder && storeTable.getStatus() != TableStatus.EATING) {
+            storeTable.changeStatus(TableStatus.EATING);
+        }
 
         return UnitOrderResDto.builder()
                         .totalOrderId(totalOrder.getId())
