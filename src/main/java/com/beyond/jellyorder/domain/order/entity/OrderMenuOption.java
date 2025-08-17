@@ -29,4 +29,11 @@ public class OrderMenuOption extends BaseIdEntity {
     @Column(name = "option_price")
     private Integer optionPrice;
 
+    // 건의 필요
+    @Column(name = "option_quantity")
+    private Integer optionQuantity;
+
+    public void addOrderMenu(OrderMenu orderMenu) {
+        this.orderMenu = orderMenu;
+    }
 }
