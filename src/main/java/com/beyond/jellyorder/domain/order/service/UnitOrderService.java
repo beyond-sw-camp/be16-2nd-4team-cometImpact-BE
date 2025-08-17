@@ -2,13 +2,14 @@ package com.beyond.jellyorder.domain.order.service;
 
 import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
+import com.beyond.jellyorder.domain.option.dto.MainOptionReqDto;
+import com.beyond.jellyorder.domain.option.dto.SubOptionReqDto;
+import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
+import com.beyond.jellyorder.domain.option.subOption.repository.SubOptionRepository;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderCreateReqDto;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderMenuReqDto;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderResDto;
-import com.beyond.jellyorder.domain.order.entity.OrderMenu;
-import com.beyond.jellyorder.domain.order.entity.OrderStatus;
-import com.beyond.jellyorder.domain.order.entity.TotalOrder;
-import com.beyond.jellyorder.domain.order.entity.UnitOrder;
+import com.beyond.jellyorder.domain.order.entity.*;
 import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.order.repository.UnitOrderRepository;
@@ -20,7 +21,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.util.Optional;
+import java.util.*;
 
 @Service
 @Transactional
@@ -32,7 +33,7 @@ public class UnitOrderService {
     private final TotalOrderRepository totalOrderRepository;
     private final StoreTableRepository storeTableRepository;
     private final MenuRepository menuRepository;
-    // pub/sub 기능 위해 Redis 필요
+    private final SubOptionRepository subOptionRepository;
 
     /**
      * 단위주문 생성
@@ -84,7 +85,7 @@ public class UnitOrderService {
         int unitPrice = 0;      // 단위주문의 합계 금액
         int unitCount = 0;      // 단위주문의 총 수량
 
-        /* 단위주문 생성 & 저장 */
+        /* 단위주문 생성 */
         UnitOrder unitOrder = UnitOrder.builder()
                 .totalOrder(totalOrder)
                 .status(OrderStatus.ACCEPT) // 전송 직후 상태는 ACCEPT
@@ -92,7 +93,7 @@ public class UnitOrderService {
                 .build();
         unitOrderRepository.save(unitOrder);
 
-        /* 단위주문 생성 & 저장 */
+        /* 단위주문 저장 */
         for (UnitOrderMenuReqDto menuReqDto : dto.getMenus()) {
             Menu menu = menuRepository.findById(menuReqDto.getMenuId())
                     .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."));
@@ -118,17 +119,73 @@ public class UnitOrderService {
             }
 
             /* 단위주문 금액, 수량 계산 */
-            int menuPrice = menu.getPrice() * menuReqDto.getQuantity();
-            unitPrice += menuPrice;
-            unitCount += menuReqDto.getQuantity();
+            int menuPrice = menu.getPrice() * menuReqDto.getQuantity(); // 메뉴 가격
+            int optionsPriceTotal = 0;  // 메뉴의 옵션 총 가격
 
-
+            // OrderMenu 저장
             OrderMenu orderMenu = OrderMenu.builder()
                     .unitOrder(unitOrder)
                     .menu(menu)
                     .quantity(menuReqDto.getQuantity())
                     .build();
             orderMenuRepository.save(orderMenu);
+
+            // 옵션 모으기
+            Map<UUID, Integer> quantityBySubId = new LinkedHashMap<>();
+            Map<UUID, Integer> priceBySubId = new LinkedHashMap<>();
+
+            // 옵션 체크 (메인옵션, 서브옵션)
+            if (menuReqDto.getMainOptions() != null && !menuReqDto.getMainOptions().isEmpty()) {
+                for (MainOptionReqDto mainDto : menuReqDto.getMainOptions()) {
+                    if (mainDto.getSubOptions() == null || mainDto.getSubOptions().isEmpty()) {
+                        continue;
+                    }
+
+                    for (SubOptionReqDto subDto : mainDto.getSubOptions()) {
+                        UUID subId = UUID.fromString(subDto.getSubOptionId());
+                        quantityBySubId.merge(subId, subDto.getQuantity(), Integer::sum);
+                        priceBySubId.put(subId, subDto.getPrice());
+                    }
+                }
+
+                // DB에서 서브옵션 조회
+                List<SubOption> subOptions = subOptionRepository.findAllById(quantityBySubId.keySet());
+
+                // 서브옵션이 해당 메뉴의 메인옵션에 속해있는지 검증
+                for (SubOption so : subOptions) {
+                    if (so.getMainOption() == null || so.getMainOption().getMenu() == null ||
+                            !so.getMainOption().getMenu().getId().equals(menu.getId())) {
+                        throw new IllegalArgumentException("선택한 옵션이 해당 메뉴의 옵션이 아닙니다.");
+                    }
+
+                    // 옵션 합산값 저장
+                    int quantity = quantityBySubId.getOrDefault(so.getId(), 0);
+                    optionsPriceTotal += so.getPrice() * quantity;
+                }
+
+                // 옵션 저장
+                for (SubOption so : subOptions) {
+                    int quantity = quantityBySubId.getOrDefault(so.getId(), 0);
+
+                    if (quantity == 0) {
+                        continue;
+                    }
+
+                    OrderMenuOption orderMenuOption = OrderMenuOption.builder()
+                            .orderMenu(orderMenu)
+                            .subOption(so)
+                            .optionName(so.getName())
+                            .optionPrice(so.getPrice())
+                            .optionQuantity(quantity)
+                            .build();
+                    // cascade : 부모에 add
+                    orderMenu.getOrderMenuOptionList().add(orderMenuOption);
+                }
+            }
+
+            unitPrice += menuPrice + optionsPriceTotal;
+            unitCount += menuReqDto.getQuantity();
+
         }
 
         /* 집계 반영 */
