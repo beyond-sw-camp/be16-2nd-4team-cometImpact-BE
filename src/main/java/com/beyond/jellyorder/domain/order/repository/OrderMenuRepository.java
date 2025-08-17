@@ -33,6 +33,21 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, UUID> {
     @EntityGraph(attributePaths = {"menu", "unitOrder"})
     List<OrderMenu> findAllByUnitOrder_TotalOrder_Id(UUID totalOrderId);
 
-
+    // totalOrder 조회용
+    @Query("""
+      select distinct om
+      from OrderMenu om
+      join om.unitOrder uo
+      join uo.totalOrder to
+      left join fetch om.orderMenuOptionList omo
+      left join fetch omo.subOption so
+      left join fetch so.mainOption mo
+      left join fetch om.menu m
+      where to.id = :totalOrderId
+      order by om.id
+    """)
+    List<OrderMenu> findAllWithOptionsByTotalOrderId(
+            @org.springframework.data.repository.query.Param("totalOrderId") UUID totalOrderId
+    );
 
 }
