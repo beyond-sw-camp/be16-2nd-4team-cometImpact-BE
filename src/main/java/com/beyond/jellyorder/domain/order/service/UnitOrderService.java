@@ -104,7 +104,7 @@ public class UnitOrderService {
             }
 
             /* 단위주문 금액, 수량 계산 */
-            Integer menuPrice = menu.getPrice() * menuReqDto.getQuantity();
+            int menuPrice = menu.getPrice() * menuReqDto.getQuantity();
             unitPrice += menuPrice;
             unitCount += menuReqDto.getQuantity();
 
