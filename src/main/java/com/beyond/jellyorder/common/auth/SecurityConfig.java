@@ -45,7 +45,8 @@ public class SecurityConfig {
                         "/swagger-ui/**",   // swagger 추가
                         "/swagger-ui.html",  // swagger 추가
                         "/request/**",
-                        "/password/**"
+                        "/password/**",
+                        "/connect/**" // websocket 허용
                                  ).permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
