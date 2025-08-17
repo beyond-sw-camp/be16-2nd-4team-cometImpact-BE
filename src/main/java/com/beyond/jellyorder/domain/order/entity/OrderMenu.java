@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.order.entity;
 
 import com.beyond.jellyorder.common.BaseIdEntity;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
+import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import jakarta.persistence.*;
 import lombok.*;
 

@@ -45,7 +45,13 @@ public class SecurityConfig {
                         "/swagger-ui/**",   // swagger 추가
                         "/swagger-ui.html",  // swagger 추가
                         "/request/**",
-                        "/password/**"
+                        "/password/**",
+                        // 테스트용(삭제 필요)
+                        "/category/**",
+                        "/ingredient/**",
+                        "/menu/**",
+                        "/zone/**",
+                        "/orders/**"
                                  ).permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)

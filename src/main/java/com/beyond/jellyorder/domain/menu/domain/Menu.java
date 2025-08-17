@@ -17,6 +17,7 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class Menu extends BaseIdAndTimeEntity {
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "category_id", nullable = false)
     private Category category;
@@ -54,16 +55,16 @@ public class Menu extends BaseIdAndTimeEntity {
     @Builder.Default
     private List<MenuIngredient> menuIngredients = new ArrayList<>();
 
-    @Enumerated(EnumType.STRING)
     @Builder.Default
-    private MenuStatus stockStatus = MenuStatus.ON_SALE;
+    @Column(name = "sold_out", nullable = false)
+    private boolean soldOut = false;
 
 
     // 하루판매 수량 증가 함수
     public void increaseSalesToday(Integer quantity) {
         this.salesToday += quantity;
         if (this.salesToday.equals(this.salesLimit)) {
-            this.stockStatus = MenuStatus.OUT_OF_STOCK;
+            this.soldOut = true;
         }
     }
 
@@ -71,7 +72,7 @@ public class Menu extends BaseIdAndTimeEntity {
     public void decreaseSalesToday(Integer quantity) {
         this.salesToday -= quantity;
         if (!this.salesToday.equals(this.salesLimit)) {
-            this.stockStatus = MenuStatus.ON_SALE;
+            this.soldOut = false;
         }
     }
 }

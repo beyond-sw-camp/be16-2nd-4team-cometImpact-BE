@@ -22,7 +22,7 @@ import org.springframework.transaction.annotation.Transactional;
 @Service
 @Transactional
 @RequiredArgsConstructor
-public class OrderService {
+public class UnitOrderService {
 
     private final UnitOrderRepository unitOrderRepository;
     private final OrderMenuRepository orderMenuRepository;
@@ -39,6 +39,18 @@ public class OrderService {
      * 총 금액/수량 집계 후 TotalOrder에 누적
      */
     public UnitOrderResDto createUnit(UnitOrderCreateReqDto dto) {
+        /* 요청값 검증 */
+        if (dto.getMenus() == null || dto.getMenus().isEmpty()) {
+            throw new IllegalArgumentException("주문 항목이 비어있습니다.");
+        }
+
+        /* 수량 검증 */
+        dto.getMenus().forEach(menuReqDto -> {
+            if (menuReqDto.getQuantity() <= 0) {
+                throw new IllegalArgumentException("수량은 1개 이상이어야 합니다. 메뉴ID : " + menuReqDto.getMenuId());
+            }
+        });
+
         /* 테이블 조회 */
         StoreTable storeTable = storeTableRepository.findById(dto.getStoreTableId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장의 테이블이 없습니다."));
@@ -66,13 +78,30 @@ public class OrderService {
                 .build();
         unitOrderRepository.save(unitOrder);
 
-        /* OrderMenu 저장 */
+        /* 단위주문 생성 & 저장 */
         for (UnitOrderMenuReqDto menuReqDto : dto.getMenus()) {
-            if (menuReqDto.getQuantity() <= 0) {
-                throw new IllegalArgumentException("수량은 1개 이상이어야 합니다.");
-            }
             Menu menu = menuRepository.findById(menuReqDto.getMenuId())
                     .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."));
+            int stockQuantity = menu.getSalesLimit() - menu.getSalesToday();
+
+            // 품절여부 확인
+            if (menu.isSoldOut()) {
+                throw new IllegalArgumentException("품절된 상품입니다.");
+            }
+
+            // -1이 아닐 경우 한정판매
+            if (menu.getSalesLimit() != -1) {
+                if (stockQuantity < menuReqDto.getQuantity()) {
+                    throw new IllegalArgumentException("현재 남은 수량은 " + stockQuantity + "개 입니다.");
+                } else {
+                    menu.increaseSalesToday(menuReqDto.getQuantity());
+                    if (menu.getSalesLimit() == menu.getSalesToday()) {
+                        menu.setSoldOut(true);
+                    }
+                }
+            } else {    // -1일 경우 상시판매
+                menu.increaseSalesToday(menuReqDto.getQuantity());
+            }
 
             /* 단위주문 금액, 수량 계산 */
             Integer menuPrice = menu.getPrice() * menuReqDto.getQuantity();

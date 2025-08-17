@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.order.repository;
 
 import com.beyond.jellyorder.domain.order.entity.OrderMenu;
+import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
@@ -27,6 +28,10 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, UUID> {
     List<OrderMenu> findAllByUnitOrderId(UUID unitOrderId);
 
 
+
+    // totalOrder 기준으로 메뉴, 옵션까지 한 번에 로딩
+    @EntityGraph(attributePaths = {"menu", "unitOrder"})
+    List<OrderMenu> findAllByUnitOrder_TotalOrder_Id(UUID totalOrderId);
 
 
 
