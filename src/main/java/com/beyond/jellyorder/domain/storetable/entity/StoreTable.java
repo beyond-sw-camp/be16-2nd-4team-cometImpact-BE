@@ -54,4 +54,8 @@ public class StoreTable extends BaseIdAndTimeEntity {
         this.seatCount = dto.getSeatCount();
     }
 
+    // 테이블 상태 변화
+    public void changeStatus(TableStatus newStatus) {
+        this.status = newStatus;
+    }
 }
