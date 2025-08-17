@@ -47,6 +47,12 @@ public class SecurityConfig {
                         "/request/**",
                         "/password/**",
                         "/connect/**" // websocket 허용
+                        // 테스트용(삭제 필요)
+                        "/category/**",
+                        "/ingredient/**",
+                        "/menu/**",
+                        "/zone/**",
+                        "/orders/**"
                                  ).permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
