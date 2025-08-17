@@ -5,9 +5,9 @@ import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.ArrayList;
 import java.util.List;
+import static com.beyond.jellyorder.domain.menu.domain.MenuStatus.ON_SALE;
 
 @Entity
 @Table(name = "menu")
@@ -58,6 +58,10 @@ public class Menu extends BaseIdAndTimeEntity {
     @Builder.Default
     @Column(name = "sold_out", nullable = false)
     private boolean soldOut = false;
+
+    @Builder.Default
+    @Column(name = "stock_status", nullable = false)
+    private MenuStatus stockStatus = ON_SALE;
 
 
     // 하루판매 수량 증가 함수
