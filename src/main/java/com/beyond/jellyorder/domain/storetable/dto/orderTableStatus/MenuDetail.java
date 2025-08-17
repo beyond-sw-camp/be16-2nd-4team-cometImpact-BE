@@ -1,7 +1,6 @@
 package com.beyond.jellyorder.domain.storetable.dto.orderTableStatus;
 
 import lombok.AllArgsConstructor;
-import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
