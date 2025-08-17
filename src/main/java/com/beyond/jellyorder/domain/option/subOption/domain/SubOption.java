@@ -28,4 +28,8 @@ public class SubOption extends BaseIdEntity {
     @Min(value = 0, message = "서브 옵션 가격은 0 이상이어야 합니다.")
     @Column(name = "price", nullable = false)
     private Integer price;
+
+    // 건의 필요
+    @Column(name = "quantity")
+    private Integer quantity;
 }
