@@ -65,6 +65,7 @@ public class UnitOrderService {
 
     /* --------------------- private methods --------------------- */
 
+    // 1. 요청값 검증
     private void validateRequest(UnitOrderCreateReqDto dto) {
         if (dto.getMenus() == null || dto.getMenus().isEmpty()) {
             throw new IllegalArgumentException("주문 항목이 비어있습니다.");
@@ -76,11 +77,14 @@ public class UnitOrderService {
         });
     }
 
+    // 2. 테이블 조회
     private StoreTable findStoreTable(UUID storeTableId) {
+        // jwt 토큰에서 찾기
         return storeTableRepository.findById(storeTableId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장의 테이블이 없습니다."));
     }
 
+    // 3. 전체주문 확보
     private TotalOrder getOrCreateTotalOrder(StoreTable storeTable) {
         return totalOrderRepository.findTopByStoreTableOrderByOrderedAtDesc(storeTable)
                 .filter(order -> order.getEndedAt() == null) // 미종료 주문이면 재사용
@@ -126,8 +130,7 @@ public class UnitOrderService {
         int stockQuantity = menu.getSalesLimit() - menu.getSalesToday();
 
         // 품절 시 주문 불가
-        if (menu.getStockStatus() == MenuStatus.OUT_OF_STOCK
-                || menu.getStockStatus() == MenuStatus.SOLD_OUT_MANUAL) {
+        if (menu.getStockStatus() != MenuStatus.ON_SALE) {
             throw new IllegalArgumentException("품절된 상품입니다.");
         }
 
@@ -137,7 +140,7 @@ public class UnitOrderService {
                 throw new IllegalArgumentException("현재 남은 수량은 " + stockQuantity + "개 입니다.");
             }
             menu.increaseSalesToday(menuReqDto.getQuantity());
-            if (menu.getSalesLimit() == menu.getSalesToday()) {
+            if (menu.getSalesLimit().equals(menu.getSalesToday())) {
                 menu.changeStockStatus(MenuStatus.OUT_OF_STOCK);
             }
         } else { // 상시판매

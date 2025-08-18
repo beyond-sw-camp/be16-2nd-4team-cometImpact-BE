@@ -31,4 +31,14 @@ public class OrderStatusResDTO {
                 .build();
     }
 
+    public static OrderStatusResDTO from(UnitOrder unitOrder, String storeTableName) {
+        return OrderStatusResDTO.builder()
+                .unitOrderId(unitOrder.getId())
+                .orderNumber(unitOrder.getOrderNumber())
+                .storeTableName(storeTableName)
+                .localTime(unitOrder.getRelevantTime())
+                .orderMenuList(unitOrder.getOrderMenus().stream().map(OrderStatusMenu::from).toList())
+                .build();
+    }
+
 }
