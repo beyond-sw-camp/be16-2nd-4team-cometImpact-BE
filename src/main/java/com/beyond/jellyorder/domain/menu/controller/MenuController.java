@@ -7,6 +7,7 @@ import com.beyond.jellyorder.domain.option.dto.OptionAddReqDto;
 import com.beyond.jellyorder.domain.option.dto.OptionAddResDto;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
@@ -58,5 +59,17 @@ public class MenuController {
     public ResponseEntity<?> deleteMenu(@RequestBody @Valid MenuDeleteReqDto reqDto) {
         menuService.deleteMenuById(reqDto.getMenuId());
         return ApiResponse.ok(null, "메뉴가 정상적으로 삭제되었습니다.");
+    }
+
+    @PutMapping(value = "/update", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    @PreAuthorize("hasRole('STORE')")
+    public ResponseEntity<?> updateMenu(
+            @ModelAttribute @Valid MenuUpdateReqDto reqDto
+    ) {
+        // PathVariable → DTO로 주입 (클라이언트 body에 menuId 보낼 필요 없음)
+        reqDto.setMenuId(reqDto.getMenuId());
+
+        MenuAdminResDto res = menuService.update(reqDto);
+        return ApiResponse.ok(res, "메뉴가 수정되었습니다.");
     }
 }
