@@ -29,7 +29,7 @@ public class WebSocketOrderController {
             @DestinationVariable UUID storeTableId,
             @Valid UnitOrderCreateReqDto reqDTO
     ) {
-        UnitOrderResDto resDTO = unitOrderService.createUnit(reqDTO);
+        UnitOrderResDto resDTO = unitOrderService.createUnit(reqDTO, storeTableId);
         messageTemplate.convertAndSend("/topic/" + storeTableId, resDTO);
     }
 

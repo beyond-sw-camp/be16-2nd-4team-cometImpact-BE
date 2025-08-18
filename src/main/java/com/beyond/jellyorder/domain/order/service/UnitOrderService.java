@@ -24,6 +24,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
@@ -37,26 +38,23 @@ public class UnitOrderService {
     private final OrderMenuRepository orderMenuRepository;
     private final SubOptionRepository subOptionRepository;
 
-    public UnitOrderResDto createUnit(UnitOrderCreateReqDto dto) {
-        // 1. 요청값 검증
-        validateRequest(dto);
+    public UnitOrderResDto createUnit(UnitOrderCreateReqDto dto, UUID storeTableId) {
+        // 1. 테이블 조회
+        StoreTable storeTable = findStoreTable(storeTableId);
 
-        // 2. 테이블 조회
-        StoreTable storeTable = findStoreTable(dto.getStoreTableId());
-
-        // 3. 전체주문 확보
+        // 2. 전체주문 확보
         TotalOrder totalOrder = getOrCreateTotalOrder(storeTable);
 
-        // 4. 단위주문 생성
+        // 3. 단위주문 생성
         UnitOrder unitOrder = createUnitOrder(totalOrder);
 
-        // 5. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)
-        UnitOrderResult result = processMenus(dto.getMenus(), unitOrder);
+        // 4. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)
+        UnitOrderResult result = processMenus(dto.getMenuList(), unitOrder);
 
-        // 6. 집계 반영
+        // 5. 집계 반영
         updateAggregates(unitOrder, totalOrder, result);
 
-        // 7. 테이블 상태 갱신
+        // 6. 테이블 상태 갱신
         updateTableStatusIfNeeded(storeTable, totalOrder);
 
         // 8. 응답 생성
@@ -65,26 +63,14 @@ public class UnitOrderService {
 
     /* --------------------- private methods --------------------- */
 
-    // 1. 요청값 검증
-    private void validateRequest(UnitOrderCreateReqDto dto) {
-        if (dto.getMenus() == null || dto.getMenus().isEmpty()) {
-            throw new IllegalArgumentException("주문 항목이 비어있습니다.");
-        }
-        dto.getMenus().forEach(menuReqDto -> {
-            if (menuReqDto.getQuantity() <= 0) {
-                throw new IllegalArgumentException("수량은 1개 이상이어야 합니다. 메뉴ID : " + menuReqDto.getMenuId());
-            }
-        });
-    }
 
-    // 2. 테이블 조회
+    // 1. 테이블 조회
     private StoreTable findStoreTable(UUID storeTableId) {
-        // jwt 토큰에서 찾기
         return storeTableRepository.findById(storeTableId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 매장의 테이블이 없습니다."));
     }
 
-    // 3. 전체주문 확보
+    // 2. 전체주문 확보
     private TotalOrder getOrCreateTotalOrder(StoreTable storeTable) {
         return totalOrderRepository.findTopByStoreTableOrderByOrderedAtDesc(storeTable)
                 .filter(order -> order.getEndedAt() == null) // 미종료 주문이면 재사용
@@ -97,6 +83,7 @@ public class UnitOrderService {
                 ));
     }
 
+    // 3. 단위주문 생성
     private UnitOrder createUnitOrder(TotalOrder totalOrder) {
         UnitOrder unitOrder = UnitOrder.builder()
                 .totalOrder(totalOrder)
@@ -106,6 +93,7 @@ public class UnitOrderService {
         return unitOrderRepository.save(unitOrder);
     }
 
+    // 4. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)
     private UnitOrderResult processMenus(List<UnitOrderMenuReqDto> menus, UnitOrder unitOrder) {
         int unitPrice = 0;
         int unitCount = 0;
@@ -116,6 +104,9 @@ public class UnitOrderService {
             OrderMenu orderMenu = createOrderMenu(menu, menuReqDto, unitOrder);
             int optionsPrice = processOptions(menuReqDto, menu, orderMenu);
 
+            // cascade로 옵션까지 저장
+            orderMenuRepository.save(orderMenu);
+
             unitPrice += menu.getPrice() * menuReqDto.getQuantity() + optionsPrice;
             unitCount += menuReqDto.getQuantity();
         }
@@ -123,6 +114,7 @@ public class UnitOrderService {
         return new UnitOrderResult(unitPrice, unitCount);
     }
 
+    // TODO: 추후 redis를 도입하여 동시성 문제 해결.
     private Menu validateAndUpdateStock(UnitOrderMenuReqDto menuReqDto) {
         Menu menu = menuRepository.findById(menuReqDto.getMenuId())
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."));
@@ -151,51 +143,57 @@ public class UnitOrderService {
     }
 
     private OrderMenu createOrderMenu(Menu menu, UnitOrderMenuReqDto menuReqDto, UnitOrder unitOrder) {
-        OrderMenu orderMenu = OrderMenu.builder()
+        return OrderMenu.builder()
                 .unitOrder(unitOrder)
                 .menu(menu)
+                .menuName(menu.getName())   // 스냅샷
+                .menuPrice(menu.getPrice()) // 스냅샷
                 .quantity(menuReqDto.getQuantity())
                 .build();
-        return orderMenuRepository.save(orderMenu);
     }
 
     private int processOptions(UnitOrderMenuReqDto menuReqDto, Menu menu, OrderMenu orderMenu) {
-        int optionsPriceTotal = 0;
+        // 1) 요청에서 sub_option.id만 뽑아 중복 제거
+        Set<UUID> requested = Optional.ofNullable(menuReqDto.getOptionList())
+                .orElseGet(List::of).stream()
+                .map(SubOptionReqDto::getSubOptionId)
+                .filter(Objects::nonNull)
+                .map(UUID::fromString)
+                .collect(Collectors.toCollection(LinkedHashSet::new));
 
-        if (menuReqDto.getMainOptions() == null || menuReqDto.getMainOptions().isEmpty()) {
-            return optionsPriceTotal;
+        if (requested.isEmpty()) return 0;
+
+        // 2) 실제 SubOption 조회 + 누락 ID 검출
+        List<SubOption> found = subOptionRepository.findAllById(requested);
+        if (found.size() != requested.size()) {
+            Set<UUID> missing = new LinkedHashSet<>(requested);
+            for (SubOption so : found) missing.remove(so.getId());
+            throw new EntityNotFoundException("존재하지 않는 subOptionId: " + missing);
         }
 
-        Map<UUID, Integer> quantityBySubId = new LinkedHashMap<>();
-        for (MainOptionReqDto mainDto : menuReqDto.getMainOptions()) {
-            if (mainDto.getSubOptions() == null) continue;
-            for (SubOptionReqDto subDto : mainDto.getSubOptions()) {
-                UUID subId = UUID.fromString(subDto.getSubOptionId());
-                quantityBySubId.merge(subId, subDto.getQuantity(), Integer::sum);
-            }
-        }
+        int perMenuQty = Optional.ofNullable(menuReqDto.getQuantity()).orElse(1); // 옵션은 메뉴 수량만큼 적용
+        int optionsTotalPrice = 0;
 
-        List<SubOption> subOptions = subOptionRepository.findAllById(quantityBySubId.keySet());
-        for (SubOption so : subOptions) {
+        for (SubOption so : found) {
+            // 3) 해당 메뉴의 옵션인지 검증
             if (!so.getMainOption().getMenu().getId().equals(menu.getId())) {
-                throw new IllegalArgumentException("선택한 옵션이 해당 메뉴의 옵션이 아닙니다.");
+                throw new IllegalArgumentException("다른 메뉴의 옵션입니다: " + so.getId());
             }
-            int quantity = quantityBySubId.getOrDefault(so.getId(), 0);
-            optionsPriceTotal += so.getPrice() * quantity;
 
-            if (quantity > 0) {
-                OrderMenuOption option = OrderMenuOption.builder()
-                        .orderMenu(orderMenu)
-                        .subOption(so)
-                        .optionName(so.getName())
-                        .optionPrice(so.getPrice())
-                        .optionQuantity(quantity)
-                        .build();
-                orderMenu.getOrderMenuOptionList().add(option);
-            }
+            // 4) 가격 합산(서버 신뢰값 사용)
+            optionsTotalPrice += so.getPrice() * perMenuQty;
+
+            // 5) 스냅샷 + 양방향 연결 (FK 세팅은 addOption 안에서)
+            orderMenu.addOption(
+                    OrderMenuOption.builder()
+                            .subOption(so)
+                            .optionName(so.getName())
+                            .optionPrice(so.getPrice())
+                            .build()
+            );
         }
 
-        return optionsPriceTotal;
+        return optionsTotalPrice;
     }
 
     private void updateAggregates(UnitOrder unitOrder, TotalOrder totalOrder, UnitOrderResult result) {
