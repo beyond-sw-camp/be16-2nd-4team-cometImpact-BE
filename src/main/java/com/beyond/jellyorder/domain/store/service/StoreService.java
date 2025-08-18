@@ -72,8 +72,11 @@ public class StoreService {
             throw new IllegalArgumentException("로그인 정보가 일치하지 않습니다.");
         }
         return store;
+    }
 
-
+    /* Store LoginId 존재 여부 확인 */
+    public boolean existsLoginId(String loginId) {
+        return storeRepository.findByLoginId(loginId).isPresent();
     }
 
 }

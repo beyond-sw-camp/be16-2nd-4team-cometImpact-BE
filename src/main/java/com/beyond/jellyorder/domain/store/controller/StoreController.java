@@ -12,10 +12,8 @@ import com.beyond.jellyorder.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
 
 import java.util.UUID;
 
@@ -61,6 +59,12 @@ public class StoreController {
         return ApiResponse.ok(loginResponseDto, "점주 토큰 재발급 완료!"); /* 프론트 개발 후 리턴 값 변경 예정*/
     }
 
+    @GetMapping("/check-login-id")
+    public ResponseEntity<?> checkLoginId(@RequestParam String loginId) {
+        boolean exists = storeService.existsLoginId(loginId);
+        return ApiResponse.ok(Map.of("available", !exists),
+                exists ? "이미 가입된 아이디입니다." : "사용 가능한 아이디입니다.");
+    }
 
 
 }
