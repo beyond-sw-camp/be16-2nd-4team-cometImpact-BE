@@ -10,6 +10,5 @@ import lombok.*;
 @Builder
 public class SubOptionReqDto {
     private String subOptionId;
-    private Integer quantity;
     private Integer price;
 }

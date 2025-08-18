@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.order.dto;
 
 import com.beyond.jellyorder.domain.option.dto.MainOptionReqDto;
+import com.beyond.jellyorder.domain.option.dto.SubOptionReqDto;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
@@ -15,5 +16,5 @@ import java.util.UUID;
 public class UnitOrderMenuReqDto {
     private UUID menuId;
     private Integer quantity;
-    private List<MainOptionReqDto> mainOptions;
+    private List<SubOptionReqDto> subOptions;
 }

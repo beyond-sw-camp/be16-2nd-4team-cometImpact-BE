@@ -20,6 +20,7 @@ import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -109,8 +110,13 @@ public class UnitOrderService {
         for (UnitOrderMenuReqDto menuReqDto : menus) {
             Menu menu = validateAndUpdateStock(menuReqDto);
 
+            // 저장 지연 : 엔티티만 만들고 아직 save 하지 않음
             OrderMenu orderMenu = createOrderMenu(menu, menuReqDto, unitOrder);
+            // 옵션 처리
             int optionsPrice = processOptions(menuReqDto, menu, orderMenu);
+
+            // cascade로 옵션까지 저장
+            orderMenuRepository.save(orderMenu);
 
             unitPrice += menu.getPrice() * menuReqDto.getQuantity() + optionsPrice;
             unitCount += menuReqDto.getQuantity();
@@ -148,51 +154,60 @@ public class UnitOrderService {
     }
 
     private OrderMenu createOrderMenu(Menu menu, UnitOrderMenuReqDto menuReqDto, UnitOrder unitOrder) {
-        OrderMenu orderMenu = OrderMenu.builder()
+        return OrderMenu.builder()
                 .unitOrder(unitOrder)
                 .menu(menu)
+                .menuName(menu.getName())   // 스냅샷
+                .menuPrice(menu.getPrice()) // 스냅샷
                 .quantity(menuReqDto.getQuantity())
                 .build();
-        return orderMenuRepository.save(orderMenu);
+//        return orderMenuRepository.save(orderMenu);
     }
 
     private int processOptions(UnitOrderMenuReqDto menuReqDto, Menu menu, OrderMenu orderMenu) {
-        int optionsPriceTotal = 0;
 
-        if (menuReqDto.getMainOptions() == null || menuReqDto.getMainOptions().isEmpty()) {
-            return optionsPriceTotal;
+        // 1) 요청에서 sub_option.id만 뽑아 중복 제거
+        Set<UUID> requested = Optional.ofNullable(menuReqDto.getSubOptions())
+                .orElseGet(List::of).stream()
+                .map(com.beyond.jellyorder.domain.option.dto.SubOptionReqDto::getSubOptionId)
+                .filter(Objects::nonNull)
+                .map(UUID::fromString)
+                .collect(java.util.stream.Collectors.toCollection(LinkedHashSet::new));
+
+        if (requested.isEmpty()) return 0;
+
+        // 2) 실제 SubOption 조회 + 누락 ID 검출
+        List<SubOption> found = subOptionRepository.findAllById(requested);
+        if (found.size() != requested.size()) {
+            Set<UUID> missing = new LinkedHashSet<>(requested);
+            for (SubOption so : found) missing.remove(so.getId());
+            throw new EntityNotFoundException("존재하지 않는 subOptionId: " + missing);
         }
 
-        Map<UUID, Integer> quantityBySubId = new LinkedHashMap<>();
-        for (MainOptionReqDto mainDto : menuReqDto.getMainOptions()) {
-            if (mainDto.getSubOptions() == null) continue;
-            for (SubOptionReqDto subDto : mainDto.getSubOptions()) {
-                UUID subId = UUID.fromString(subDto.getSubOptionId());
-                quantityBySubId.merge(subId, subDto.getQuantity(), Integer::sum);
-            }
-        }
+        int perMenuQty = Optional.ofNullable(menuReqDto.getQuantity()).orElse(1); // 옵션은 메뉴 수량만큼 적용
+        int optionsTotalPrice = 0;
 
-        List<SubOption> subOptions = subOptionRepository.findAllById(quantityBySubId.keySet());
-        for (SubOption so : subOptions) {
+        for (SubOption so : found) {
+            // 3) 해당 메뉴의 옵션인지 검증
             if (!so.getMainOption().getMenu().getId().equals(menu.getId())) {
-                throw new IllegalArgumentException("선택한 옵션이 해당 메뉴의 옵션이 아닙니다.");
+                throw new IllegalArgumentException("다른 메뉴의 옵션입니다: " + so.getId());
             }
-            int quantity = quantityBySubId.getOrDefault(so.getId(), 0);
-            optionsPriceTotal += so.getPrice() * quantity;
 
-            if (quantity > 0) {
-                OrderMenuOption option = OrderMenuOption.builder()
-                        .orderMenu(orderMenu)
-                        .subOption(so)
-                        .optionName(so.getName())
-                        .optionPrice(so.getPrice())
-                        .optionQuantity(quantity)
-                        .build();
-                orderMenu.getOrderMenuOptionList().add(option);
-            }
+            // 4) 가격 합산(서버 신뢰값 사용)
+            optionsTotalPrice += so.getPrice() * perMenuQty;
+
+            // 5) 스냅샷 + 양방향 연결 (FK 세팅은 addOption 안에서)
+            orderMenu.addOption(
+                    OrderMenuOption.builder()
+                            .subOption(so)
+                            .optionName(so.getName())
+                            .optionPrice(so.getPrice())
+                            .build()
+            );
+            orderMenuRepository.save(orderMenu);
         }
 
-        return optionsPriceTotal;
+        return optionsTotalPrice;
     }
 
     private void updateAggregates(UnitOrder unitOrder, TotalOrder totalOrder, UnitOrderResult result) {
