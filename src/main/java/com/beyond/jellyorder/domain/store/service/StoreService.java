@@ -38,7 +38,7 @@ public class StoreService {
         if (storeRepository.findByLoginId(loginId).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 아이디 입니다. " + loginId);
         }
-        if (storeRepository.findBybusinessNumber(bNo).isPresent()) {
+        if (storeRepository.findByBusinessNumber(bNo).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + bNo);
         }
 
