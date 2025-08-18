@@ -37,7 +37,7 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a.requestMatchers(
                         "/store/create",
                         "/store/do-login",
-                        "/storeTable/do-login",
+                        "/store-table/do-login",
                         "/store/refresh-at",
                         "/sse/**",
                         "/payment/**",

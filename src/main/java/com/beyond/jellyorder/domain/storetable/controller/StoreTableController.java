@@ -64,7 +64,7 @@ public class StoreTableController {
                 .storeTableRefreshToken(refreshToken)
                 .build();
 
-        return ApiResponse.ok(loginResDTO, storeTableLoginReqDTO.getName() + " 테이블 로그인 완료!");
+        return ApiResponse.ok(loginResDTO, storeTableLoginReqDTO.getTableName() + " 테이블 로그인 완료!");
     }
 
     @PostMapping("/refresh-at")
