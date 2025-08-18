@@ -29,7 +29,4 @@ public class SubOption extends BaseIdEntity {
     @Column(name = "price", nullable = false)
     private Integer price;
 
-    // 건의 필요
-    @Column(name = "quantity")
-    private Integer quantity;
 }

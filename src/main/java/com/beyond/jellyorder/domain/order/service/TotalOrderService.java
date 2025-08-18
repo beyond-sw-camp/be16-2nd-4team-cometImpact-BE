@@ -61,7 +61,7 @@ public class TotalOrderService {
                     // 옵션 라인 매핑
                     List<TotalOrderByTableResDto.OptionLine> optionLines = om.getOrderMenuOptionList().stream()
                             .map(omo -> {
-                                int lineTotal = omo.getOptionPrice() * omo.getOptionQuantity();
+                                int lineTotal = omo.getOptionPrice();
                                 String mainName = (omo.getSubOption() != null && omo.getSubOption().getMainOption() != null)
                                         ? omo.getSubOption().getMainOption().getName()
                                         : null;
@@ -70,7 +70,6 @@ public class TotalOrderService {
                                         .mainOptionName(mainName)
                                         .subOptionName(omo.getOptionName())   // 주문 시점 스냅샷
                                         .price(omo.getOptionPrice())          // 주문 시점 스냅샷
-                                        .quantity(omo.getOptionQuantity())
                                         .lineTotal(lineTotal)
                                         .build();
                             })

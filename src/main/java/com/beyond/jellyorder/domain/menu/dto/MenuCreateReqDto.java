@@ -1,5 +1,7 @@
 package com.beyond.jellyorder.domain.menu.dto;
 
+import com.beyond.jellyorder.domain.category.domain.Category;
+import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import jakarta.validation.constraints.*;
 import lombok.*;
@@ -42,4 +44,23 @@ public class MenuCreateReqDto {
     private MultipartFile imageFile;
 
     private List<MainOptionDto> mainOptions;
+
+    @Builder.Default
+    private boolean onSale = true;
+
+    public Menu toEntity(Category category, String imageUrl) {
+        if (category == null) throw new IllegalArgumentException("카테고리는 필수입니다.");
+        if (imageUrl == null || imageUrl.isBlank()) throw new IllegalArgumentException("이미지 URL은 필수입니다.");
+
+        return Menu.builder()
+                .category(category)
+                .name(getName())
+                .price(getPrice())
+                .description(getDescription())
+                .imageUrl(imageUrl)
+                .origin(getOrigin())
+                .salesLimit(getSalesLimit() != null ? getSalesLimit() : -1)
+                .salesToday(0)
+                .build();
+    }
 }
