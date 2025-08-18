@@ -12,16 +12,9 @@ import java.util.UUID;
 
 @Repository
 public interface IngredientRepository extends JpaRepository<Ingredient, UUID>, IngredientRepositoryCustom{
-    /**
-     * 주어진 storeId와 재료명(name)에 해당하는 재료가 이미 존재하는지 여부를 확인한다.
-     *
-     * @param storeId 매장 ID (현재는 String이지만, 추후 UUID로 변경 예정)
-     * @param name    재료명
-     * @return 존재 여부
-     */
-    boolean existsByStoreIdAndName(String storeId, String name);  // TODO: UUID로 교체
-    Optional<Ingredient> findByStoreIdAndName(String storeId, String name);
-    List<Ingredient> findAllByStoreId(String storeId);
+    boolean existsByStoreIdAndName(UUID store_id, String name);  // TODO: UUID로 교체
+    Optional<Ingredient> findByStoreIdAndName(UUID store_id, String name);
+    List<Ingredient> findAllByStoreId(UUID store_id);
 
     interface AffectedMenu {
         String getId();   // BIN_TO_UUID 결과를 받음
@@ -35,4 +28,7 @@ public interface IngredientRepository extends JpaRepository<Ingredient, UUID>, I
         WHERE mi.ingredient_id = :ingredientId
         """, nativeQuery = true)
     List<AffectedMenu> findAffectedMenus(@Param("ingredientId") UUID ingredientId);
+
+    boolean existsByStoreIdAndNameAndIdNot(UUID store_id, String name, UUID id);
+    Optional<Ingredient> findByIdAndStoreId(UUID id, UUID store_id);
 }

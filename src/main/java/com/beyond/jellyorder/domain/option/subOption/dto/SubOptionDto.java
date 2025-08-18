@@ -18,4 +18,6 @@ public class SubOptionDto {
     @NotNull(message = "서브 옵션 가격은 필수입니다.")
     @Min(value = 0, message = "서브 옵션 가격은 0 이상이어야 합니다.")
     private Integer price;
+
+    private Integer quantity;
 }

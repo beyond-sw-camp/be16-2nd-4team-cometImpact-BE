@@ -6,21 +6,24 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.List;
+
 @Data
 @Builder
 @NoArgsConstructor
 @AllArgsConstructor
 public class OrderMenuDetailPrice {
-    private String name;
-    private Integer quantity;
-    private Integer price;
+    private String MenuName;
+    private Integer MenuQuantity;
+    private Integer MenuPrice;
+    private List<OrderMenuOptionDetail> menuOptionList;
 
-
-    public static OrderMenuDetailPrice from(OrderMenu orderMenu) {
+    public static OrderMenuDetailPrice from(OrderMenu orderMenu, List<OrderMenuOptionDetail> menuOptionList) {
         return OrderMenuDetailPrice.builder()
-                .name(orderMenu.getMenu().getName())
-                .quantity(orderMenu.getQuantity())
-                .price(orderMenu.getMenu().getPrice() * orderMenu.getQuantity())
+                .MenuName(orderMenu.getMenu().getName())
+                .MenuQuantity(orderMenu.getQuantity())
+                .MenuPrice(orderMenu.getMenu().getPrice() * orderMenu.getQuantity())
+                .menuOptionList(menuOptionList)
                 .build();
     }
 }

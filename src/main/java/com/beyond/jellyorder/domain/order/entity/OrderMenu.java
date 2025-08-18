@@ -2,13 +2,18 @@ package com.beyond.jellyorder.domain.order.entity;
 
 import com.beyond.jellyorder.common.BaseIdEntity;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
+import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.util.ArrayList;
+import java.util.List;
 
 
 @Entity
 @Table(name = "order_menu")
 @Getter
+@Setter
 @NoArgsConstructor(access = AccessLevel.PROTECTED)
 @AllArgsConstructor
 @Builder
@@ -24,4 +29,25 @@ public class OrderMenu extends BaseIdEntity {
 
     @Column(nullable = false)
     private Integer quantity;
+
+    @Column(name = "menu_name", length = 30)
+    private String menuName;
+
+    @Column(name = "menu_price")
+    private Integer menuPrice;
+
+    @OneToMany(mappedBy = "orderMenu", cascade = CascadeType.ALL, orphanRemoval = true)
+    @Builder.Default
+    private List<OrderMenuOption> orderMenuOptionList = new ArrayList<>();
+
+    // 주문 수량 변경 메서드
+    public void updateQuantity(Integer quantity) {
+        this.quantity = quantity;
+    }
+
+    public void addOption(OrderMenuOption option) {
+        orderMenuOptionList.add(option);
+        option.addOrderMenu(this);
+    }
+
 }

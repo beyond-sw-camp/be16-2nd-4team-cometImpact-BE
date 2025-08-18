@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.menu.service;
 
+import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.common.s3.S3Manager;
 import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.category.repository.CategoryRepository;
@@ -18,6 +19,7 @@ import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import com.beyond.jellyorder.domain.option.subOption.dto.SubOptionDto;
+import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -38,12 +40,17 @@ public class MenuService {
     private final IngredientRepository ingredientRepository;
     private final MenuIngredientRepository menuIngredientRepository;
     private final S3Manager s3Manager;
+    private final StoreJwtClaimUtil storeJwtClaimUtil;
+    private final StoreRepository storeRepository;
 
     public MenuCreateResDto create(MenuCreateReqDto reqDto) {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
+
         // 0) 카테고리 조회
-        Category category = categoryRepository.findByStoreIdAndName(reqDto.getStoreId(), reqDto.getCategoryName())
+        Category category = categoryRepository.findByStoreIdAndName(UUID.fromString(storeId), reqDto.getCategoryName())
                 .orElseThrow(() -> new EntityNotFoundException(
-                        "카테고리 조회 실패: name=" + reqDto.getCategoryName() + ", storeId=" + reqDto.getStoreId()));
+                        "카테고리 조회 실패: name=" + reqDto.getCategoryName() + ", storeId=" + storeId));
 
         // 1) 옵션 트리 사전 검증 & 메모리 구성 (이미지/DB 작업 전)
         List<MainOption> preparedMainOptions = new ArrayList<>();
@@ -114,9 +121,9 @@ public class MenuService {
 
         List<Ingredient> ingredients = new ArrayList<>(ingredientNames.size());
         for (String ingName : ingredientNames) {
-            Ingredient ing = ingredientRepository.findByStoreIdAndName(reqDto.getStoreId(), ingName)
+            Ingredient ing = ingredientRepository.findByStoreIdAndName(UUID.fromString(storeId), ingName)
                     .orElseThrow(() -> new EntityNotFoundException(
-                            "식자재를 찾을 수 없습니다: name=" + ingName + ", storeId=" + reqDto.getStoreId()));
+                            "식자재를 찾을 수 없습니다: name=" + ingName + ", storeId=" + storeId));
             ingredients.add(ing);
         }
 
@@ -141,7 +148,7 @@ public class MenuService {
                     .description(reqDto.getDescription())
                     .imageUrl(imageUrl)
                     .origin(reqDto.getOrigin())
-                    .salesLimit(reqDto.getSalesLimit() != null ? reqDto.getSalesLimit() : -1L)
+                    .salesLimit(reqDto.getSalesLimit() != null ? reqDto.getSalesLimit() : -1)
                     .salesToday(0)
                     .build();
 
@@ -207,12 +214,11 @@ public class MenuService {
                 .build();
     }
 
-    public MenuCreateResDto getMenuByStoreIdAndName(String storeId, String name) { // 추후 name 대신 UUID로 수정 예정
+    public MenuCreateResDto getMenuByStoreIdAndName(String name) { // 추후 name 대신 UUID로 수정 예정
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        // TODO [2025-08-02]: storeId 유효성 검증 (인증된 점주의 storeId인지 확인)
-        // Auth 도입 후 검증 로직 추가 예정
-
-        Menu menu = menuRepository.findByCategory_StoreIdAndName(storeId, name)
+        Menu menu = menuRepository.findByCategory_StoreIdAndName(UUID.fromString(storeId), name)
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다: name=" + name + ", storeId=" + storeId));
 
         return MenuCreateResDto.builder()
@@ -243,12 +249,11 @@ public class MenuService {
     }
 
     @Transactional(readOnly = true)
-    public List<MenuListResDto> getMenusByStoreId(String storeId) {
-        List<Menu> menus = menuRepository.findAllByCategory_StoreId(storeId);
+    public List<MenuListResDto> getMenusByStoreId() {
+        final String storeId = storeJwtClaimUtil.getStoreId();
+        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        if (menus.isEmpty()) {
-            throw new EntityNotFoundException("해당 storeId에 대한 메뉴가 존재하지 않습니다: " + storeId);
-        }
+        List<Menu> menus = menuRepository.findAllByCategory_StoreId(UUID.fromString(storeId));
 
         return menus.stream()
                 .map(menu -> MenuListResDto.builder()

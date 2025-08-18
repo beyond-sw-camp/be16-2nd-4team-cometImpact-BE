@@ -10,6 +10,7 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import org.hibernate.annotations.GenericGenerator;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Entity
@@ -36,5 +37,13 @@ public class Store extends BaseIdAndTimeEntity {
     @Builder.Default
     @Enumerated(EnumType.STRING)
     private Role role = Role.STORE;
+    @Column(name = "business_opened_at", nullable = false)
+    private LocalDateTime businessOpenedAt;
+    @Column(name = "business_closed_at")
+    private LocalDateTime businessClosedAt;
+
+    public void updatePassword(String encodedPassword) {
+        this.password = encodedPassword;
+    }
 
 }

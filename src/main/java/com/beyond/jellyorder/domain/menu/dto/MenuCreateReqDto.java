@@ -14,10 +14,6 @@ import java.util.List;
 @AllArgsConstructor
 @Builder
 public class MenuCreateReqDto {
-
-    @NotNull(message = "매장 ID(storeId)는 필수입니다.")
-    private String storeId;
-
     @NotNull(message = "카테고리명은 필수입니다.")
     private String categoryName;
 
@@ -37,7 +33,7 @@ public class MenuCreateReqDto {
     private String origin;
 
     @Min(value = -1, message = "판매 한도는 -1 이상이어야 합니다.")
-    private Long salesLimit = -1L;
+    private Integer salesLimit = -1;
 
     @Builder.Default
     private List<String> ingredients = new ArrayList<>();

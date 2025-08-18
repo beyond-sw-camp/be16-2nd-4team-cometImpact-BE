@@ -48,4 +48,15 @@ public class TotalOrder extends BaseIdEntity {
     protected void onCreate() {
         this.orderedAt = LocalDateTime.now();
     }
+
+    // 단위주문 총 금액
+    public void addUnitTotal(int price, int count) {
+        this.totalPrice += price;
+        this.count += count;
+    }
+
+    // 총 주문 개수 변경 메서드
+    public void updateCount(Integer updateCount) {
+        this.count += updateCount;
+    }
 }

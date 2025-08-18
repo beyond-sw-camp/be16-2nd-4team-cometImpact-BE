@@ -2,23 +2,15 @@ package com.beyond.jellyorder.domain.category.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
 import com.beyond.jellyorder.domain.category.domain.Category;
-import org.springframework.data.jpa.repository.Modifying;
-import org.springframework.data.jpa.repository.Query;
-import org.springframework.data.repository.query.Param;
 
 import java.util.List;
 import java.util.Optional;
 import java.util.UUID;
 
 public interface CategoryRepository extends JpaRepository<Category, UUID>, CategoryRepositoryCustom{
-    boolean existsByStoreIdAndName(String storeId, String name); // 임시 String storeId. **추후 UUID로 변경 필수**
-//    Optional<Category> findByIdAndStoreId(UUID id, String storeId);
-    Optional<Category> findByStoreIdAndName(String storeId, String name);
-    List<Category> findAllByStoreId(String storeId);
-    Optional<Category> findByIdAndStoreId(UUID id, String storeId);
-
-    @Modifying
-    @Query("DELETE FROM Category c WHERE c.storeId = :storeId AND c.name = :name")
-    int deleteByStoreIdAndName(@Param("storeId") String storeId, @Param("name") String name);
-
+    boolean existsByStoreIdAndName(UUID store_id, String name);
+    Optional<Category> findByStoreIdAndName(UUID store_id, String name);
+    List<Category> findAllByStoreId(UUID store_id);
+    Optional<Category> findByIdAndStoreId(UUID id, UUID store_id);
+    int deleteByStore_IdAndName(UUID storeId, String name);
 }

@@ -1,10 +1,9 @@
 package com.beyond.jellyorder.domain.category.domain;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
+import com.beyond.jellyorder.domain.store.entity.Store;
 import jakarta.persistence.*;
 import lombok.*;
-
-import java.util.UUID;
 
 /**
  * 카테고리(Category) 도메인 엔티티.
@@ -27,8 +26,10 @@ import java.util.UUID;
         )
 })
 public class Category extends BaseIdAndTimeEntity {
-    @Column(name = "store_id", nullable = false)
-    private String storeId;
+    @ManyToOne(fetch = FetchType.LAZY, optional = false)
+    @JoinColumn(name = "store_id", nullable = false)
+    @ToString.Exclude
+    private Store store;
 
     @Column(length = 20, nullable = false)
     private String name;

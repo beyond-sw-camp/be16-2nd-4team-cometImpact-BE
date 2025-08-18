@@ -113,13 +113,13 @@ public class StoreTableService {
 
     public StoreTable doLogin(StoreTableLoginReqDTO storeTableLoginReqDTO) {
         Store store = storeRepository.findByLoginId(storeTableLoginReqDTO.getLoginId())
-                .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 틀렸습니다."));
+                .orElseThrow(() -> new EntityNotFoundException("로그인 정보가 일치하지 않습니다."));
 
         StoreTable storeTable = storeTableRepository.findByStoreAndName(store, storeTableLoginReqDTO.getName())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 테이블입니다."));
 
         if (!passwordEncoder.matches(storeTableLoginReqDTO.getPassword(), store.getPassword())) {
-            throw new IllegalArgumentException("아이디 또는 비밀번호!!가 틀렸습니다.");
+            throw new IllegalArgumentException("로그인 정보가 일치하지 않습니다.");
         }
 
         return storeTable;

@@ -11,6 +11,7 @@ import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.Optional;
 import java.util.UUID;
 
@@ -54,6 +55,7 @@ public class StoreService {
                 .ownerEmail(dto.getOwnerEmail())
                 .phoneNumber(dto.getPhoneNumber())
                 .password(passwordEncoder.encode(dto.getPassword()))
+                .businessOpenedAt(LocalDateTime.now())
                 .build();
 
         storeRepository.save(store);
@@ -65,9 +67,9 @@ public class StoreService {
     /* Store 로그인 Service*/
     public Store doLogin(StoreLoginReqDTO storeLoginReqDTO) {
         Store store = storeRepository.findByLoginId(storeLoginReqDTO.getLoginId())
-                .orElseThrow(() -> new EntityNotFoundException("아이디!! 또는 비밀번호가 일치하지 않습니다.")) ; /* "로그인 정보가 일치하지 않습니다", 통일 예정 */
+                .orElseThrow(() -> new EntityNotFoundException("로그인 정보가 일치하지 않습니다.")) ;
         if (!passwordEncoder.matches(storeLoginReqDTO.getPassword(), store.getPassword())){
-            throw new IllegalArgumentException("아이디 또는 비밀번호!!가 일치하지 않습니다."); /* "로그인 정보가 일치하지 않습니다", 통일 예정 */
+            throw new IllegalArgumentException("로그인 정보가 일치하지 않습니다.");
         }
         return store;
 

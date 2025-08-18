@@ -5,9 +5,9 @@ import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import jakarta.persistence.*;
 import lombok.*;
-
 import java.util.ArrayList;
 import java.util.List;
+import static com.beyond.jellyorder.domain.menu.domain.MenuStatus.*;
 
 @Entity
 @Table(name = "menu")
@@ -39,7 +39,7 @@ public class Menu extends BaseIdAndTimeEntity {
 
     @Builder.Default
     @Column(name = "sales_limit", nullable = false)
-    private Long salesLimit = -1L;
+    private Integer salesLimit = -1;
 
     @Builder.Default
     @Column(name = "sales_today", nullable = false)
@@ -52,5 +52,42 @@ public class Menu extends BaseIdAndTimeEntity {
             cascade = CascadeType.ALL,
             orphanRemoval = true)
     @ToString.Exclude
+    @Builder.Default
     private List<MenuIngredient> menuIngredients = new ArrayList<>();
+
+    @Builder.Default
+    @Column(name = "stock_status", nullable = false)
+    private MenuStatus stockStatus = ON_SALE;
+
+    // 재고 상태 변환 함수
+    public void changeStockStatus(MenuStatus newStatus) {
+        this.stockStatus = newStatus;
+    }
+
+    // 수동 품절 설정
+    public void markSoldOutManually() {
+        this.stockStatus = MenuStatus.SOLD_OUT_MANUAL;
+    }
+
+    // 수동 품절을 해제 및 재판매
+    public void markOnSale() {
+        this.stockStatus = MenuStatus.ON_SALE;
+    }
+
+    // 하루판매 수량 증가 함수
+    public void increaseSalesToday(Integer quantity) {
+        this.salesToday += quantity;
+        if (this.salesLimit != -1 && this.salesToday >= this.salesLimit
+                && !this.stockStatus.equals(MenuStatus.SOLD_OUT_MANUAL)) {
+            this.stockStatus = MenuStatus.OUT_OF_STOCK;
+        }
+    }
+
+    // 하루판매 수량 감소 함수
+    public void decreaseSalesToday(Integer quantity) {
+        this.salesToday -= quantity;
+        if (!this.salesToday.equals(this.salesLimit) && !this.stockStatus.equals(SOLD_OUT_MANUAL)) {
+            this.stockStatus = ON_SALE;
+        }
+    }
 }

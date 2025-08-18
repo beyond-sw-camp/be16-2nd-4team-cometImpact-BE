@@ -36,17 +36,23 @@ public class SecurityConfig {
                 .addFilterBefore(jwtTokenFilter, UsernamePasswordAuthenticationFilter.class)
                 .authorizeHttpRequests(a -> a.requestMatchers(
                         "/store/create",
-                        "/store/doLogin",
-                        "/storetable/doLogin",
+                        "/store/do-login",
+                        "/storeTable/do-login",
                         "/store/refresh-at",
                         "/sse/**",
                         "/payment/**",
                         "/v3/api-docs/**",  // swagger 추가
                         "/swagger-ui/**",   // swagger 추가
-                        "/swagger-ui.html"  // swagger 추가
-                                 ).permitAll()
-                        .requestMatchers(HttpMethod.POST, "/request/create").hasRole("STORE")
-                        .anyRequest().authenticated())
+                        "/swagger-ui.html",  // swagger 추가
+                        "/request/**",
+                        "/password/**",
+                        // 테스트용(삭제 필요)
+                        "/category/**",
+                        "/ingredient/**",
+                        "/menu/**",
+                        "/zone/**",
+                        "/orders/**"
+                                 ).permitAll().anyRequest().authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
                                 .accessDeniedHandler(jwtAuthorizationHandler))

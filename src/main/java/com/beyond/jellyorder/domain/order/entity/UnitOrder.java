@@ -54,11 +54,25 @@ public class UnitOrder extends BaseIdEntity {
 
     // 주문 상태의 따라 시간 값 추출 메서드
     public LocalTime getRelevantTime() {
-        return switch (status) {
+        return switch (this.status) {
             case ACCEPT   -> LocalTime.from(getAcceptedAt());
             case COMPLETE -> LocalTime.from(getCompletedAt());
             case CANCEL   -> LocalTime.from(getCancelledAt());
         };
+    }
+
+    // 주문 상태 수정 메서드
+    public void updateOrderStatus(OrderStatus status) {
+        this.status = status;
+        switch (status) {
+            case COMPLETE -> this.completedAt = LocalDateTime.now();
+            case CANCEL -> this.cancelledAt = LocalDateTime.now();
+        }
+    }
+
+    // 단위주문 총 수량
+    public void updateUnitCount(int totalCount) {
+        this.totalCount = totalCount;
     }
 
 }
