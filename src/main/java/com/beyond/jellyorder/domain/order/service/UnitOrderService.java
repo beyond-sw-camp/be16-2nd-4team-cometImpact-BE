@@ -20,6 +20,7 @@ import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -101,7 +102,9 @@ public class UnitOrderService {
         for (UnitOrderMenuReqDto menuReqDto : menus) {
             Menu menu = validateAndUpdateStock(menuReqDto);
 
+            // 저장 지연 : 엔티티만 만들고 아직 save 하지 않음
             OrderMenu orderMenu = createOrderMenu(menu, menuReqDto, unitOrder);
+            // 옵션 처리
             int optionsPrice = processOptions(menuReqDto, menu, orderMenu);
 
             // cascade로 옵션까지 저장

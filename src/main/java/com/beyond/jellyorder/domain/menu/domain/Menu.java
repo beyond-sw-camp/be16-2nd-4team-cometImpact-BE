@@ -90,4 +90,10 @@ public class Menu extends BaseIdAndTimeEntity {
             this.stockStatus = ON_SALE;
         }
     }
+
+    public void addMenuIngredient(MenuIngredient mi) {
+        if (this.menuIngredients == null) this.menuIngredients = new ArrayList<>();
+        this.menuIngredients.add(mi);
+        mi.setMenu(this);
+    }
 }
