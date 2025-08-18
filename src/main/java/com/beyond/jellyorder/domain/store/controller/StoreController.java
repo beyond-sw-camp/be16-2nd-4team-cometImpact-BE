@@ -42,6 +42,7 @@ public class StoreController {
         StoreLoginResDTO loginResponseDto = StoreLoginResDTO.builder()
                 .storeAccessToken(storeAccessToken)
                 .storeRefreshToken(storeRefreshToken)
+                .storeName(store.getStoreName())
                 .build();
 
         return ApiResponse.ok(loginResponseDto, "로그인 완료");
