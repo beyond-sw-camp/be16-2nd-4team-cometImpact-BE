@@ -66,5 +66,12 @@ public class StoreController {
                 exists ? "이미 가입된 아이디입니다." : "사용 가능한 아이디입니다.");
     }
 
+    @GetMapping("/check-business-number")
+    public ResponseEntity<?> checkBusinessNumber(@RequestParam String businessNumber) {
+        boolean exists = storeService.existsBusinessNumber(businessNumber);
+        return ApiResponse.ok(Map.of("available", !exists),
+                exists ? "이미 사용 중인 사업자등록번호입니다." : "사용 가능한 사업자등록번호입니다.");
+    }
+
 
 }

@@ -62,8 +62,6 @@ public class StoreService {
         return store.getId();
     }
 
-
-
     /* Store 로그인 Service*/
     public Store doLogin(StoreLoginReqDTO storeLoginReqDTO) {
         Store store = storeRepository.findByLoginId(storeLoginReqDTO.getLoginId())
@@ -77,6 +75,11 @@ public class StoreService {
     /* Store LoginId 존재 여부 확인 */
     public boolean existsLoginId(String loginId) {
         return storeRepository.findByLoginId(loginId).isPresent();
+    }
+
+    /* Store BusinessNumber 존재 여부 확인 */
+    public boolean existsBusinessNumber(String businessNumber) {
+        return storeRepository.findByBusinessNumber(businessNumber).isPresent();
     }
 
 }

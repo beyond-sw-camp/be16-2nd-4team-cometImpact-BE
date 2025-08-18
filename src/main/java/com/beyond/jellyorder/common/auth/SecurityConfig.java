@@ -47,6 +47,7 @@ public class SecurityConfig {
                         "/request/**",
                         "/password/**",
                         "/store/check-login-id",
+                        "/store/check-business-number",
                         // 테스트용(삭제 필요)
                         "/category/**",
                         "/ingredient/**",
