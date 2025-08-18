@@ -36,7 +36,6 @@ public class TotalOrderByTableResDto {
         private String mainOptionName; // 없으면 null
         private String subOptionName;
         private Integer price;         // 옵션 금액
-        private Integer quantity;
         private Integer lineTotal;
     }
 }
