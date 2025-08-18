@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.websocket;
 
 import com.beyond.jellyorder.domain.order.dto.UnitOrderCreateReqDto;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderResDto;
+import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusResDTO;
 import com.beyond.jellyorder.domain.order.service.UnitOrderService;
 import jakarta.validation.Valid;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
@@ -29,7 +30,7 @@ public class WebSocketOrderController {
             @DestinationVariable UUID storeTableId,
             @Valid UnitOrderCreateReqDto reqDTO
     ) {
-        UnitOrderResDto resDTO = unitOrderService.createUnit(reqDTO, storeTableId);
+        OrderStatusResDTO resDTO = unitOrderService.createUnit(reqDTO, storeTableId);
         messageTemplate.convertAndSend("/topic/" + storeTableId, resDTO);
     }
 

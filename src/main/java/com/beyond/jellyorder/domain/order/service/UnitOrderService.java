@@ -11,6 +11,9 @@ import com.beyond.jellyorder.domain.order.dto.UnitOrderCreateReqDto;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderMenuReqDto;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderResDto;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderResult;
+import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusMenu;
+import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusMenuOption;
+import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusResDTO;
 import com.beyond.jellyorder.domain.order.entity.*;
 import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
@@ -39,7 +42,7 @@ public class UnitOrderService {
     private final OrderMenuRepository orderMenuRepository;
     private final SubOptionRepository subOptionRepository;
 
-    public UnitOrderResDto createUnit(UnitOrderCreateReqDto dto, UUID storeTableId) {
+    public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto, UUID storeTableId) {
         // 1. 테이블 조회
         StoreTable storeTable = findStoreTable(storeTableId);
 
@@ -59,7 +62,7 @@ public class UnitOrderService {
         updateTableStatusIfNeeded(storeTable, totalOrder);
 
         // 8. 응답 생성
-        return buildResponse(totalOrder, unitOrder, result);
+        return buildResponse(unitOrder, storeTable);
     }
 
     /* --------------------- private methods --------------------- */
@@ -108,6 +111,7 @@ public class UnitOrderService {
             int optionsPrice = processOptions(menuReqDto, menu, orderMenu);
 
             // cascade로 옵션까지 저장
+            unitOrder.getOrderMenus().add(orderMenu);
             orderMenuRepository.save(orderMenu);
 
             unitPrice += menu.getPrice() * menuReqDto.getQuantity() + optionsPrice;
@@ -156,6 +160,7 @@ public class UnitOrderService {
     }
 
     private int processOptions(UnitOrderMenuReqDto menuReqDto, Menu menu, OrderMenu orderMenu) {
+
         // 1) 요청에서 sub_option.id만 뽑아 중복 제거
         Set<UUID> requested = Optional.ofNullable(menuReqDto.getOptionList())
                 .orElseGet(List::of).stream()
@@ -210,12 +215,28 @@ public class UnitOrderService {
         }
     }
 
-    private UnitOrderResDto buildResponse(TotalOrder totalOrder, UnitOrder unitOrder, UnitOrderResult result) {
-        return UnitOrderResDto.builder()
-                .totalOrderId(totalOrder.getId())
+    private OrderStatusResDTO buildResponse(UnitOrder unitOrder, StoreTable storeTable) {
+        // orderMenu → dto 변환
+        List<OrderStatusMenu> orderMenuDtos = unitOrder.getOrderMenus().stream()
+                .map(orderMenu -> OrderStatusMenu.builder()
+                        .menuName(orderMenu.getMenu().getName())   // 스냅샷
+                        .menuQuantity(orderMenu.getQuantity())
+                        .optionList(
+                                orderMenu.getOrderMenuOptionList().stream()
+                                        .map(omo -> OrderStatusMenuOption.builder()
+                                                .optionName(omo.getSubOption().getName())
+                                                .build()
+                                        ).toList()
+                        )
+                        .build()
+                ).toList();
+
+        return OrderStatusResDTO.builder()
                 .unitOrderId(unitOrder.getId())
-                .unitPrice(result.getUnitPrice())
-                .unitCount(result.getUnitCount())
+                .orderNumber(unitOrder.getOrderNumber())
+                .storeTableName(storeTable.getName())
+                .localTime(unitOrder.getRelevantTime())
+                .orderMenuList(orderMenuDtos)
                 .build();
     }
 }

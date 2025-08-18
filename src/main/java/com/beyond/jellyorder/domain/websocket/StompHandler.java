@@ -21,7 +21,7 @@ public class StompHandler implements ChannelInterceptor {
         final StompHeaderAccessor accessor = StompHeaderAccessor.wrap(message);
 
         if (StompCommand.CONNECT == accessor.getCommand()) {
-            System.out.println("connect요청 시 토큰 유혀성 검증");
+            System.out.println("connect요청 시 토큰 유효성 검증");
             String bearerToken = accessor.getFirstNativeHeader("Authorization");
             String token = bearerToken.substring(7);
             // 토큰 검증
