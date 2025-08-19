@@ -46,6 +46,7 @@ public class SecurityConfig {
                         "/swagger-ui.html",  // swagger 추가
                         "/request/**",
                         "/password/**",
+                        "/connect/**", // websocket 허용
                         // 테스트용(삭제 필요)
                         "/category/**",
                         "/ingredient/**",
