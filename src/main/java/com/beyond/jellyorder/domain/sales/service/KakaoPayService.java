@@ -1,9 +1,9 @@
-package com.beyond.jellyorder.domain.sales.payment.service;
+package com.beyond.jellyorder.domain.sales.service;
 
 import com.beyond.jellyorder.common.auth.KakaoPayProperties;
-import com.beyond.jellyorder.domain.sales.payment.dto.KakaoApproveResDto;
-import com.beyond.jellyorder.domain.sales.payment.dto.KakaoReadyReqDto;
-import com.beyond.jellyorder.domain.sales.payment.dto.KakaoReadyResDto;
+import com.beyond.jellyorder.domain.sales.dto.KakaoApproveResDto;
+import com.beyond.jellyorder.domain.sales.dto.KakaoReadyReqDto;
+import com.beyond.jellyorder.domain.sales.dto.KakaoReadyResDto;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.*;
