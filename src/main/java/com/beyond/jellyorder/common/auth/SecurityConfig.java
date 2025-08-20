@@ -39,6 +39,7 @@ public class SecurityConfig {
                         "/store/do-login",
                         "/store-table/do-login",
                         "/store/refresh-at",
+                        "/store-table/refresh-at",
                         "/sse/**",
                         "/payment/**",
                         "/v3/api-docs/**",  // swagger 추가
@@ -52,9 +53,13 @@ public class SecurityConfig {
                         "/category/**",
                         "/ingredient/**",
                         "/menu/**",
-                        "/zone/**",
+//                        "/zone/**",
                         "/orders/**"
-                                 ).permitAll().anyRequest().authenticated())
+                                 ).permitAll()
+//                        .requestMatchers("/store-table/**")
+//                        .hasRole("STORE")
+                        .anyRequest()
+                        .authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
                                 .accessDeniedHandler(jwtAuthorizationHandler))
