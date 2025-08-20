@@ -32,7 +32,7 @@ public class Sales extends BaseIdAndTimeEntity {
     @Column(name = "status", nullable = false)
     private Status status;
 
-    @Column(name = "total_amount", nullable = false)
+    @Column(name = "total_amount")
     private Long totalAmount;
 
     @Column(name = "settlement_amount")

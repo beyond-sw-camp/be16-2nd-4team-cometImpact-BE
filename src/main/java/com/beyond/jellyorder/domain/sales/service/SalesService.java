@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.sales.service;
 
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
+import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.sales.entity.OrderType;
 import com.beyond.jellyorder.domain.sales.entity.PaymentMethod;
 import com.beyond.jellyorder.domain.sales.entity.Sales;
@@ -8,7 +9,6 @@ import com.beyond.jellyorder.domain.sales.entity.Status;
 import com.beyond.jellyorder.domain.sales.repository.SalesRepository;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
-import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
 import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
@@ -24,7 +24,6 @@ import java.util.UUID;
 public class SalesService {
 
     private final SalesRepository salesRepository;
-    private final StoreTableRepository storeTableRepository;
     private final EntityManager em;
 
     // 주문을 기준으로 결제 PENDING 생성(있다면 갱신)
@@ -83,11 +82,12 @@ public class SalesService {
         sales.setPaidAt(paidAt != null ? paidAt : LocalDateTime.now());
         sales.setStatus(Status.COMPLETED);
 
-        // 결제 완료 후 테이블 status 리셋
+        // 결제 완료 후 테이블 status 리셋 && totalOrder의 paymentedAt 시간 업데이트
         TotalOrder totalOrder = sales.getTotalOrder();
         if (totalOrder != null && totalOrder.getStoreTable() != null) {
             StoreTable table = totalOrder.getStoreTable();
             updateTableStatus(table, totalOrder);
+            totalOrder.updatePaymentedAt(sales.getPaidAt());
         }
 
         return sales;
