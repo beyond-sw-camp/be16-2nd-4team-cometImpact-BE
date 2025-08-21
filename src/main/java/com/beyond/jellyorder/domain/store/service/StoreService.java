@@ -90,7 +90,11 @@ public class StoreService {
         String businessNumber = storeLoginIdFindDTO.getBusinessNumber();
 
         Store store = storeRepository.findByOwnerNameAndBusinessNumber(ownerName, businessNumber)
-                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 사업자 번호입니다." + businessNumber));
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사업자 번호 혹은 가입되지 않은 사용자입니다." ));
+
+        if (ownerName != storeLoginIdFindDTO.getOwnerName()) {
+            throw new IllegalArgumentException("유효하지 않은 사업자 번호 혹은 가입되지 않은 사용자입니다.");
+        }
 
         String loginID = store.getLoginId();
         return loginID;
