@@ -1,12 +1,14 @@
 package com.beyond.jellyorder.domain.store.service;
 
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
+import com.beyond.jellyorder.domain.store.dto.StoreLoginIdFindDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginReqDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreCreateDTO;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.sqm.EntityTypeException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -80,6 +82,18 @@ public class StoreService {
     /* Store BusinessNumber 존재 여부 확인 */
     public boolean existsBusinessNumber(String businessNumber) {
         return storeRepository.findByBusinessNumber(businessNumber).isPresent();
+    }
+
+    /* Store Login Id 찾기 */
+    public String findLoginId(StoreLoginIdFindDTO storeLoginIdFindDTO) {
+        String ownerName = storeLoginIdFindDTO.getOwnerName();
+        String businessNumber = storeLoginIdFindDTO.getBusinessNumber();
+
+        Store store = storeRepository.findByOwnerNameAndBusinessNumber(ownerName, businessNumber)
+                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 사업자 번호입니다." + businessNumber));
+
+        String loginID = store.getLoginId();
+        return loginID;
     }
 
 }

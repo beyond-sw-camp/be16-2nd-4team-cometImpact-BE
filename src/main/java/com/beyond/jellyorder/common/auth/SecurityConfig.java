@@ -38,6 +38,7 @@ public class SecurityConfig {
                         "/store/create",
                         "/store/do-login",
                         "/store-table/do-login",
+                        "/store/find-login-id",
                         "/store/refresh-at",
                         "/store-table/refresh-at",
                         "/sse/**",
