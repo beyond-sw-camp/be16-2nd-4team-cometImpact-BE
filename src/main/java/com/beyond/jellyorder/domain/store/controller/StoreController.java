@@ -43,6 +43,7 @@ public class StoreController {
                 .storeAccessToken(storeAccessToken)
                 .storeRefreshToken(storeRefreshToken)
                 .storeName(store.getStoreName())
+                .storeId(store.getId())
                 .build();
 
         return ApiResponse.ok(loginResponseDto, "로그인 완료");
