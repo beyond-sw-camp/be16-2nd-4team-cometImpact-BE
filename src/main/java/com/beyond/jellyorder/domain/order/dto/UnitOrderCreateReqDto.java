@@ -15,6 +15,9 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class UnitOrderCreateReqDto {
+    @NotEmpty(message = "storeTableId가 없습니다.")
+    private UUID storeTableId;
+
     @NotEmpty(message = "주문 항목이 비어있습니다.")
     @Valid   // 내부 메뉴 리스트까지 검증
     List<UnitOrderMenuReqDto> menuList;

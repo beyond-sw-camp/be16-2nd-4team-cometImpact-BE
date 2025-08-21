@@ -51,6 +51,7 @@ public class StoreTableController {
         return ApiResponse.ok(resDTO, "구역이 수정되었습니다.");
     }
 
+    @PreAuthorize("permitAll()")
     @PostMapping("/do-login")
     public ResponseEntity<?> storeTableLogin(@Valid @RequestBody StoreTableLoginReqDTO storeTableLoginReqDTO) {
 
@@ -67,6 +68,7 @@ public class StoreTableController {
         return ApiResponse.ok(loginResDTO, storeTableLoginReqDTO.getName() + " 테이블 로그인 완료!");
     }
 
+    @PreAuthorize("permitAll()")
     @PostMapping("/refresh-at")
     public ResponseEntity<?> storeTableNewAt(@RequestBody RefreshTokenDto refreshTokenDto) {
         StoreTable storeTable = authService.validateStoreTableRt(refreshTokenDto.getRefreshToken());
