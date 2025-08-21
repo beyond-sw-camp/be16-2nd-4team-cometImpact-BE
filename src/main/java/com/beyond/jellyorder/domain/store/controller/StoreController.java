@@ -76,7 +76,7 @@ public class StoreController {
                 exists ? "이미 사용 중인 사업자등록번호입니다." : "사용 가능한 사업자등록번호입니다.");
     }
 
-    @GetMapping("/find-login-id")
+    @PostMapping("/find-login-id")
     public ResponseEntity<?> findLoginId(@RequestBody StoreLoginIdFindDTO storeLoginIdFindDTO) {
         String loginId = storeService.findLoginId(storeLoginIdFindDTO);
         return ApiResponse.ok(loginId, "현재 가입된 아이디는 " + loginId + " 입니다.");
