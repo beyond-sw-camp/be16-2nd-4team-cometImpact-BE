@@ -92,7 +92,7 @@ public class StoreService {
         Store store = storeRepository.findByOwnerNameAndBusinessNumber(ownerName, businessNumber)
                 .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사업자 번호 혹은 가입되지 않은 사용자입니다." ));
 
-        if (ownerName != storeLoginIdFindDTO.getOwnerName()) {
+        if (!ownerName.equals(store.getOwnerName())) {
             throw new IllegalArgumentException("유효하지 않은 사업자 번호 혹은 가입되지 않은 사용자입니다.");
         }
 
