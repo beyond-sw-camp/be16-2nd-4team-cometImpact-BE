@@ -135,6 +135,7 @@ public class MenuService {
             return MenuCreateResDto.fromEntity(menu);
 
         } catch (Exception e) {
+            // 8) 실패 시 업로드 파일 정리
             if (imageUrl != null) {
                 s3Manager.delete(imageUrl);
             }
