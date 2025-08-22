@@ -7,6 +7,7 @@ import com.beyond.jellyorder.common.auth.StoreTableJwtTokenProvider;
 import com.beyond.jellyorder.domain.storetable.dto.storeTable.*;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.service.StoreTableService;
+import jakarta.annotation.security.PermitAll;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -65,7 +66,7 @@ public class StoreTableController {
                 .storeTableRefreshToken(refreshToken)
                 .build();
 
-        return ApiResponse.ok(loginResDTO, storeTableLoginReqDTO.getName() + " 테이블 로그인 완료!");
+        return ApiResponse.ok(loginResDTO, storeTableLoginReqDTO.getTableName() + " 테이블 로그인 완료!");
     }
 
     @PreAuthorize("permitAll()")

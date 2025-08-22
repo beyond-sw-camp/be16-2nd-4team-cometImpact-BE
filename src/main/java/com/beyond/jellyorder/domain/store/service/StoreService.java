@@ -1,12 +1,14 @@
 package com.beyond.jellyorder.domain.store.service;
 
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
+import com.beyond.jellyorder.domain.store.dto.StoreLoginIdFindDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginReqDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreCreateDTO;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.hibernate.query.sqm.EntityTypeException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -38,7 +40,7 @@ public class StoreService {
         if (storeRepository.findByLoginId(loginId).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 아이디 입니다. " + loginId);
         }
-        if (storeRepository.findBybusinessNumber(bNo).isPresent()) {
+        if (storeRepository.findByBusinessNumber(bNo).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + bNo);
         }
 
@@ -62,8 +64,6 @@ public class StoreService {
         return store.getId();
     }
 
-
-
     /* Store 로그인 Service*/
     public Store doLogin(StoreLoginReqDTO storeLoginReqDTO) {
         Store store = storeRepository.findByLoginId(storeLoginReqDTO.getLoginId())
@@ -72,8 +72,32 @@ public class StoreService {
             throw new IllegalArgumentException("로그인 정보가 일치하지 않습니다.");
         }
         return store;
+    }
 
+    /* Store LoginId 존재 여부 확인 */
+    public boolean existsLoginId(String loginId) {
+        return storeRepository.findByLoginId(loginId).isPresent();
+    }
 
+    /* Store BusinessNumber 존재 여부 확인 */
+    public boolean existsBusinessNumber(String businessNumber) {
+        return storeRepository.findByBusinessNumber(businessNumber).isPresent();
+    }
+
+    /* Store Login Id 찾기 */
+    public String findLoginId(StoreLoginIdFindDTO storeLoginIdFindDTO) {
+        String ownerName = storeLoginIdFindDTO.getOwnerName();
+        String businessNumber = storeLoginIdFindDTO.getBusinessNumber();
+
+        Store store = storeRepository.findByOwnerNameAndBusinessNumber(ownerName, businessNumber)
+                .orElseThrow(() -> new IllegalArgumentException("유효하지 않은 사업자 번호 혹은 가입되지 않은 사용자입니다." ));
+
+        if (!ownerName.equals(store.getOwnerName())) {
+            throw new IllegalArgumentException("유효하지 않은 사업자 번호 혹은 가입되지 않은 사용자입니다.");
+        }
+
+        String loginID = store.getLoginId();
+        return loginID;
     }
 
 }

@@ -11,7 +11,8 @@ import java.util.UUID;
 public interface StoreRepository extends JpaRepository<Store, UUID> {
 
     Optional<Store> findByLoginId(String loginId);
-    Optional<Store> findBybusinessNumber(String businessNumber);
+    Optional<Store> findByBusinessNumber(String businessNumber);
     Optional<Store> findByOwnerEmail(String email);
     Optional<Store> findById(UUID id);
+    Optional<Store> findByOwnerNameAndBusinessNumber(String ownerName, String businessNumber);
 }

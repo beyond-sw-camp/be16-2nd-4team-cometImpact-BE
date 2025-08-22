@@ -115,7 +115,7 @@ public class StoreTableService {
         Store store = storeRepository.findByLoginId(storeTableLoginReqDTO.getLoginId())
                 .orElseThrow(() -> new EntityNotFoundException("로그인 정보가 일치하지 않습니다."));
 
-        StoreTable storeTable = storeTableRepository.findByStoreAndName(store, storeTableLoginReqDTO.getName())
+        StoreTable storeTable = storeTableRepository.findByStoreAndName(store, storeTableLoginReqDTO.getTableName())
                 .orElseThrow(() -> new EntityNotFoundException("존재하지 않는 테이블입니다."));
 
         if (!passwordEncoder.matches(storeTableLoginReqDTO.getPassword(), store.getPassword())) {
