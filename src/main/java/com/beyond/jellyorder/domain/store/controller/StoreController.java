@@ -4,6 +4,7 @@ import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.common.auth.AuthService;
 import com.beyond.jellyorder.common.auth.StoreJwtTokenProvider;
 import com.beyond.jellyorder.common.auth.RefreshTokenDto;
+import com.beyond.jellyorder.domain.store.dto.StoreLoginIdFindDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginReqDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginResDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreCreateDTO;
@@ -75,5 +76,9 @@ public class StoreController {
                 exists ? "이미 사용 중인 사업자등록번호입니다." : "사용 가능한 사업자등록번호입니다.");
     }
 
-
+    @PostMapping("/find-login-id")
+    public ResponseEntity<?> findLoginId(@RequestBody StoreLoginIdFindDTO storeLoginIdFindDTO) {
+        String loginId = storeService.findLoginId(storeLoginIdFindDTO);
+        return ApiResponse.ok(loginId, "현재 가입된 아이디는 " + loginId + " 입니다.");
+    }
 }
