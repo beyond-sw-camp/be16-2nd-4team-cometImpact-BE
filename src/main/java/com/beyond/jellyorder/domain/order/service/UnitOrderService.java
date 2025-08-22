@@ -42,9 +42,9 @@ public class UnitOrderService {
     private final OrderMenuRepository orderMenuRepository;
     private final SubOptionRepository subOptionRepository;
 
-    public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto, UUID storeTableId) {
+    public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto) {
         // 1. 테이블 조회
-        StoreTable storeTable = findStoreTable(storeTableId);
+        StoreTable storeTable = findStoreTable(dto.getStoreTableId());
 
         // 2. 전체주문 확보
         TotalOrder totalOrder = getOrCreateTotalOrder(storeTable);

@@ -21,7 +21,7 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
     @Override
     public void registerStompEndpoints(StompEndpointRegistry registry) {
         registry.addEndpoint("/connect")
-                .setAllowedOrigins("http://localhost:3000")
+                .setAllowedOrigins("http://localhost:3111")
                 // ws://가 아닌 http:// 엔드포인트를 사용할 수 있게 해주는 sockJs 라이브러리를 통한 요청을 허용하는 설정.
                 .withSockJS();
 
@@ -35,7 +35,8 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         // /topic/1 형태로 메시지를 수신(subscribe)해야 함을 설정.
         // jellyorder는 /topic/{storeId}/{tableName} 으로 설정
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue", "/user");
+        registry.setUserDestinationPrefix("/user");
     }
 
     @Override

@@ -22,12 +22,11 @@ public class UnitOrderController {
     private final UnitOrderService orderService;
 
     /** 단위주문 생성 */
-    @PostMapping("/unit/create/{storeTableId}")
+    @PostMapping("/unit/create")
     public ResponseEntity<?> createUnit(
-            @RequestBody @Valid UnitOrderCreateReqDto reqDTO,
-            @PathVariable UUID storeTableId
+            @RequestBody @Valid UnitOrderCreateReqDto reqDTO
             ) {
-        OrderStatusResDTO resDTO = orderService.createUnit(reqDTO, storeTableId);
+        OrderStatusResDTO resDTO = orderService.createUnit(reqDTO);
 
         return ApiResponse.created(resDTO, "단위주문이 생성되었습니다.");
     }
