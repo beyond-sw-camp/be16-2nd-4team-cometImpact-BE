@@ -30,5 +30,4 @@ public class OrderStatusResDTO {
                 .orderMenuList(unitOrder.getOrderMenus().stream().map(OrderStatusMenu::from).toList())
                 .build();
     }
-
 }
