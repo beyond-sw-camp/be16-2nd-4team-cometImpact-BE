@@ -25,5 +25,4 @@ public class OrderStatusMenu {
                         .map(OrderStatusMenuOption::from).toList())
                 .build();
     }
-
 }

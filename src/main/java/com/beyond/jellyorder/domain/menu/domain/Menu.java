@@ -78,7 +78,7 @@ public class Menu extends BaseIdAndTimeEntity {
     public void increaseSalesToday(Integer quantity) {
         this.salesToday += quantity;
         if (this.salesLimit != -1 && this.salesToday >= this.salesLimit
-                && !this.stockStatus.equals(MenuStatus.SOLD_OUT_MANUAL)) {
+                && this.stockStatus != MenuStatus.SOLD_OUT_MANUAL) {
             this.stockStatus = MenuStatus.OUT_OF_STOCK;
         }
     }
