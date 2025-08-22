@@ -59,4 +59,9 @@ public class TotalOrder extends BaseIdEntity {
     public void updateCount(Integer updateCount) {
         this.count += updateCount;
     }
+
+    // 결제 시간 업데이트 메서드
+    public void updatePaymentedAt(LocalDateTime paidAt) {
+        this.paymentedAt = paidAt;
+    }
 }
