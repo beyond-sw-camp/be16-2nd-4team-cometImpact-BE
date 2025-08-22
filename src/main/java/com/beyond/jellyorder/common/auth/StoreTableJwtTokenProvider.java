@@ -68,7 +68,6 @@ import java.util.Date;
 
         Claims claims = Jwts.claims().setSubject(loginId);
         claims.put("role", role);
-        claims.put("tableName", tableName);
         claims.put("storeId", storeId);
         claims.put("storeTableId", storeTableId);
 
