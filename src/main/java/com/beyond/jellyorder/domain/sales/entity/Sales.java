@@ -41,7 +41,6 @@ public class Sales extends BaseIdAndTimeEntity {
     @Column(name = "paid_at")
     private LocalDateTime paidAt;
 
-    // 추가사항 (카카오페이 tid)
     @Column(name = "tid")
     private String tid;
 
