@@ -38,7 +38,7 @@ public class StoreService {
         if (storeRepository.findByLoginId(loginId).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 아이디 입니다. " + loginId);
         }
-        if (storeRepository.findBybusinessNumber(bNo).isPresent()) {
+        if (storeRepository.findByBusinessNumber(bNo).isPresent()) {
             throw new DuplicateResourceException("이미 가입된 사업자등록번호 입니다. " + bNo);
         }
 
@@ -62,8 +62,6 @@ public class StoreService {
         return store.getId();
     }
 
-
-
     /* Store 로그인 Service*/
     public Store doLogin(StoreLoginReqDTO storeLoginReqDTO) {
         Store store = storeRepository.findByLoginId(storeLoginReqDTO.getLoginId())
@@ -72,8 +70,16 @@ public class StoreService {
             throw new IllegalArgumentException("로그인 정보가 일치하지 않습니다.");
         }
         return store;
+    }
 
+    /* Store LoginId 존재 여부 확인 */
+    public boolean existsLoginId(String loginId) {
+        return storeRepository.findByLoginId(loginId).isPresent();
+    }
 
+    /* Store BusinessNumber 존재 여부 확인 */
+    public boolean existsBusinessNumber(String businessNumber) {
+        return storeRepository.findByBusinessNumber(businessNumber).isPresent();
     }
 
 }

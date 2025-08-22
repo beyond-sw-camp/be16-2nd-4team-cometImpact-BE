@@ -5,6 +5,8 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.UUID;
+
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
@@ -13,4 +15,6 @@ import lombok.NoArgsConstructor;
 public class StoreLoginResDTO {
     private String storeAccessToken;
     private String storeRefreshToken;
+    private String storeName;
+    private UUID storeId;
 }
