@@ -64,6 +64,7 @@ public class StoreTableController {
                 .builder()
                 .storeTableAccessToken(accessToken)
                 .storeTableRefreshToken(refreshToken)
+                .storeTableId(storeTable.getId())
                 .build();
 
         return ApiResponse.ok(loginResDTO, storeTableLoginReqDTO.getTableName() + " 테이블 로그인 완료!");
