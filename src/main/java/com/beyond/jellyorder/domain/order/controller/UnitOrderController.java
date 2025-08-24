@@ -13,7 +13,7 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/orders")
-@PreAuthorize("hasRole('STORE')")
+@PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
 public class UnitOrderController {
 
     private final UnitOrderService orderService;
