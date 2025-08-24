@@ -3,8 +3,13 @@ package com.beyond.jellyorder.domain.ingredient.service;
 import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.ingredient.domain.Ingredient;
+import com.beyond.jellyorder.domain.ingredient.domain.IngredientStatus;
 import com.beyond.jellyorder.domain.ingredient.dto.*;
 import com.beyond.jellyorder.domain.ingredient.repository.IngredientRepository;
+import com.beyond.jellyorder.domain.menu.domain.Menu;
+import com.beyond.jellyorder.domain.menu.domain.MenuStatus;
+import com.beyond.jellyorder.domain.menu.repository.MenuIngredientRepository;
+import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -29,6 +34,8 @@ public class IngredientService {
 
     private final IngredientRepository ingredientRepository;
     private final StoreRepository storeRepository;
+    private final MenuRepository menuRepository;
+    private final MenuIngredientRepository menuIngredientRepository;
     private final StoreJwtClaimUtil storeJwtClaimUtil;
 
     /**
@@ -95,35 +102,68 @@ public class IngredientService {
                 .build();
     }
 
+    @Transactional
     public IngredientDeleteResDto delete(String ingredientId) {
         final String storeId = storeJwtClaimUtil.getStoreId();
-        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
+        storeRepository.findById(UUID.fromString(storeId))
+                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
         // 1) 대상 조회
         Ingredient ingredient = ingredientRepository.findById(UUID.fromString(ingredientId))
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "식자재를 찾을 수 없습니다. id=" + ingredientId));
+                .orElseThrow(() -> new EntityNotFoundException("식자재를 찾을 수 없습니다. id=" + ingredientId));
 
         // 2) 소속(storeId) 검증
         if (!ingredient.getStore().getId().equals(UUID.fromString(storeId))) {
-            throw new EntityNotFoundException(
-                    "요청한 매장에 속하지 않는 식자재입니다. id=" + ingredientId
-                            + ", storeId=" + storeId);
+            throw new EntityNotFoundException("요청한 매장에 속하지 않는 식자재입니다. id=" + ingredientId + ", storeId=" + storeId);
         }
 
-        // 3) 영향받는 메뉴 사전 조회 (네이티브: BIN_TO_UUID → String)
+        // ✅ (A) 영향받는 메뉴 ID들을 미리 확보
         var briefs = ingredientRepository.findAffectedMenus(ingredient.getId());
+        List<UUID> affectedMenuIds = briefs.stream()
+                .map(b -> UUID.fromString(b.getId()))
+                .toList();
+
+        // 3) 삭제
+        ingredientRepository.delete(ingredient);
+
+        // ✅ (B) 상태 복원 로직
+        if (!affectedMenuIds.isEmpty()) {
+            List<Menu> menus = menuRepository.findAllById(affectedMenuIds);
+            int changed = 0;
+
+            for (Menu m : menus) {
+                // 수동 품절은 건드리지 않음
+                if (m.getStockStatus() == MenuStatus.SOLD_OUT_MANUAL) continue;
+
+                // 현재 OUT_OF_STOCK 이고, 판매제한으로 인한 소진 상태가 아니어야 함
+                boolean limitedSoldOut = (m.getSalesLimit() != null)
+                        && !m.getSalesLimit().equals(-1)
+                        && m.getSalesToday() != null
+                        && m.getSalesToday().equals(m.getSalesLimit());
+
+                if (m.getStockStatus() == MenuStatus.OUT_OF_STOCK && !limitedSoldOut) {
+                    // 남아있는 연관 식자재 중 EXHAUSTED 가 하나라도 있으면 그대로 유지
+                    long exhaustedCnt = menuIngredientRepository.countExhaustedByMenuId(m.getId());
+                    if (exhaustedCnt == 0) {
+                        m.changeStockStatus(MenuStatus.ON_SALE);
+                        changed++;
+                    }
+                }
+            }
+
+            if (changed > 0) {
+                menuRepository.saveAll(menus);
+            }
+        }
+
+        // 4) 응답 조립
         var affected = briefs.stream()
                 .map(b -> IngredientDeleteResDto.AffectedMenuDto.builder()
-                        .id(UUID.fromString(b.getId())) // String → UUID 변환
+                        .id(UUID.fromString(b.getId()))
                         .name(b.getName())
                         .build())
                 .toList();
 
-        // 4) 삭제 (JPA orphanRemoval 또는 DB FK ON DELETE CASCADE로 연결행 정리)
-        ingredientRepository.delete(ingredient);
-
-        // 5) 응답 조립
         return IngredientDeleteResDto.builder()
                 .ingredientId(ingredient.getId())
                 .ingredientName(ingredient.getName())
@@ -132,15 +172,23 @@ public class IngredientService {
     }
 
     public IngredientModifyResDto modify(IngredientModifyReqDto req) {
-        final String storeId = storeJwtClaimUtil.getStoreId();
-        storeRepository.findById(UUID.fromString(storeId)).orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
+        final String storeIdStr = storeJwtClaimUtil.getStoreId();
+        final UUID storeId = UUID.fromString(storeIdStr);
+
+        storeRepository.findById(storeId)
+                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeIdStr));
 
         if (req.getName() == null && req.getStatus() == null) {
             throw new IllegalArgumentException("수정할 필드가 없습니다. name 또는 status 중 최소 한 개는 필요합니다.");
         }
 
-        Ingredient ingredient = ingredientRepository.findByIdAndStoreId(req.getIngredientId(), UUID.fromString(storeId))
-                .orElseThrow(() -> new EntityNotFoundException("식자재를 찾을 수 없습니다. id=" + req.getIngredientId() + ", storeId=" + storeId));
+        Ingredient ingredient = ingredientRepository
+                .findByIdAndStoreId(req.getIngredientId(), storeId)
+                .orElseThrow(() ->
+                        new EntityNotFoundException("식자재를 찾을 수 없습니다. id=" + req.getIngredientId() + ", storeId=" + storeIdStr));
+
+        // 기존 상태 백업
+        final IngredientStatus prevStatus = ingredient.getStatus();
 
         // 이름 수정
         if (req.getName() != null) {
@@ -148,9 +196,8 @@ public class IngredientService {
             if (newName.isEmpty()) {
                 throw new IllegalArgumentException("식자재명은 공백일 수 없습니다.");
             }
-            // 동일 매장 내 중복 방지
             boolean duplicated = ingredientRepository
-                    .existsByStoreIdAndNameAndIdNot(UUID.fromString(storeId), newName, req.getIngredientId());
+                    .existsByStoreIdAndNameAndIdNot(storeId, newName, req.getIngredientId());
             if (duplicated) {
                 throw new IllegalArgumentException("동일 매장 내 이미 존재하는 식자재명입니다: " + newName);
             }
@@ -163,6 +210,30 @@ public class IngredientService {
         }
 
         Ingredient saved = ingredientRepository.save(ingredient);
+
+        // ✅ EXHAUSTED 로 변경된 경우: 이 재료를 쓰는 메뉴(동일 매장, 수동품절 제외)를 OUT_OF_STOCK 로 전환
+        if (req.getStatus() == IngredientStatus.EXHAUSTED && prevStatus != IngredientStatus.EXHAUSTED) {
+            // 1) 조인테이블에서 메뉴 ID만 조회
+            List<UUID> menuIds = menuIngredientRepository.findMenuIdsByIngredient(saved);
+            if (!menuIds.isEmpty()) {
+                // 2) 해당 메뉴들 로드
+                List<Menu> menus = menuRepository.findAllById(menuIds);
+
+                int changed = 0;
+                for (Menu m : menus) {
+                    // SOLD_OUT_MANUAL 이 아니면 OUT_OF_STOCK으로
+                    if (m.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL
+                            && m.getStockStatus() != MenuStatus.OUT_OF_STOCK) {
+                        m.changeStockStatus(MenuStatus.OUT_OF_STOCK);
+                        changed++;
+                    }
+                }
+
+                if (changed > 0) {
+                    menuRepository.saveAll(menus);
+                }
+            }
+        }
 
         return IngredientModifyResDto.builder()
                 .id(saved.getId())
