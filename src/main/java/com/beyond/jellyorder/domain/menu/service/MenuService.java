@@ -18,12 +18,14 @@ import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import com.beyond.jellyorder.domain.option.subOption.dto.SubOptionDto;
+import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -44,21 +46,34 @@ public class MenuService {
     public MenuCreateResDto create(MenuCreateReqDto reqDto) {
         final UUID storeUuid = UUID.fromString(storeJwtClaimUtil.getStoreId());
 
-        // 0) 매장 검증
-        storeRepository.findById(storeUuid)
+        // 0) 매장 검증 & 엔티티 확보
+        Store store = storeRepository.findById(storeUuid)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeUuid));
 
-        // 1) 카테고리 조회
-        Category category = categoryRepository.findByStoreIdAndName(storeUuid, reqDto.getCategoryName())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "카테고리 조회 실패: name=" + reqDto.getCategoryName() + ", storeId=" + storeUuid));
+        // 1) 카테고리 조회 (없으면 생성)
+        String catName = Optional.ofNullable(reqDto.getCategoryName())
+                .map(String::trim).orElse("");
+        if (catName.isEmpty()) {
+            throw new IllegalArgumentException("카테고리명은 필수입니다.");
+        }
 
-        // 2) 옵션 트리 생성(검증 포함)
+        Category category = categoryRepository.findByStoreIdAndName(storeUuid, reqDto.getCategoryName())
+                .orElseGet(() -> {
+                    // 없으면 새로 생성
+                    Category newCat = Category.builder()
+                            .store(store)
+                            .name(reqDto.getCategoryName())
+                            .description(reqDto.getCategoryDescription())
+                            .build();
+                    return categoryRepository.save(newCat);
+                });
+
+        // 2) 옵션 트리 생성(검증 포함) — 기존 로직 유지
         List<MainOption> preparedMainOptions = new ArrayList<>();
         if (reqDto.getMainOptions() != null && !reqDto.getMainOptions().isEmpty()) {
             Set<String> dupMainNames = new HashSet<>();
             for (MainOptionDto modto : reqDto.getMainOptions()) {
-                MainOption mo = modto.toEntity(); // 내부에서 서브옵션 검증 포함
+                MainOption mo = modto.toEntity();
                 if (!dupMainNames.add(mo.getName())) {
                     throw new IllegalArgumentException("중복된 메인 옵션 이름이 존재합니다: " + mo.getName());
                 }
@@ -66,14 +81,10 @@ public class MenuService {
             }
         }
 
-        // 3) 식자재 존재 검증 + 입력값 정리
+        // 3) 식자재 존재 검증 — 기존 로직 유지
         List<String> ingredientNames = Optional.ofNullable(reqDto.getIngredients()).orElseGet(List::of)
-                .stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .distinct()
-                .toList();
+                .stream().filter(Objects::nonNull).map(String::trim)
+                .filter(s -> !s.isEmpty()).distinct().toList();
 
         List<Ingredient> ingredients = new ArrayList<>(ingredientNames.size());
         for (String ingName : ingredientNames) {
@@ -83,7 +94,7 @@ public class MenuService {
             ingredients.add(ing);
         }
 
-        // 4) 이미지 검증
+        // 4) 이미지 검증 — 기존 유지
         MultipartFile imageFile = reqDto.getImageFile();
         if (imageFile == null || imageFile.isEmpty()) {
             throw new IllegalArgumentException("메뉴 이미지 파일이 누락되었습니다.");
@@ -91,13 +102,12 @@ public class MenuService {
 
         String imageUrl = null;
         try {
-            // 5) 이미지 업로드
+            // 5) 업로드
             imageUrl = s3Manager.upload(imageFile, "menus");
 
-            // 6) 메뉴 저장(기본 필드 매핑)
+            // 6) 메뉴 저장
             Menu menu = reqDto.toEntity(category, imageUrl);
-
-            menu = menuRepository.save(menu); // UUID 확보
+            menu = menuRepository.save(menu);
 
             // 7) 옵션 역참조 연결(cascade)
             for (MainOption mo : preparedMainOptions) {
@@ -108,30 +118,26 @@ public class MenuService {
                     }
                 }
             }
-            menu.setMainOptions(preparedMainOptions); // cascade로 함께 persist
+            menu.setMainOptions(preparedMainOptions);
 
-            // 8) MenuIngredient 생성 & 컬렉션에만 추가
+            // 8) MenuIngredient 연결
             if (!ingredients.isEmpty()) {
                 Set<UUID> seen = new HashSet<>();
                 for (Ingredient ing : ingredients) {
-                    if (!seen.add(ing.getId())) continue; // 같은 재료 중복 방지
-                    MenuIngredient mi = MenuIngredient.builder()
-                            .menu(menu)
-                            .ingredient(ing)
-                            .build();
-                    // 편의 메서드로 양방향 연결 + 컬렉션 추가
-                    menu.addMenuIngredient(mi);
+                    if (!seen.add(ing.getId())) continue;
+                    menu.addMenuIngredient(
+                            MenuIngredient.builder().menu(menu).ingredient(ing).build()
+                    );
                 }
-                // menuIngredientRepository.saveAll(...) 호출하지 않습니다. (cascade로 처리)
             }
 
-            // 9) 재고 상태 결정 (수동 품절이면 유지, 아니면 식자재 기반 산정)
+            // 9) 재고 상태 계산
             if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
                 MenuStatus computed = deriveStockStatusFromIngredients(menu);
                 menu.changeStockStatus(computed);
             }
 
-            // 10) 응답 변환
+            // 10) 응답
             return MenuCreateResDto.fromEntity(menu);
 
         } catch (Exception e) {
@@ -142,6 +148,7 @@ public class MenuService {
             throw e;
         }
     }
+
 
     private MenuStatus deriveStockStatusFromIngredients(Menu menu) {
         if (menu.getMenuIngredients() == null || menu.getMenuIngredients().isEmpty()) {
@@ -293,11 +300,12 @@ public class MenuService {
         menuRepository.delete(menu);
     }
 
+    @Transactional
     public MenuAdminResDto update(MenuUpdateReqDto dto) {
         final UUID storeUuid = UUID.fromString(storeJwtClaimUtil.getStoreId());
 
         // 0) 매장 검증
-        storeRepository.findById(storeUuid)
+        Store store = storeRepository.findById(storeUuid)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeUuid));
 
         // 1) 메뉴 조회 + 소속 검증
@@ -310,11 +318,25 @@ public class MenuService {
         }
 
         // 2) 카테고리 변경
-        if (dto.getCategoryName() != null &&
-                !dto.getCategoryName().equals(menu.getCategory().getName())) {
-            Category newCategory = categoryRepository.findByStoreIdAndName(storeUuid, dto.getCategoryName())
-                    .orElseThrow(() -> new EntityNotFoundException("카테고리 없음: " + dto.getCategoryName()));
-            menu.setCategory(newCategory);
+        if (StringUtils.hasText(dto.getCategoryName())) {
+            String newName = dto.getCategoryName().trim();
+            String currName = (menu.getCategory() != null ? menu.getCategory().getName() : null);
+
+            if (!Objects.equals(currName, newName)) {
+                Category targetCategory = categoryRepository
+                        .findByStoreIdAndName(storeUuid, newName)
+                        .orElseGet(() -> {
+                            // 없으면 생성해서 바로 사용
+                            Category created = Category.builder()
+                                    .store(store)               // ⚠️ 연관 엔티티 주입
+                                    .name(newName)
+                                    .description(dto.getCategoryDescription())          // 필요 시 description 규칙 맞게
+                                    .build();
+                            return categoryRepository.save(created);
+                        });
+
+                menu.setCategory(targetCategory);
+            }
         }
 
         // 3) 스칼라 필드 변경 (필요 시만 set)
@@ -359,9 +381,10 @@ public class MenuService {
             }
         }
 
-
         // 6) 옵션 트리 동기화 (이름 기반 diff)
         syncOptions(menu, dto.getMainOptions());
+
+        syncIngredientsByIds(menu, dto.getIngredientIds(), storeUuid);
 
         // 7) 재고 상태 재계산
         if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
@@ -375,50 +398,68 @@ public class MenuService {
 
     /* =================== 동기화/도우미 메서드 =================== */
 
-    private void syncIngredients(Menu menu, List<String> requestedNames, UUID storeUuid) {
-        List<String> req = Optional.ofNullable(requestedNames).orElseGet(List::of).stream()
+    private void syncIngredientsByIds(Menu menu, List<UUID> requestedIds, UUID storeUuid) {
+        // 요청 정규화
+        List<UUID> reqIds = Optional.ofNullable(requestedIds).orElseGet(List::of).stream()
                 .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
                 .distinct()
                 .toList();
 
-        // 현재 (ingredientId -> MenuIngredient)
+        // 현재 상태: (ingredientId -> MenuIngredient)
         Map<UUID, MenuIngredient> current = Optional.ofNullable(menu.getMenuIngredients())
                 .orElseGet(List::of).stream()
                 .filter(mi -> mi.getIngredient() != null)
                 .collect(Collectors.toMap(mi -> mi.getIngredient().getId(), mi -> mi));
 
-        // 요청을 엔티티로 resolve (ingredientId -> Ingredient)
-        Map<UUID, Ingredient> desired = new HashMap<>();
-        for (String name : req) {
-            Ingredient ing = ingredientRepository.findByStoreIdAndName(storeUuid, name)
-                    .orElseThrow(() -> new EntityNotFoundException("식자재 없음: " + name));
-            desired.put(ing.getId(), ing);
+        // 요청이 빈 리스트면 모두 제거
+        if (reqIds.isEmpty()) {
+            if (menu.getMenuIngredients() != null) {
+                // orphanRemoval=true 가정
+                menu.getMenuIngredients().clear();
+            } else {
+                menu.setMenuIngredients(new ArrayList<>());
+            }
+            return;
         }
 
-        // 제거
+        // 요청 ID → 엔티티 resolve + 매장 소유 검증
+        List<Ingredient> found = ingredientRepository.findAllById(reqIds);
+        if (found.size() != reqIds.size()) {
+            throw new EntityNotFoundException("존재하지 않는 식자재 ID가 포함되어 있습니다.");
+        }
+        boolean otherStore = found.stream().anyMatch(ing -> ing.getStore() == null
+                || !Objects.equals(ing.getStore().getId(), storeUuid));
+        if (otherStore) {
+            throw new AccessDeniedException("다른 매장의 식자재는 연결할 수 없습니다.");
+        }
+
+        // 요청(target) 집합
+        Set<UUID> desiredIds = found.stream().map(Ingredient::getId).collect(Collectors.toSet());
+
+        // 제거: 현재 있는데 요청에 없는 링크 제거
         if (menu.getMenuIngredients() != null) {
-            for (UUID ingId : new ArrayList<>(current.keySet())) {
-                if (!desired.containsKey(ingId)) {
-                    menu.getMenuIngredients().remove(current.get(ingId));
+            for (UUID curId : new ArrayList<>(current.keySet())) {
+                if (!desiredIds.contains(curId)) {
+                    menu.getMenuIngredients().remove(current.get(curId)); // orphanRemoval로 삭제
                 }
             }
         } else {
             menu.setMenuIngredients(new ArrayList<>());
         }
 
-        // 추가
-        for (Map.Entry<UUID, Ingredient> e : desired.entrySet()) {
-            if (!current.containsKey(e.getKey())) {
-                MenuIngredient mi = MenuIngredient.builder()
+        // 추가: 요청에 있는데 현재 없는 링크 추가
+        for (Ingredient ing : found) {
+            UUID iid = ing.getId();
+            if (!current.containsKey(iid)) {
+                MenuIngredient link = MenuIngredient.builder()
                         .menu(menu)
-                        .ingredient(e.getValue())
+                        .ingredient(ing)
                         .build();
-                menu.addMenuIngredient(mi); // 편의 메서드
+                menu.addMenuIngredient(link); // 편의 메서드 있으면 사용
             }
         }
     }
+
 
     private void syncOptions(Menu menu, List<MainOptionDto> requestedMainDtos) {
         List<MainOptionDto> req = Optional.ofNullable(requestedMainDtos).orElseGet(List::of);
