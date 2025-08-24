@@ -4,6 +4,7 @@ import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.common.auth.AuthService;
 import com.beyond.jellyorder.common.auth.StoreJwtTokenProvider;
 import com.beyond.jellyorder.common.auth.RefreshTokenDto;
+import com.beyond.jellyorder.domain.store.dto.StoreLoginIdFindDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginReqDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreLoginResDTO;
 import com.beyond.jellyorder.domain.store.dto.StoreCreateDTO;
@@ -12,10 +13,8 @@ import com.beyond.jellyorder.domain.store.service.StoreService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
+import java.util.*;
 
 import java.util.UUID;
 
@@ -44,6 +43,8 @@ public class StoreController {
         StoreLoginResDTO loginResponseDto = StoreLoginResDTO.builder()
                 .storeAccessToken(storeAccessToken)
                 .storeRefreshToken(storeRefreshToken)
+                .storeName(store.getStoreName())
+                .storeId(store.getId())
                 .build();
 
         return ApiResponse.ok(loginResponseDto, "로그인 완료");
@@ -61,6 +62,23 @@ public class StoreController {
         return ApiResponse.ok(loginResponseDto, "점주 토큰 재발급 완료!"); /* 프론트 개발 후 리턴 값 변경 예정*/
     }
 
+    @GetMapping("/check-login-id")
+    public ResponseEntity<?> checkLoginId(@RequestParam String loginId) {
+        boolean exists = storeService.existsLoginId(loginId);
+        return ApiResponse.ok(Map.of("available", !exists),
+                exists ? "이미 가입된 아이디입니다." : "사용 가능한 아이디입니다.");
+    }
 
+    @GetMapping("/check-business-number")
+    public ResponseEntity<?> checkBusinessNumber(@RequestParam String businessNumber) {
+        boolean exists = storeService.existsBusinessNumber(businessNumber);
+        return ApiResponse.ok(Map.of("available", !exists),
+                exists ? "이미 사용 중인 사업자등록번호입니다." : "사용 가능한 사업자등록번호입니다.");
+    }
 
+    @PostMapping("/find-login-id")
+    public ResponseEntity<?> findLoginId(@RequestBody StoreLoginIdFindDTO storeLoginIdFindDTO) {
+        String loginId = storeService.findLoginId(storeLoginIdFindDTO);
+        return ApiResponse.ok(loginId, "현재 가입된 아이디는 " + loginId + " 입니다.");
+    }
 }

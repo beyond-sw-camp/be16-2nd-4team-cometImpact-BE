@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.order.dto.orderStatus;
 
 import com.beyond.jellyorder.domain.order.entity.UnitOrder;
+import com.fasterxml.jackson.annotation.JsonFormat;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
@@ -18,6 +19,7 @@ public class OrderStatusResDTO {
     private UUID unitOrderId;
     private Integer orderNumber;
     private String storeTableName;
+    @JsonFormat(pattern = "HH:mm")
     private LocalTime localTime;
     private List<OrderStatusMenu> orderMenuList;
 
@@ -30,5 +32,4 @@ public class OrderStatusResDTO {
                 .orderMenuList(unitOrder.getOrderMenus().stream().map(OrderStatusMenu::from).toList())
                 .build();
     }
-
 }

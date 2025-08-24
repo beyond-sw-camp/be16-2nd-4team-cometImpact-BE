@@ -37,8 +37,10 @@ public class SecurityConfig {
                 .authorizeHttpRequests(a -> a.requestMatchers(
                         "/store/create",
                         "/store/do-login",
-                        "/storeTable/do-login",
+                        "/store-table/do-login",
+                        "/store/find-login-id",
                         "/store/refresh-at",
+                        "/store-table/refresh-at",
                         "/sse/**",
                         "/payment/**",
                         "/v3/api-docs/**",  // swagger 추가
@@ -46,13 +48,20 @@ public class SecurityConfig {
                         "/swagger-ui.html",  // swagger 추가
                         "/request/**",
                         "/password/**",
+                        "/connect/**", // websocket 허용
+                        "/store/check-login-id",
+                        "/store/check-business-number",
                         // 테스트용(삭제 필요)
                         "/category/**",
                         "/ingredient/**",
                         "/menu/**",
-                        "/zone/**",
+//                        "/zone/**",
                         "/orders/**"
-                                 ).permitAll().anyRequest().authenticated())
+                                 ).permitAll()
+//                        .requestMatchers("/store-table/**")
+//                        .hasRole("STORE")
+                        .anyRequest()
+                        .authenticated())
                 .exceptionHandling(e ->
                         e.authenticationEntryPoint(jwtAuthenticationHandler)
                                 .accessDeniedHandler(jwtAuthorizationHandler))

@@ -1,7 +1,6 @@
-package com.beyond.jellyorder.domain.kakaoPay.dto;
+package com.beyond.jellyorder.domain.sales.dto;
 
 import lombok.Data;
-
 
 @Data
 public class KakaoReadyResDto {

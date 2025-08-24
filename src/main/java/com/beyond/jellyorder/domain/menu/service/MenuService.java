@@ -18,11 +18,14 @@ import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import com.beyond.jellyorder.domain.option.subOption.dto.SubOptionDto;
+import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.util.*;
@@ -43,21 +46,34 @@ public class MenuService {
     public MenuCreateResDto create(MenuCreateReqDto reqDto) {
         final UUID storeUuid = UUID.fromString(storeJwtClaimUtil.getStoreId());
 
-        // 0) 매장 검증
-        storeRepository.findById(storeUuid)
+        // 0) 매장 검증 & 엔티티 확보
+        Store store = storeRepository.findById(storeUuid)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeUuid));
 
-        // 1) 카테고리 조회
-        Category category = categoryRepository.findByStoreIdAndName(storeUuid, reqDto.getCategoryName())
-                .orElseThrow(() -> new EntityNotFoundException(
-                        "카테고리 조회 실패: name=" + reqDto.getCategoryName() + ", storeId=" + storeUuid));
+        // 1) 카테고리 조회 (없으면 생성)
+        String catName = Optional.ofNullable(reqDto.getCategoryName())
+                .map(String::trim).orElse("");
+        if (catName.isEmpty()) {
+            throw new IllegalArgumentException("카테고리명은 필수입니다.");
+        }
 
-        // 2) 옵션 트리 생성(검증 포함)
+        Category category = categoryRepository.findByStoreIdAndName(storeUuid, reqDto.getCategoryName())
+                .orElseGet(() -> {
+                    // 없으면 새로 생성
+                    Category newCat = Category.builder()
+                            .store(store)
+                            .name(reqDto.getCategoryName())
+                            .description(reqDto.getCategoryDescription())
+                            .build();
+                    return categoryRepository.save(newCat);
+                });
+
+        // 2) 옵션 트리 생성(검증 포함) — 기존 로직 유지
         List<MainOption> preparedMainOptions = new ArrayList<>();
         if (reqDto.getMainOptions() != null && !reqDto.getMainOptions().isEmpty()) {
             Set<String> dupMainNames = new HashSet<>();
             for (MainOptionDto modto : reqDto.getMainOptions()) {
-                MainOption mo = modto.toEntity(); // 내부에서 서브옵션 검증 포함
+                MainOption mo = modto.toEntity();
                 if (!dupMainNames.add(mo.getName())) {
                     throw new IllegalArgumentException("중복된 메인 옵션 이름이 존재합니다: " + mo.getName());
                 }
@@ -65,14 +81,10 @@ public class MenuService {
             }
         }
 
-        // 3) 식자재 존재 검증 + 입력값 정리
+        // 3) 식자재 존재 검증 — 기존 로직 유지
         List<String> ingredientNames = Optional.ofNullable(reqDto.getIngredients()).orElseGet(List::of)
-                .stream()
-                .filter(Objects::nonNull)
-                .map(String::trim)
-                .filter(s -> !s.isEmpty())
-                .distinct()
-                .toList();
+                .stream().filter(Objects::nonNull).map(String::trim)
+                .filter(s -> !s.isEmpty()).distinct().toList();
 
         List<Ingredient> ingredients = new ArrayList<>(ingredientNames.size());
         for (String ingName : ingredientNames) {
@@ -82,7 +94,7 @@ public class MenuService {
             ingredients.add(ing);
         }
 
-        // 4) 이미지 검증
+        // 4) 이미지 검증 — 기존 유지
         MultipartFile imageFile = reqDto.getImageFile();
         if (imageFile == null || imageFile.isEmpty()) {
             throw new IllegalArgumentException("메뉴 이미지 파일이 누락되었습니다.");
@@ -90,13 +102,12 @@ public class MenuService {
 
         String imageUrl = null;
         try {
-            // 5) 이미지 업로드
+            // 5) 업로드
             imageUrl = s3Manager.upload(imageFile, "menus");
 
-            // 6) 메뉴 저장(기본 필드 매핑)
+            // 6) 메뉴 저장
             Menu menu = reqDto.toEntity(category, imageUrl);
-
-            menu = menuRepository.save(menu); // UUID 확보
+            menu = menuRepository.save(menu);
 
             // 7) 옵션 역참조 연결(cascade)
             for (MainOption mo : preparedMainOptions) {
@@ -107,39 +118,37 @@ public class MenuService {
                     }
                 }
             }
-            menu.setMainOptions(preparedMainOptions); // cascade로 함께 persist
+            menu.setMainOptions(preparedMainOptions);
 
-            // 8) MenuIngredient 생성 & 컬렉션에만 추가
+            // 8) MenuIngredient 연결
             if (!ingredients.isEmpty()) {
                 Set<UUID> seen = new HashSet<>();
                 for (Ingredient ing : ingredients) {
-                    if (!seen.add(ing.getId())) continue; // 같은 재료 중복 방지
-                    MenuIngredient mi = MenuIngredient.builder()
-                            .menu(menu)
-                            .ingredient(ing)
-                            .build();
-                    // 편의 메서드로 양방향 연결 + 컬렉션 추가
-                    menu.addMenuIngredient(mi);
+                    if (!seen.add(ing.getId())) continue;
+                    menu.addMenuIngredient(
+                            MenuIngredient.builder().menu(menu).ingredient(ing).build()
+                    );
                 }
-                // menuIngredientRepository.saveAll(...) 호출하지 않습니다. (cascade로 처리)
             }
 
-            // 9) 재고 상태 결정 (수동 품절이면 유지, 아니면 식자재 기반 산정)
+            // 9) 재고 상태 계산
             if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
                 MenuStatus computed = deriveStockStatusFromIngredients(menu);
                 menu.changeStockStatus(computed);
             }
 
-            // 10) 응답 변환
+            // 10) 응답
             return MenuCreateResDto.fromEntity(menu);
 
         } catch (Exception e) {
+            // 8) 실패 시 업로드 파일 정리
             if (imageUrl != null) {
                 s3Manager.delete(imageUrl);
             }
             throw e;
         }
     }
+
 
     private MenuStatus deriveStockStatusFromIngredients(Menu menu) {
         if (menu.getMenuIngredients() == null || menu.getMenuIngredients().isEmpty()) {
@@ -289,6 +298,270 @@ public class MenuService {
 
         // 5) 메뉴 삭제 (옵션 등 cascade 삭제 포함)
         menuRepository.delete(menu);
+    }
+
+    @Transactional
+    public MenuAdminResDto update(MenuUpdateReqDto dto) {
+        final UUID storeUuid = UUID.fromString(storeJwtClaimUtil.getStoreId());
+
+        // 0) 매장 검증
+        Store store = storeRepository.findById(storeUuid)
+                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeUuid));
+
+        // 1) 메뉴 조회 + 소속 검증
+        Menu menu = menuRepository.findById(dto.getMenuId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다."));
+
+        UUID menuStoreId = menu.getCategory() != null ? menu.getCategory().getStore().getId() : null; // Category에 storeId 필드 있다고 가정
+        if (menuStoreId == null || !menuStoreId.equals(storeUuid)) {
+            throw new AccessDeniedException("해당 메뉴는 현재 매장의 소속이 아닙니다.");
+        }
+
+        // 2) 카테고리 변경
+        if (StringUtils.hasText(dto.getCategoryName())) {
+            String newName = dto.getCategoryName().trim();
+            String currName = (menu.getCategory() != null ? menu.getCategory().getName() : null);
+
+            if (!Objects.equals(currName, newName)) {
+                Category targetCategory = categoryRepository
+                        .findByStoreIdAndName(storeUuid, newName)
+                        .orElseGet(() -> {
+                            // 없으면 생성해서 바로 사용
+                            Category created = Category.builder()
+                                    .store(store)               // ⚠️ 연관 엔티티 주입
+                                    .name(newName)
+                                    .description(dto.getCategoryDescription())          // 필요 시 description 규칙 맞게
+                                    .build();
+                            return categoryRepository.save(created);
+                        });
+
+                menu.setCategory(targetCategory);
+            }
+        }
+
+        // 3) 스칼라 필드 변경 (필요 시만 set)
+        if (dto.getName() != null && !Objects.equals(menu.getName(), dto.getName())) {
+            menu.setName(dto.getName());
+        }
+        if (dto.getPrice() != null && !Objects.equals(menu.getPrice(), dto.getPrice())) {
+            menu.setPrice(dto.getPrice());
+        }
+        if (dto.getDescription() != null && !Objects.equals(menu.getDescription(), dto.getDescription())) {
+            menu.setDescription(dto.getDescription());
+        }
+        if (dto.getOrigin() != null && !Objects.equals(menu.getOrigin(), dto.getOrigin())) {
+            menu.setOrigin(dto.getOrigin());
+        }
+        if (dto.getSalesLimit() != null) {
+            Integer newLimit = dto.getSalesLimit();
+            if (!Objects.equals(menu.getSalesLimit(), newLimit)) {
+                menu.setSalesLimit(newLimit);
+            }
+        }
+        // onSale 정책: 필요 시 수동 품절 토글로 연결
+        if (dto.getOnSale() != null) {
+            if (dto.getOnSale()) {
+                // 수동 품절 해제
+                if (menu.getStockStatus() == MenuStatus.SOLD_OUT_MANUAL) {
+                    menu.markOnSale();
+                }
+            } else {
+                // 수동 품절로 전환
+                menu.markSoldOutManually();
+            }
+        }
+
+        // 4) 이미지 교체 (성공 후 기존 삭제)
+        if (dto.getImageFile() != null && !dto.getImageFile().isEmpty()) {
+            String oldUrl = menu.getImageUrl();
+            String newUrl = s3Manager.upload(dto.getImageFile(), "menus");
+            menu.setImageUrl(newUrl);
+            if (oldUrl != null) {
+                s3Manager.delete(oldUrl);
+            }
+        }
+
+        // 6) 옵션 트리 동기화 (이름 기반 diff)
+        syncOptions(menu, dto.getMainOptions());
+
+        syncIngredientsByIds(menu, dto.getIngredientIds(), storeUuid);
+
+        // 7) 재고 상태 재계산
+        if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
+            MenuStatus computed = deriveStockStatusFromIngredients(menu);
+            menu.changeStockStatus(computed);
+        }
+
+        // 8) 응답
+        return MenuAdminResDto.fromEntity(menu);
+    }
+
+    /* =================== 동기화/도우미 메서드 =================== */
+
+    private void syncIngredientsByIds(Menu menu, List<UUID> requestedIds, UUID storeUuid) {
+        // 요청 정규화
+        List<UUID> reqIds = Optional.ofNullable(requestedIds).orElseGet(List::of).stream()
+                .filter(Objects::nonNull)
+                .distinct()
+                .toList();
+
+        // 현재 상태: (ingredientId -> MenuIngredient)
+        Map<UUID, MenuIngredient> current = Optional.ofNullable(menu.getMenuIngredients())
+                .orElseGet(List::of).stream()
+                .filter(mi -> mi.getIngredient() != null)
+                .collect(Collectors.toMap(mi -> mi.getIngredient().getId(), mi -> mi));
+
+        // 요청이 빈 리스트면 모두 제거
+        if (reqIds.isEmpty()) {
+            if (menu.getMenuIngredients() != null) {
+                // orphanRemoval=true 가정
+                menu.getMenuIngredients().clear();
+            } else {
+                menu.setMenuIngredients(new ArrayList<>());
+            }
+            return;
+        }
+
+        // 요청 ID → 엔티티 resolve + 매장 소유 검증
+        List<Ingredient> found = ingredientRepository.findAllById(reqIds);
+        if (found.size() != reqIds.size()) {
+            throw new EntityNotFoundException("존재하지 않는 식자재 ID가 포함되어 있습니다.");
+        }
+        boolean otherStore = found.stream().anyMatch(ing -> ing.getStore() == null
+                || !Objects.equals(ing.getStore().getId(), storeUuid));
+        if (otherStore) {
+            throw new AccessDeniedException("다른 매장의 식자재는 연결할 수 없습니다.");
+        }
+
+        // 요청(target) 집합
+        Set<UUID> desiredIds = found.stream().map(Ingredient::getId).collect(Collectors.toSet());
+
+        // 제거: 현재 있는데 요청에 없는 링크 제거
+        if (menu.getMenuIngredients() != null) {
+            for (UUID curId : new ArrayList<>(current.keySet())) {
+                if (!desiredIds.contains(curId)) {
+                    menu.getMenuIngredients().remove(current.get(curId)); // orphanRemoval로 삭제
+                }
+            }
+        } else {
+            menu.setMenuIngredients(new ArrayList<>());
+        }
+
+        // 추가: 요청에 있는데 현재 없는 링크 추가
+        for (Ingredient ing : found) {
+            UUID iid = ing.getId();
+            if (!current.containsKey(iid)) {
+                MenuIngredient link = MenuIngredient.builder()
+                        .menu(menu)
+                        .ingredient(ing)
+                        .build();
+                menu.addMenuIngredient(link); // 편의 메서드 있으면 사용
+            }
+        }
+    }
+
+
+    private void syncOptions(Menu menu, List<MainOptionDto> requestedMainDtos) {
+        List<MainOptionDto> req = Optional.ofNullable(requestedMainDtos).orElseGet(List::of);
+
+        // 현재 main 맵 (name -> entity)
+        Map<String, MainOption> currMain = Optional.ofNullable(menu.getMainOptions())
+                .orElseGet(List::of).stream()
+                .collect(Collectors.toMap(MainOption::getName, mo -> mo, (a, b) -> a, LinkedHashMap::new));
+
+        // 요청 main 맵 (name -> dto) + 검증
+        Map<String, MainOptionDto> desiredMain = req.stream()
+                .peek(dto -> {
+                    String n = (dto.getName() == null ? "" : dto.getName().trim());
+                    if (n.isEmpty()) throw new IllegalArgumentException("메인 옵션 이름은 필수입니다.");
+                })
+                .collect(Collectors.toMap(
+                        m -> m.getName().trim(),
+                        m -> m,
+                        (a, b) -> { throw new IllegalArgumentException("중복 메인 옵션: " + a.getName()); },
+                        LinkedHashMap::new
+                ));
+
+        // 제거될 main
+        if (menu.getMainOptions() != null) {
+            for (String name : new ArrayList<>(currMain.keySet())) {
+                if (!desiredMain.containsKey(name)) {
+                    menu.getMainOptions().remove(currMain.get(name)); // orphanRemoval
+                }
+            }
+        } else {
+            menu.setMainOptions(new ArrayList<>());
+        }
+
+        // 추가/수정 main
+        for (Map.Entry<String, MainOptionDto> e : desiredMain.entrySet()) {
+            String name = e.getKey();
+            MainOptionDto dto = e.getValue();
+
+            if (!currMain.containsKey(name)) {
+                // 추가
+                MainOption newMo = dto.toEntity(); // 내부에서 subOptions DTO→엔티티 변환/검증
+                newMo.setMenu(menu);
+                if (newMo.getSubOptions() != null) {
+                    for (SubOption so : newMo.getSubOptions()) {
+                        so.setMainOption(newMo);
+                    }
+                }
+                menu.getMainOptions().add(newMo);
+            } else {
+                // 수정: 서브옵션 동기화
+                MainOption mo = currMain.get(name);
+                syncSubOptions(mo, dto.getSubOptions());
+            }
+        }
+    }
+
+    private void syncSubOptions(MainOption mo, List<SubOptionDto> requestedSubs) {
+        List<SubOptionDto> req = Optional.ofNullable(requestedSubs).orElseGet(List::of);
+
+        Map<String, SubOption> curr = Optional.ofNullable(mo.getSubOptions())
+                .orElseGet(List::of).stream()
+                .collect(Collectors.toMap(SubOption::getName, so -> so, (a, b) -> a, LinkedHashMap::new));
+
+        Map<String, SubOptionDto> desired = req.stream()
+                .peek(d -> {
+                    String n = (d.getName() == null ? "" : d.getName().trim());
+                    if (n.isEmpty()) throw new IllegalArgumentException("서브 옵션 이름은 필수입니다.");
+                    if (d.getPrice() == null || d.getPrice() < 0) throw new IllegalArgumentException("서브 옵션 가격은 0 이상이어야 합니다.");
+                })
+                .collect(Collectors.toMap(
+                        d -> d.getName().trim(),
+                        d -> d,
+                        (a, b) -> { throw new IllegalArgumentException("중복 서브 옵션: " + a.getName()); },
+                        LinkedHashMap::new
+                ));
+
+        // 제거
+        if (mo.getSubOptions() != null) {
+            for (String name : new ArrayList<>(curr.keySet())) {
+                if (!desired.containsKey(name)) {
+                    mo.getSubOptions().remove(curr.get(name)); // orphanRemoval
+                }
+            }
+        } else {
+            mo.setSubOptions(new ArrayList<>());
+        }
+
+        // 추가/수정
+        for (Map.Entry<String, SubOptionDto> e : desired.entrySet()) {
+            String name = e.getKey();
+            SubOptionDto dto = e.getValue();
+            if (!curr.containsKey(name)) {
+                SubOption so = SubOption.builder().name(name).price(dto.getPrice()).build();
+                so.setMainOption(mo);
+                mo.getSubOptions().add(so);
+            } else {
+                SubOption so = curr.get(name);
+                if (!Objects.equals(so.getPrice(), dto.getPrice())) {
+                    so.setPrice(dto.getPrice());
+                }
+            }
+        }
     }
 }
 

@@ -67,7 +67,7 @@ public class CategoryService {
         }
 
         return categoryList.stream()
-                .map(category -> new GetCategoryResDto(category.getId(), category.getName()))
+                .map(category -> new GetCategoryResDto(category.getId(), category.getName(), category.getDescription()))
                 .collect(Collectors.toList());
     }
 

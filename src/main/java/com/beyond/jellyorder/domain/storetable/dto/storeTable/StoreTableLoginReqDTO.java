@@ -19,7 +19,7 @@ public class StoreTableLoginReqDTO {
     @NotBlank(message = "점주의 비밀번호는 필수 입력값입니다.")
     private String password;
     @NotBlank(message = "테이블 이름은 필수 입력값입니다.")
-    private String name;
+    private String tableName;
 
 }
 
