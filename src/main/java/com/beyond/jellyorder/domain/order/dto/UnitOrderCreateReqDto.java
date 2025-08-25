@@ -16,7 +16,6 @@ import java.util.UUID;
 @Setter
 @NoArgsConstructor
 public class UnitOrderCreateReqDto {
-    @NotNull(message = "storeTableId가 없습니다.")
     private UUID storeTableId;
 
     @NotEmpty(message = "주문 항목이 비어있습니다.")

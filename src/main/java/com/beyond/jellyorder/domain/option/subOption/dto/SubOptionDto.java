@@ -6,12 +6,15 @@ import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
+import java.util.UUID;
+
 @Getter
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class SubOptionDto {
+    private UUID id;
 
     @NotBlank(message = "서브 옵션 이름은 필수입니다.")
     private String name;
@@ -34,6 +37,7 @@ public class SubOptionDto {
 
     public static SubOptionDto fromEntity(SubOption e) {
         return SubOptionDto.builder()
+                .id(e.getId())
                 .name(e.getName())
                 .price(e.getPrice())
                 .build();

@@ -15,12 +15,13 @@ import jakarta.servlet.http.HttpSession;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.UUID;
 
 @RestController
-@RequestMapping("/payment")
+@RequestMapping("/sales")
 @RequiredArgsConstructor
 public class SalesController {
     private final SalesService salesService;
@@ -114,6 +115,7 @@ public class SalesController {
     }
 
     // 카운터 결제 선택 (식사 후)
+    @PreAuthorize("hasRole('STORE')")
     @PostMapping("/counter/choose")
     public ResponseEntity<String> counterChoose(@RequestBody OrderIdReqDto req) {
         UUID orderId = req.getOrderId();
@@ -134,6 +136,7 @@ public class SalesController {
     }
 
     // 카운터 결제 완료
+    @PreAuthorize("hasRole('STORE')")
     @PostMapping("/counter/complete")
     public ResponseEntity<Void> counterComplete(@RequestBody CounterCompleteReqDto req) {
         salesService.complete(
