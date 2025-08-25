@@ -102,51 +102,70 @@ public class UnitOrderService {
         int unitPrice = 0;
         int unitCount = 0;
 
-        for (UnitOrderMenuReqDto menuReqDto : menus) {
-            Menu menu = validateAndUpdateStock(menuReqDto);
+        // 0) 미리 조회 캐시 (같은 메뉴가 여러 번 올 수 있으니)
+        Map<UUID, Menu> menuMap = new HashMap<>();
 
-            // 저장 지연 : 엔티티만 만들고 아직 save 하지 않음
-            OrderMenu orderMenu = createOrderMenu(menu, menuReqDto, unitOrder);
-            // 옵션 처리
-            int optionsPrice = processOptions(menuReqDto, menu, orderMenu);
+        // 1) 에러 수집용
+        List<String> soldOut = new ArrayList<>();
+        List<String> shortage = new ArrayList<>();
 
-            // cascade로 옵션까지 저장
+        // ---------- 1st pass: 검증만 ----------
+        for (UnitOrderMenuReqDto req : menus) {
+            UUID menuId = req.getMenuId();
+            Menu menu = menuMap.computeIfAbsent(menuId, id ->
+                    menuRepository.findById(id)
+                            .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."))
+            );
+
+            // 품절 검증
+            if (menu.getStockStatus() != MenuStatus.ON_SALE) {
+                soldOut.add(menu.getName());
+                continue;
+            }
+
+            // 수량 검증
+            if (!Objects.equals(menu.getSalesLimit(), -1)) {
+                int remain = menu.getSalesLimit() - menu.getSalesToday();
+                if (remain < req.getQuantity()) {
+                    shortage.add(menu.getName() + " (남은 " + remain + "개)");
+                }
+            }
+        }
+
+        // 하나로 모아 던지기
+        if (!soldOut.isEmpty() || !shortage.isEmpty()) {
+            List<String> msgs = new ArrayList<>();
+            if (!soldOut.isEmpty()) msgs.add("품절된 상품입니다: " + String.join(", ", soldOut));
+            if (!shortage.isEmpty()) msgs.add("수량이 부족한 상품입니다: " + String.join(", ", shortage));
+            throw new IllegalArgumentException(String.join(" / ", msgs));
+        }
+
+        // ---------- 2nd pass: 실제 적용(증가/저장/합산) ----------
+        for (UnitOrderMenuReqDto req : menus) {
+            Menu menu = menuMap.get(req.getMenuId()); // 1차에서 조회해둔 것 사용
+
+            // 재고 증가 & 상태 변경
+            if (!Objects.equals(menu.getSalesLimit(), -1)) {
+                menu.increaseSalesToday(req.getQuantity());
+                if (menu.getSalesLimit().equals(menu.getSalesToday())) {
+                    menu.changeStockStatus(MenuStatus.OUT_OF_STOCK);
+                }
+            } else {
+                menu.increaseSalesToday(req.getQuantity());
+            }
+
+            // 주문 엔티티 저장
+            OrderMenu orderMenu = createOrderMenu(menu, req, unitOrder);
+            int optionsPrice = processOptions(req, menu, orderMenu);
+
             unitOrder.getOrderMenus().add(orderMenu);
             orderMenuRepository.save(orderMenu);
 
-            unitPrice += menu.getPrice() * menuReqDto.getQuantity() + optionsPrice;
-            unitCount += menuReqDto.getQuantity();
+            unitPrice += menu.getPrice() * req.getQuantity() + optionsPrice;
+            unitCount += req.getQuantity();
         }
 
         return new UnitOrderResult(unitPrice, unitCount);
-    }
-
-    // TODO: 추후 redis를 도입하여 동시성 문제 해결.
-    private Menu validateAndUpdateStock(UnitOrderMenuReqDto menuReqDto) {
-        Menu menu = menuRepository.findById(menuReqDto.getMenuId())
-                .orElseThrow(() -> new EntityNotFoundException("해당 메뉴가 존재하지 않습니다."));
-
-        int stockQuantity = menu.getSalesLimit() - menu.getSalesToday();
-
-        // 품절 시 주문 불가
-        if (menu.getStockStatus() != MenuStatus.ON_SALE) {
-            throw new IllegalArgumentException("품절된 상품입니다.");
-        }
-
-        // 한정 판매 수량 검증
-        if (menu.getSalesLimit() != -1) {
-            if (stockQuantity < menuReqDto.getQuantity()) {
-                throw new IllegalArgumentException("현재 남은 수량은 " + stockQuantity + "개 입니다.");
-            }
-            menu.increaseSalesToday(menuReqDto.getQuantity());
-            if (menu.getSalesLimit().equals(menu.getSalesToday())) {
-                menu.changeStockStatus(MenuStatus.OUT_OF_STOCK);
-            }
-        } else { // 상시판매
-            menu.increaseSalesToday(menuReqDto.getQuantity());
-        }
-
-        return menu;
     }
 
     private OrderMenu createOrderMenu(Menu menu, UnitOrderMenuReqDto menuReqDto, UnitOrder unitOrder) {

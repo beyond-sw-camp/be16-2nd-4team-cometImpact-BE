@@ -54,12 +54,10 @@ public class SecurityConfig {
                         // 테스트용(삭제 필요)
                         "/category/**",
                         "/ingredient/**",
-                        "/menu/**",
+                        "/menu/**"
 //                        "/zone/**",
-                        "/orders/**"
                                  ).permitAll()
-//                        .requestMatchers("/store-table/**")
-//                        .hasRole("STORE")
+                        .requestMatchers(HttpMethod.POST, "/orders/unit/create/**").hasRole("STORE_TABLE")
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(e ->
