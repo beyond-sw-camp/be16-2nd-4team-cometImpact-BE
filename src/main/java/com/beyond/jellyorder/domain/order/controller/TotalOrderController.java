@@ -13,7 +13,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/orders")
-//@PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
+@PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
 public class TotalOrderController {
 
     private final TotalOrderService totalOrderService;

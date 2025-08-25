@@ -16,17 +16,16 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/orders")
-//@PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
+@PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
 public class UnitOrderController {
 
     private final UnitOrderService orderService;
 
     /** 단위주문 생성 */
-    @PostMapping("/unit/create/{storeTableId}")
+    @PostMapping("/unit/create")
     public ResponseEntity<?> createUnit(
-            @PathVariable UUID storeTableId, @RequestBody @Valid UnitOrderCreateReqDto reqDTO
+            @RequestBody @Valid UnitOrderCreateReqDto reqDTO
             ) {
-        reqDTO.setStoreTableId(storeTableId);
         OrderStatusResDTO resDTO = orderService.createUnit(reqDTO);
 
         return ApiResponse.created(resDTO, "단위주문이 생성되었습니다.");
