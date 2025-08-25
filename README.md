@@ -64,7 +64,7 @@
 
 ### 🧾 ERD
 - https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW
-
+![ERD](https://raw.githubusercontent.com/beyond-sw-camp/be16-2nd-4team-cometImpact-BE/develop/Jelly_order_ERD.png)
 ### 📆 WBS (Work Breakdown Structure)
 - https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=0#gid=0
 
