@@ -238,12 +238,13 @@ public class UnitOrderService {
         // orderMenu → dto 변환
         List<OrderStatusMenu> orderMenuDtos = unitOrder.getOrderMenus().stream()
                 .map(orderMenu -> OrderStatusMenu.builder()
-                        .menuName(orderMenu.getMenu().getName())   // 스냅샷
+                        .menuName(Optional.ofNullable(orderMenu.getMenuName())
+                                .orElse(orderMenu.getMenu().getName())) // 스냅샷
                         .menuQuantity(orderMenu.getQuantity())
                         .optionList(
                                 orderMenu.getOrderMenuOptionList().stream()
                                         .map(omo -> OrderStatusMenuOption.builder()
-                                                .optionName(omo.getSubOption().getName())
+                                                .optionName(omo.getOptionName())
                                                 .build()
                                         ).toList()
                         )
