@@ -49,8 +49,8 @@ public class OrderMenu extends BaseIdEntity {
         if (option == null) {
             return;
         }
-        orderMenuOptionList.add(option);
         option.addOrderMenu(this);
+        this.orderMenuOptionList.add(option);
     }
 
 }

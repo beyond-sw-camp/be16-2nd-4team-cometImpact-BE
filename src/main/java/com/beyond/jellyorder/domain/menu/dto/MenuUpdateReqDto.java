@@ -23,6 +23,10 @@ public class MenuUpdateReqDto {
     @NotBlank(message = "카테고리명은 필수입니다.")
     private String categoryName;
 
+    // 새 카테고리를 만들 때만 사용 (선택)
+    @Size(max = 255)
+    private String categoryDescription;
+
     @NotBlank(message = "메뉴 이름은 필수입니다.")
     @Size(max = 30)
     private String name;
@@ -49,4 +53,6 @@ public class MenuUpdateReqDto {
 
     // 전체 스냅샷
     private List<MainOptionDto> mainOptions;   // 메인/서브 옵션 트리
+
+    private List<UUID> ingredientIds;
 }

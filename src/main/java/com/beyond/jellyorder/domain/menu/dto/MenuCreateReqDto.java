@@ -19,6 +19,10 @@ public class MenuCreateReqDto {
     @NotNull(message = "카테고리명은 필수입니다.")
     private String categoryName;
 
+    // 새 카테고리를 만들 때만 사용 (선택)
+    @Size(max = 255)
+    private String categoryDescription;
+
     @NotBlank(message = "메뉴 이름(name)은 필수입니다.")
     @Size(max = 30, message = "메뉴 이름은 30자 이하로 입력해주세요.")
     private String name;

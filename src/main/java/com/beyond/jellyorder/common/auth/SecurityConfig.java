@@ -41,8 +41,9 @@ public class SecurityConfig {
                         "/store/find-login-id",
                         "/store/refresh-at",
                         "/store-table/refresh-at",
-                        "/sse/**",
-                        "/payment/**",
+                        "/sales/qr/success",
+                        "/sales/qr/cancel",
+                        "/sales/qr/fail",
                         "/v3/api-docs/**",  // swagger 추가
                         "/swagger-ui/**",   // swagger 추가
                         "/swagger-ui.html",  // swagger 추가
@@ -50,16 +51,15 @@ public class SecurityConfig {
                         "/password/**",
                         "/connect/**", // websocket 허용
                         "/store/check-login-id",
-                        "/store/check-business-number",
-                        // 테스트용(삭제 필요)
-                        "/category/**",
-                        "/ingredient/**",
-                        "/menu/**",
+                        "/store/check-business-number"
+//                        // 테스트용(삭제 필요)
+//                        "/category/**",
+//                        "/ingredient/**",
+//                        "/menu/**"
 //                        "/zone/**",
-                        "/orders/**"
-                                 ).permitAll()
-//                        .requestMatchers("/store-table/**")
-//                        .hasRole("STORE")
+                        ).permitAll()
+                        .requestMatchers("/sales/qr/ready", "/sales/qr/approve")
+                            .hasAnyRole("STORE","STORE_TABLE")
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(e ->

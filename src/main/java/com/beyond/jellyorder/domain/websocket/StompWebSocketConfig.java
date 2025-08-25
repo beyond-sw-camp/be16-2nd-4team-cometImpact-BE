@@ -35,7 +35,8 @@ public class StompWebSocketConfig implements WebSocketMessageBrokerConfigurer {
 
         // /topic/1 형태로 메시지를 수신(subscribe)해야 함을 설정.
         // jellyorder는 /topic/{storeId}/{tableName} 으로 설정
-        registry.enableSimpleBroker("/topic");
+        registry.enableSimpleBroker("/topic", "/queue", "/user");
+        registry.setUserDestinationPrefix("/user");
     }
 
     @Override
