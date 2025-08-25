@@ -86,16 +86,26 @@ public class SalesService {
         TotalOrder totalOrder = sales.getTotalOrder();
         if (totalOrder != null && totalOrder.getStoreTable() != null) {
             StoreTable table = totalOrder.getStoreTable();
-            updateTableStatus(table, totalOrder);
+            if (method == PaymentMethod.QR) {
+                updateTableStatusQR(table, totalOrder);
+            } else if ((method == PaymentMethod.CARD || method == PaymentMethod.CASH)) {
+                updateTableStatusCounter(table, totalOrder);
+            }
             totalOrder.updatePaymentedAt(sales.getPaidAt());
         }
 
         return sales;
     }
 
-    private void updateTableStatus(StoreTable storeTable, TotalOrder totalOrder) {
+    private void updateTableStatusQR(StoreTable storeTable, TotalOrder totalOrder) {
         if (storeTable.getStatus() == TableStatus.EATING && totalOrder.getOrderedAt() != null) {
             storeTable.changeStatus(TableStatus.PAY_DONE);
+        }
+    }
+
+    private void updateTableStatusCounter(StoreTable storeTable, TotalOrder totalOrder) {
+        if (storeTable.getStatus() == TableStatus.EATING && totalOrder.getOrderedAt() != null) {
+            storeTable.changeStatus(TableStatus.STANDBY);
         }
     }
 

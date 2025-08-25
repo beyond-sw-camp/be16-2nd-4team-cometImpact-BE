@@ -15,7 +15,7 @@ import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 @RequiredArgsConstructor
 @RequestMapping("/sse/request")
 @PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
-public class RequestSseController {
+public class RequestSseController { 
     private final SseEmitters emitters;
 
     @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
