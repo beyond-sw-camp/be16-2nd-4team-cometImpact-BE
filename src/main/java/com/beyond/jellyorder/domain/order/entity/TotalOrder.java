@@ -64,4 +64,9 @@ public class TotalOrder extends BaseIdEntity {
     public void updatePaymentedAt(LocalDateTime paidAt) {
         this.paymentedAt = paidAt;
     }
+
+    // 총 가격 감소 메서드
+    public void decreaseTotalPrice(Integer decreasePrice) {
+        this.totalPrice -= decreasePrice;
+    }
 }
