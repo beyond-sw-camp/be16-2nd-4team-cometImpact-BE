@@ -54,7 +54,13 @@
 - https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1037534638#gid=1037534638
 
 ### 🎨 화면 설계서
-- 
+- https://www.figma.com/proto/WuBdoUWSz5n3gdSHdMN2qo/Untitled?node-id=40-52&t=effERlSz00L47uYz-1
+- 화면설계_점주(STORE)
+<img width="2272" height="1452" alt="image" src="https://github.com/user-attachments/assets/50a33d51-f4e6-4848-b90b-70fbc4c9f666" />
+- 화면설계_테이블(STORE_TABLE)
+<img width="1388" height="1332" alt="image" src="https://github.com/user-attachments/assets/d50ff505-8019-4977-9770-1dcf7d4a3ed3" />
+
+
 
 ### 🧾 ERD
 - https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW
