@@ -7,11 +7,13 @@ import com.beyond.jellyorder.domain.sseRequest.sse.SseEmitters;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/sse/request")
+@PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
 // 고객 요청 전송용
 public class RequestController {
     private final RedisRequestService requestService;
