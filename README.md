@@ -156,7 +156,7 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 </details>
 <details>
   <summary><b>테이블 오더 페이지</b></summary>
-<img width="800" alt="image" src="https://github.com/user-attachments/assets/d50ff505-8019-4977-9770-1dcf7d4a3ed3" />
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/c0bb2ccf-a485-407f-874e-c51e33b41423" />
 </details>
 
 ##  ERD - [상세보기](https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW)
@@ -454,6 +454,22 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 
 테이블 오더 페이지
 -
+### - 로그인
+<details>
+  <summary><b>테이블 자동로그인_기본</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/ba6664ff-1f00-477b-b143-199734f6ce41" alt=" storeTable 테이블 일반로그인" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>테이블 일반로그인</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/dbceaeba-8561-47e2-8c26-fedc7331ffed" alt=" storeTable 테이블 일반로그인" width="720">
+    </p>
+</details>
+
+### - 테이블 오더
 <details>
   <summary><b>카테고리 선택</b></summary>
     <p align="center">
