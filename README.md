@@ -35,9 +35,6 @@
 
 ---
 ## 1. 📌 프로젝트 기획서
-<p align="center">
-  <img width="800" alt="image" src="https://github.com/user-attachments/assets/832ac568-cf29-438f-b520-9b87d1e6ef6e" />
-</p>
 
 
 
@@ -45,6 +42,9 @@
 Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·경량 POS 시스템이다. 상용 솔루션의 초기 설치비·월 구독료·PG 수수료 등 비용 장벽과, 고령층·IT 비숙련자에게 어려운 복잡한 UI를 핵심 문제로 규정하고, 직관적·대형 폰트 기반 UI/UX와 수수료 락인 없는 아키텍처(VAN/현금/기본 카드 단말 연동 중심)를 제공한다. 이를 통해 점주는 더 단순한 POS 운영 경험, 고객은 쉽고 빠른 주문 경험을 얻으며, 누구나 코드와 문서를 내려받아 무상으로 자체 설치·개조할 수 있도록 오픈소스로 배포한다. 비용 부담과 디지털 격차가 실제 현장에서 도입 저해 요인으로 보고되고 있음을 전제로 설계하였다.
 
 ## 프로젝트 배경
+<p align="center">
+  <img width="800" alt="image" src="https://github.com/user-attachments/assets/832ac568-cf29-438f-b520-9b87d1e6ef6e" />
+</p>
 ### 1) 비용 장벽과 수수료 구조의 불투명성
 
 테이블오더 확산은 인건비 절감을 배경으로 빠르게 진행되었으나, **PG 연동에 따른 높은 결제 수수료(대개 0.8~2.5% 이상)**, **월 구독료·통신비·장비비** 등으로 기대 절감액보다 **고정지출이 커지는 사례**가 다수 보도되었다. 일부 사업장은 **의무사용·위약금** 등 계약 리스크도 경험한다. 업계·언론 보도는 **VAN 위주 결제 대비 PG 경유 시 월 수십만 원~연 수백만 원 추가 비용**이 발생할 수 있음을 지적한다. 또한 법·제도상 **PG 수수료에 대한 제한이나 표준화가 미흡**하다는 점도 반복적으로 제기되고 있다. [YTN](https://www.ytn.co.kr/_ln/0102_202410181024214328)[서울경제](https://www.sedaily.com/NewsView/2DFEDQEVRN)[네이트 뉴스](https://news.nate.com/view/20240108n02405)
@@ -92,7 +92,55 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 - 학술·정책 연구는 **스마트 기술의 효용**과 함께 **도입·투자 부담**을 병목으로 지적. → **오픈소스·저비용·자체 설치** 모델의 공공적 가치. [KCI](https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002995983)
 ---
 
-## 2. 📐 분석 및 설계
+## 2. 🛠 기술 스택
+
+### Backend
+![Java 17](https://img.shields.io/badge/Java%2017-007396?style=for-the-badge&logo=openjdk&logoColor=white)
+![Spring Boot](https://img.shields.io/badge/Spring%20Boot%203.5-6DB33F?style=for-the-badge&logo=springboot&logoColor=white)
+![Spring Security](https://img.shields.io/badge/Spring%20Security-6DB33F?style=for-the-badge&logo=springsecurity&logoColor=white)
+![Spring Data JPA](https://img.shields.io/badge/Spring%20Data%20JPA-59666C?style=for-the-badge&logo=hibernate&logoColor=white)
+![Hibernate](https://img.shields.io/badge/Hibernate-59666C?style=for-the-badge&logo=hibernate&logoColor=white)
+![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
+![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white)
+![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
+![SSE](https://img.shields.io/badge/SSE%20(Server--Sent%20Events)-000000?style=for-the-badge&logo=fastapi&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
+
+
+### Frontend
+![Vue.js](https://img.shields.io/badge/Vue.js%203-4FC08D?style=for-the-badge&logo=vue.js&logoColor=white)
+![Vuetify](https://img.shields.io/badge/Vuetify-1867C0?style=for-the-badge&logo=vuetify&logoColor=white)
+![JavaScript](https://img.shields.io/badge/JavaScript-F7DF1E?style=for-the-badge&logo=javascript&logoColor=black)
+![HTML5](https://img.shields.io/badge/HTML5-E34F26?style=for-the-badge&logo=html5&logoColor=white)
+![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
+
+### ☁️ Infra & Cloud
+![AWS S3](https://img.shields.io/badge/AWS%20S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white)
+![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)
+
+### External API & Integration
+![RestTemplate](https://img.shields.io/badge/RestTemplate-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
+![KakaoPay](https://img.shields.io/badge/KakaoPay-FFCD00?style=for-the-badge&logo=kakaotalk&logoColor=black)
+![ODcloud](https://img.shields.io/badge/ODcloud_API-005BAC?style=for-the-badge&logo=databricks&logoColor=white)
+![Gmail SMTP](https://img.shields.io/badge/Gmail%20SMTP-EA4335?style=for-the-badge&logo=gmail&logoColor=white)
+
+### Test & Docs
+![Swagger UI](https://img.shields.io/badge/Swagger-85EA2D?style=for-the-badge&logo=swagger&logoColor=black)
+![Postman](https://img.shields.io/badge/Postman-FF6C37?style=for-the-badge&logo=postman&logoColor=white)
+![JMeter](https://img.shields.io/badge/Apache%20JMeter-D22128?style=for-the-badge&logo=apachejmeter&logoColor=white)
+
+
+###  Tools & Collaboration
+![Git](https://img.shields.io/badge/Git-F05032?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-181717?style=for-the-badge&logo=github&logoColor=white)
+![Notion](https://img.shields.io/badge/Notion-000000?style=for-the-badge&logo=notion&logoColor=white)
+![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
+![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
+
+---
+
+## 3. 📐 분석 및 설계
 
 ### ✅ [요구사항 명세서](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1037534638#gid=1037534638)
 
@@ -120,8 +168,15 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 
 ---
 
-## 3. 🧪 단위테스트 결과서
+
+
+---
+
+## 4. 🧪 단위테스트 결과서
 > 각 항목을 클릭하면 테스트 시연 GIF/영상이 펼쳐집니다.
+
+점주 페이지
+-
 
 ### 회원가입 및 로그인
 <details>
@@ -154,6 +209,107 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     <img src="https://github.com/user-attachments/assets/f0d92778-05ff-4068-afbc-3727e21502e2" alt="점주 비밀번호 재설정" width="720">
     </p>
 </details>
+
+
+### 테이블 현황
+
+
+<details>
+  <summary><b>구역 별 주문 테이블 정보 조회 (기본 화면)</b></summary>
+  <p align="center">
+
+  </p>
+</details>
+
+<details>
+  <summary><b>주문 테이블 상세 정보</b></summary>
+  <p align="center">
+![ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/8c38f22f-75bf-4186-82db-2d20e6949115)
+  </p>
+</details>
+
+### 주문 현황
+<details>
+  <summary><b>주문 접수 페이지 (접수 탭)</b></summary>
+  <p align="center">
+    <img src="" alt="주문 접수 페이지" width="720">
+  </p>
+</details>
+
+<details>
+  <summary><b>주문 접수 페이지 (완료 탭)</b></summary>
+  <p align="center">
+    <img src="" alt="주문 접수 페이지" width="720">
+  </p>
+</details>
+
+<details>
+  <summary><b>주문 접수 페이지 (취소 탭)</b></summary>
+  <p align="center">
+    <img src="" alt="주문 접수 페이지" width="720">
+  </p>
+</details>
+
+<details>
+  <summary><b>실시간 주문 확인 (WebSocket 연결/수신)</b></summary>
+  <p align="center">
+   ![실시간 주문](https://github.com/user-attachments/assets/60762f7f-825d-460a-900d-a0b90cfade3b)
+ </p>
+</details>
+
+<details>
+  <summary><b>조리완료</b></summary>
+  <p align="center">
+    <img src="" alt="조리완료" width="720">
+  </p>
+</details>
+
+
+<details>
+  <summary><b>조리 취소</b></summary>
+  <p align="center">
+    <img src="" alt="취소" width="720">
+  </p>
+</details>
+
+
+### 테이블 및 구역 관리
+<details>
+  <summary><b>테이블 추가</b></summary>
+  <p align="center">
+
+
+  </p>
+</details>
+
+<details>
+  <summary><b>테이블 수정</b></summary>
+  <p align="center">
+    <img src="" alt="테이블 수정" width="720">
+  </p>
+</details>
+
+<details>
+  <summary><b>구역 추가</b></summary>
+  <p align="center">
+    <img src="" alt="구역 추가" width="720">
+  </p>
+</details>
+
+<details>
+  <summary><b>구역 수정</b></summary>
+  <p align="center">
+![구역수정](https://github.com/user-attachments/assets/44c2ccee-7ab7-4ea2-a659-a8d62898b0e5)
+  </p>
+</details>
+
+
+
+
+
+
+
+
 
 
 
@@ -264,7 +420,6 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     </p>
 </details>
 
-</details>
 ### 식자재 관리
 <details>
   <summary><b>식자재 관리 메인 페이지</b></summary>
@@ -299,17 +454,5 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 
 
 ---
-
-## 4. 🛠 기술 스택
-
-### 👨‍💻 Frontend
-- 
-
-### 👩‍🔧 Backend
-- 
-
-### 🧠 AI/추천
-- 
-
-### 🧪 DevOps & Test
-- 
+테이블 오더 페이지
+-
