@@ -34,7 +34,7 @@
 </table>
 
 ---
-## 1. 📌 프로젝트 기획서
+## 1. 프로젝트 기획서
 
 
 
@@ -93,7 +93,7 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 
 <br>
 
-## 2. 🛠 기술 스택
+## 2. 기술 스택
 
 ### Backend
 ![Java 17](https://img.shields.io/badge/Java%2017-007396?style=for-the-badge&logo=openjdk&logoColor=white)
@@ -141,7 +141,7 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 
 <br>
 
-## 3. 📐 분석 및 설계
+## 3. 분석 및 설계
 
 ## 요구사항 명세서 [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1037534638#gid=1037534638)
 <details>
@@ -179,10 +179,9 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 <br>
 
 
-## 4. 🧪 단위테스트 결과서
-
-점주 페이지
--
+## 4. 단위테스트 결과서
+<details>
+  <summary><h4><b>점주 페이지</b></h4></summary>
 
 ### - 회원가입 및 로그인
 <details>
@@ -452,8 +451,11 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 </details>
 <br>
 
-테이블 오더 페이지
--
+</details>
+
+<details>
+  <summary><h4><b>테이블 오더 페이지</b></h4></summary>
+
 ### - 로그인
 <details>
   <summary><b>테이블 자동로그인_기본</b></summary>
@@ -538,4 +540,5 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     <p align="center">
     <img src="https://github.com/user-attachments/assets/036a22f0-19a1-4447-b9e1-90b585e686ed" alt=" storeTable QR 결제" width="720">
     </p>
+</details>
 </details>
