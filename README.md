@@ -99,7 +99,6 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 ### 🎨 [화면 설계서](https://www.figma.com/design/WuBdoUWSz5n3gdSHdMN2qo/be16-4th-team?node-id=0-1&t=5D9WbMwwOTOxQaVj-1)
 <details>
   <summary><b>화면설계서</b></summary>
-
   - 화면설계_점주(STORE)  
     <p align="center">
       <img width="800" alt="image" src="https://github.com/user-attachments/assets/50a33d51-f4e6-4848-b90b-70fbc4c9f666" />
@@ -109,15 +108,12 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     <p align="center">
       <img width="800" alt="image" src="https://github.com/user-attachments/assets/d50ff505-8019-4977-9770-1dcf7d4a3ed3" />
     </p>
-
 </details>
-
-
 
 ### 🧾 [ERD](https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW)
 <details>
   <summary><b>ERD</b></summary>
-![ERD](https://raw.githubusercontent.com/beyond-sw-camp/be16-2nd-4team-cometImpact-BE/develop/Jelly_order_ERD.png)
+  <img src="https://raw.githubusercontent.com/beyond-sw-camp/be16-2nd-4team-cometImpact-BE/develop/Jelly_order_ERD.png"></img>
 </details>
 
 ### 📆 [WBS (Work Breakdown Structure)](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=0#gid=0)
@@ -268,15 +264,7 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     </p>
 </details>
 
-<details>
-  <summary><b>메뉴 수정 (식자재 수정 후 상태값 자동 변경 - 치즈_듬뿍_피자)</b></summary>
-    <p align="center">
-    <img src="https://github.com/user-attachments/assets/f1f9e8f7-b6aa-479e-b8c7-501b9d93a079" alt="Menu - 메뉴 수정 (식자재 수정 후 상태값 자동 변경)" width="720">
-    </p>
 </details>
-
-</details>
-
 ### 식자재 관리
 <details>
   <summary><b>식자재 관리 메인 페이지</b></summary>
