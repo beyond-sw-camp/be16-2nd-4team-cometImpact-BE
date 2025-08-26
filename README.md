@@ -456,3 +456,72 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 ---
 테이블 오더 페이지
 -
+<details>
+  <summary><b>카테고리 선택</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/21cc53b1-4653-4cb9-9858-a95ddebe1155" alt=" storeTable 카테고리 선택" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>레이아웃 변경</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/026e292b-18c3-472a-80ef-36152b4bde2f" alt=" storeTable 레이아웃 변경" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>메뉴 상세 모달</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/76c3b3ed-b80d-4e9b-b8e3-abe38b5001ec" alt=" storeTable 메뉴 상세 모달" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>옵션 선택</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/3d0562ee-d29e-4ba0-a3cf-4d7c8e4422f8" alt=" storeTable 옵션 선택" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>장바구니 수량 선택</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/4abeafd8-bfac-42a9-bda7-0e0b1da6618d" alt=" storeTable 장바구니 수량 선택" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>품절된 상품 주문</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/e62121e9-09de-440f-bb8f-d81273a76c46" alt=" storeTable 품절된 상품 주문" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>한정 수량 상품 주문</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/b19dd341-1b77-4406-85a4-b760ae345d6d" alt=" storeTable 한정 수량 상품 주문" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>동일 메뉴, 다른 옵션</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/b9cd78a8-1eb0-4137-aab8-3c95ef1d6c43" alt=" storeTable 동일 메뉴, 다른 옵션" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>주문 후 주문 내역 조회</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/21048e43-0a4b-452d-957b-6b531aa686fa" alt=" storeTable 주문 후 주문 내역 조회" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>QR 결제</b></summary>
+    <p align="center">
+    <img src="https://github.com/user-attachments/assets/036a22f0-19a1-4447-b9e1-90b585e686ed" alt=" storeTable QR 결제" width="720">
+    </p>
+</details>
