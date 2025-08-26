@@ -5,6 +5,7 @@ import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusResDTO;
 import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusUpdateReqDTO;
 import com.beyond.jellyorder.domain.order.dto.orderStatus.UnitOrderStatusResDTO;
 import com.beyond.jellyorder.domain.order.entity.OrderMenu;
+import com.beyond.jellyorder.domain.order.entity.OrderMenuOption;
 import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.order.entity.UnitOrder;
 import com.beyond.jellyorder.domain.order.repository.UnitOrderRepository;
@@ -17,7 +18,9 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.Objects;
 import java.util.UUID;
 
 @Service
@@ -76,6 +79,29 @@ public class OrderStatusService {
 
             // 상태변경
             unitOrder.updateOrderStatus(OrderStatus.CANCEL);
+
+            // totalOrder 가격 변경 (메뉴가격 + 옵션가격합) × 수량 을 모두 합산
+            int totalDelta = unitOrder.getOrderMenus()
+                    .stream()
+                    .filter(Objects::nonNull)
+                    .mapToInt(om -> {
+                        int menuPrice = om.getMenuPrice() != null ? om.getMenuPrice() : 0;
+
+                        int optionsSum = (om.getOrderMenuOptionList() != null ? om.getOrderMenuOptionList() : Collections.<OrderMenuOption>emptyList())
+                                .stream()
+                                .filter(Objects::nonNull)
+                                .mapToInt(opt -> opt.getOptionPrice() != null ? opt.getOptionPrice() : 0)
+                                .sum();
+
+                        int qty = om.getQuantity() != null ? om.getQuantity() : 1; // 수량 누락 시 1로 처리
+
+                        // (메뉴가격 + 옵션가격합) × 수량
+                        return Math.multiplyExact(menuPrice + optionsSum, qty);
+                    })
+                    .sum();
+
+            unitOrder.getTotalOrder().decreaseTotalPrice(totalDelta);
+
         }
 
         return UnitOrderStatusResDTO.from(unitOrder);
