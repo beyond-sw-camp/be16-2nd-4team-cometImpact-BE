@@ -90,7 +90,8 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 - **수수료·운영비 부담**이 인건비 절감을 상쇄하는 사례 다수, **PG 수수료 상한 부재**·계약 리스크 지적. → 비용 장벽 해소 필요. [YTN](https://www.ytn.co.kr/_ln/0102_202410181024214328) [서울경제](https://www.sedaily.com/NewsView/2DFEDQEVRN) [네이트 뉴스](https://news.nate.com/view/20240108n02405)
 - **고령층·비숙련자 사용성 한계**가 도입/이용 저해. **큰 글씨·음성·단계 축소** 지원 시 적응 개선. → 접근성 중심 설계 필요. [브라보마이라이프](https://bravo.etoday.co.kr/view/atc_view/13547)
 - 학술·정책 연구는 **스마트 기술의 효용**과 함께 **도입·투자 부담**을 병목으로 지적. → **오픈소스·저비용·자체 설치** 모델의 공공적 가치. [KCI](https://www.kci.go.kr/kciportal/ci/sereArticleSearch/ciSereArtiView.kci?sereArticleSearchBean.artiId=ART002995983)
----
+
+<br>
 
 ## 2. 🛠 기술 스택
 
@@ -138,47 +139,52 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 ![Discord](https://img.shields.io/badge/Discord-5865F2?style=for-the-badge&logo=discord&logoColor=white)
 ![Figma](https://img.shields.io/badge/Figma-F24E1E?style=for-the-badge&logo=figma&logoColor=white)
 
----
+<br>
 
 ## 3. 📐 분석 및 설계
 
-### ✅ [요구사항 명세서](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1037534638#gid=1037534638)
-
-### 🎨 [화면 설계서](https://www.figma.com/design/WuBdoUWSz5n3gdSHdMN2qo/be16-4th-team?node-id=0-1&t=5D9WbMwwOTOxQaVj-1)
+## 요구사항 명세서 [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1037534638#gid=1037534638)
 <details>
-  <summary><b>화면설계서</b></summary>
-  - 화면설계_점주(STORE)  
-    <p align="center">
-      <img width="800" alt="image" src="https://github.com/user-attachments/assets/50a33d51-f4e6-4848-b90b-70fbc4c9f666" />
-    </p>
-
-  - 화면설계_테이블(STORE_TABLE)  
-    <p align="center">
-      <img width="800" alt="image" src="https://github.com/user-attachments/assets/d50ff505-8019-4977-9770-1dcf7d4a3ed3" />
-    </p>
+  <summary><b>요구사항 명세서</b></summary>
+<img width="1362" height="608" alt="스크린샷 2025-08-26 오후 3 29 12" src="https://github.com/user-attachments/assets/8a6c232d-0e74-44f2-a18a-fe436ef44985" />
 </details>
 
-### 🧾 [ERD](https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW)
+##  화면 설계서 - [상세보기](https://www.figma.com/design/WuBdoUWSz5n3gdSHdMN2qo/be16-4th-team?node-id=0-1&t=5D9WbMwwOTOxQaVj-1)
+<details>
+  <summary><b>점주 페이지</b></summary>
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/50a33d51-f4e6-4848-b90b-70fbc4c9f666" />
+</details>
+<details>
+  <summary><b>테이블 오더 페이지</b></summary>
+<img width="800" alt="image" src="https://github.com/user-attachments/assets/d50ff505-8019-4977-9770-1dcf7d4a3ed3" />
+</details>
+
+##  ERD - [상세보기](https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW)
 <details>
   <summary><b>ERD</b></summary>
   <img src="https://raw.githubusercontent.com/beyond-sw-camp/be16-2nd-4team-cometImpact-BE/develop/Jelly_order_ERD.png"></img>
 </details>
 
-### 📆 [WBS (Work Breakdown Structure)](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=0#gid=0)
+## WBS - [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=0#gid=0)
+<details>
+  <summary><b>WBS</b></summary>
+<img width="1420" height="648" alt="스크린샷 2025-08-26 오후 3 01 35" src="https://github.com/user-attachments/assets/bcfe1f43-44c1-418a-a2a6-12862316e928" />
+</details>
 
----
+## API 명세서 - [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=394720298#gid=394720298)
+<details>
+  <summary><b>API 명세서</b></summary>
+<img width="1402" height="580" alt="스크린샷 2025-08-26 오후 3 02 55" src="https://github.com/user-attachments/assets/ebaf6eaa-b99c-4d8d-bfa1-b98f8370fd9c" />
+</details>
+<br>
 
-
-
----
 
 ## 4. 🧪 단위테스트 결과서
-> 각 항목을 클릭하면 테스트 시연 GIF/영상이 펼쳐집니다.
 
 점주 페이지
 -
 
-### 회원가입 및 로그인
+### - 회원가입 및 로그인
 <details>
   <summary><b>점주 회원가입</b></summary>
     <p align="center">
@@ -211,56 +217,57 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 </details>
 
 
-### 테이블 현황
-
-
+### - 테이블 현황
 <details>
   <summary><b>구역 별 주문 테이블 정보 조회 (기본 화면)</b></summary>
   <p align="center">
-
+<img width="1440" height="776" alt="구역 별 주문 테이블 정보 조회" src="https://github.com/user-attachments/assets/ced2bcc1-2fc1-4476-a309-cc00b4335b20" />
   </p>
 </details>
 
 <details>
   <summary><b>주문 테이블 상세 정보</b></summary>
   <p align="center">
-![ezgif com-video-to-gif-converter](https://github.com/user-attachments/assets/8c38f22f-75bf-4186-82db-2d20e6949115)
+    
+![주문 테이블 상세 정보](https://github.com/user-attachments/assets/1c254460-b2e9-43bb-bee5-b827e58f0cce)
   </p>
 </details>
 
-### 주문 현황
+### - 주문 현황
 <details>
   <summary><b>주문 접수 페이지 (접수 탭)</b></summary>
   <p align="center">
-    <img src="" alt="주문 접수 페이지" width="720">
+<img width="720" height="776" alt="구역 별 주문 테이블 정보 조회_접수" src="https://github.com/user-attachments/assets/c368e723-4966-41b6-8dc5-0c2aef6840c7" />
   </p>
 </details>
 
 <details>
   <summary><b>주문 접수 페이지 (완료 탭)</b></summary>
   <p align="center">
-    <img src="" alt="주문 접수 페이지" width="720">
+    <img width="720" height="774" alt="구역 별 주문 테이블 정보 조회_완료" src="https://github.com/user-attachments/assets/c432923d-108a-4189-8c3e-22bc87726048" />
   </p>
 </details>
 
 <details>
   <summary><b>주문 접수 페이지 (취소 탭)</b></summary>
   <p align="center">
-    <img src="" alt="주문 접수 페이지" width="720">
+    <img width="720" height="776" alt="구역 별 주문 테이블 정보 조회_접수" src="https://github.com/user-attachments/assets/e0276868-41db-4ae9-b192-606d45f197a2" />
   </p>
 </details>
 
 <details>
   <summary><b>실시간 주문 확인 (WebSocket 연결/수신)</b></summary>
   <p align="center">
-   ![실시간 주문](https://github.com/user-attachments/assets/60762f7f-825d-460a-900d-a0b90cfade3b)
+    
+![실시간 주문](https://github.com/user-attachments/assets/5fb32e56-39e3-490f-8dd8-8b414d0bc88b)
  </p>
 </details>
 
 <details>
   <summary><b>조리완료</b></summary>
   <p align="center">
-    <img src="" alt="조리완료" width="720">
+    
+  ![조리 완료](https://github.com/user-attachments/assets/de8fec5b-4813-422d-b6e4-63f18a0637fe)
   </p>
 </details>
 
@@ -268,52 +275,46 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 <details>
   <summary><b>조리 취소</b></summary>
   <p align="center">
-    <img src="" alt="취소" width="720">
+    
+  ![주문 취소](https://github.com/user-attachments/assets/18b21176-1cc9-4f4d-9e4e-e82f45204341)
   </p>
 </details>
 
 
-### 테이블 및 구역 관리
+### - 테이블 및 구역 관리
 <details>
   <summary><b>테이블 추가</b></summary>
   <p align="center">
-
-
+    
+  ![테이블 추가](https://github.com/user-attachments/assets/dd19b603-6acb-4429-9189-208ecc5de6b5)
   </p>
 </details>
 
 <details>
   <summary><b>테이블 수정</b></summary>
   <p align="center">
-    <img src="" alt="테이블 수정" width="720">
+    
+  ![테이블 수정](https://github.com/user-attachments/assets/b9a09b8c-208c-4366-894e-7aff13aa8bf6)
   </p>
 </details>
 
 <details>
   <summary><b>구역 추가</b></summary>
   <p align="center">
-    <img src="" alt="구역 추가" width="720">
+    
+  ![구역 추가](https://github.com/user-attachments/assets/1bff8794-2c3e-4056-afb5-fa658ef910d0)
   </p>
 </details>
 
 <details>
   <summary><b>구역 수정</b></summary>
   <p align="center">
-![구역수정](https://github.com/user-attachments/assets/44c2ccee-7ab7-4ea2-a659-a8d62898b0e5)
+    
+  ![구역수정](https://github.com/user-attachments/assets/44c2ccee-7ab7-4ea2-a659-a8d62898b0e5)
   </p>
 </details>
 
-
-
-
-
-
-
-
-
-
-
-### 메뉴 관리
+### - 메뉴 관리
   
 <details>
   <summary><b>메뉴 추가 (기본 값 설정)</b></summary>
@@ -420,7 +421,7 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     </p>
 </details>
 
-### 식자재 관리
+### - 식자재 관리
 <details>
   <summary><b>식자재 관리 메인 페이지</b></summary>
     <p align="center">
@@ -449,11 +450,8 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     </p>
 </details>
 </details>
+<br>
 
-
-
-
----
 테이블 오더 페이지
 -
 <details>
