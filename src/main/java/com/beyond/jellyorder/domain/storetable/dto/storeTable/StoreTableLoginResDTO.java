@@ -16,4 +16,5 @@ public class StoreTableLoginResDTO {
     private String storeTableAccessToken;
     private String storeTableRefreshToken;
     private UUID storeTableId;
+    private UUID storeId;
 }
