@@ -32,4 +32,21 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
 
     Optional<StoreTable> findByStoreAndName(Store store, String name);
 
+    // 활성(삭제되지 않은) 이름 중복 체크
+    boolean existsByStoreIdAndNameAndDeletedFalse(UUID storeId, String name);
+
+    // 특정 테이블이 진행중 주문과 연결되어 있는지 체크 메서드
+    @Query("""
+        select case when count(t) > 0 then true else false end
+        from TotalOrder t
+        where t.storeTable.id = :storeTableId
+          and t.endedAt is null
+    """)
+    boolean existsOpenOrder(UUID storeTableId);
+
+    // 아카이브 포함 단건 조회 (네이티브로 @Where 우회)
+    // nativeQuery를 true로 하면 작성한 쿼리 그대로 실행함. 그래서 삭제 된 데이터도 조회 가능.
+    @Query(value = "select * from store_table where id = :id", nativeQuery = true)
+    Optional<StoreTable> findAnyById(@Param("id") UUID id);
+
 }

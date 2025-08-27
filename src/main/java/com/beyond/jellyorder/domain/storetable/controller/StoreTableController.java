@@ -52,6 +52,14 @@ public class StoreTableController {
         return ApiResponse.ok(resDTO, "구역이 수정되었습니다.");
     }
 
+    @DeleteMapping("/{storeTableId}")
+    public ResponseEntity<?> deleteStoreTable(
+            @PathVariable UUID storeTableId
+    ) {
+        String deleteStoreTableName = storeTableService.deleteStoreTable(storeTableId);
+        return ApiResponse.ok(deleteStoreTableName, "삭제가 완료되었습니다.");
+    }
+
     @PreAuthorize("permitAll()")
     @PostMapping("/do-login")
     public ResponseEntity<?> storeTableLogin(@Valid @RequestBody StoreTableLoginReqDTO storeTableLoginReqDTO) {

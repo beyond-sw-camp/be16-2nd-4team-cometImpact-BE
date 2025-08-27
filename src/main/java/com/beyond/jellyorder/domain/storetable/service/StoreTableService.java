@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.storetable.service;
 
+import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.common.exception.DuplicateResourceException;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
@@ -30,6 +31,7 @@ public class StoreTableService {
     private final StoreRepository storeRepository;
     private final ZoneRepository zoneRepository;
     private final PasswordEncoder passwordEncoder;
+    private final StoreJwtClaimUtil storeJwtClaimUtil;
 
     // 테이블 생성
     @Transactional
@@ -110,7 +112,7 @@ public class StoreTableService {
         return StoreTableResDTO.from(storeTable);
     }
 
-
+    // 테이블 로그인
     public StoreTable doLogin(StoreTableLoginReqDTO storeTableLoginReqDTO) {
         Store store = storeRepository.findByLoginId(storeTableLoginReqDTO.getLoginId())
                 .orElseThrow(() -> new EntityNotFoundException("로그인 정보가 일치하지 않습니다."));
@@ -124,6 +126,32 @@ public class StoreTableService {
 
         return storeTable;
     }
+
+    // 테이블 삭제
+    @Transactional
+    public String deleteStoreTable(UUID storeTableId) {
+        UUID storeId = UUID.fromString(storeJwtClaimUtil.getStoreId());
+
+        StoreTable table = storeTableRepository.findById(storeTableId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 테이블 없습니다."));
+
+        // 소유 매장 검증
+        if (!table.getStore().getId().equals(storeId)) {
+            throw new IllegalArgumentException("해당 매장의 테이블이 아닙니다.");
+        }
+
+        // 1) 진행중 주문 존재 시 차단
+        if (storeTableRepository.existsOpenOrder(storeTableId)) {
+            throw new IllegalArgumentException("진행 중 주문이 있어 비활성화할 수 없습니다.");
+        }
+
+        // 2) soft delete (@SQLDelete 실행됨 → name에 suffix, deleted=true)
+        storeTableRepository.delete(table);
+        // delete() 호출이 UPDATE로 변환되어 실행됨
+
+        return table.getName();
+    }
+
 
     /**
      * === 내부 공통 메서드 정의 ===
