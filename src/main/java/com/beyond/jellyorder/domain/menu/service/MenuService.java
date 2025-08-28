@@ -46,55 +46,40 @@ public class MenuService {
     public MenuCreateResDto create(MenuCreateReqDto reqDto) {
         final UUID storeUuid = UUID.fromString(storeJwtClaimUtil.getStoreId());
 
-        // 0) 매장 검증 & 엔티티 확보
+        // 0) 매장 검증
         Store store = storeRepository.findById(storeUuid)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeUuid));
 
-        // 1) 카테고리 조회 (없으면 생성)
-        String catName = Optional.ofNullable(reqDto.getCategoryName())
-                .map(String::trim).orElse("");
+        // 1) 카테고리 조회/생성
+        String catName = Optional.ofNullable(reqDto.getCategoryName()).map(String::trim).orElse("");
         if (catName.isEmpty()) {
             throw new IllegalArgumentException("카테고리명은 필수입니다.");
         }
-
         Category category = categoryRepository.findByStoreIdAndName(storeUuid, reqDto.getCategoryName())
-                .orElseGet(() -> {
-                    // 없으면 새로 생성
-                    Category newCat = Category.builder()
-                            .store(store)
-                            .name(reqDto.getCategoryName())
-                            .description(reqDto.getCategoryDescription())
-                            .build();
-                    return categoryRepository.save(newCat);
-                });
+                .orElseGet(() -> categoryRepository.save(
+                        Category.builder()
+                                .store(store)
+                                .name(reqDto.getCategoryName())
+                                .description(reqDto.getCategoryDescription())
+                                .build()
+                ));
 
-        // 2) 옵션 트리 생성(검증 포함) — 기존 로직 유지
+        // 2) 옵션 트리 준비 (중복 이름 검증)
         List<MainOption> preparedMainOptions = new ArrayList<>();
         if (reqDto.getMainOptions() != null && !reqDto.getMainOptions().isEmpty()) {
             Set<String> dupMainNames = new HashSet<>();
             for (MainOptionDto modto : reqDto.getMainOptions()) {
                 MainOption mo = modto.toEntity();
-                if (!dupMainNames.add(mo.getName())) {
-                    throw new IllegalArgumentException("중복된 메인 옵션 이름이 존재합니다: " + mo.getName());
+                String normalized = (mo.getName() == null ? "" : mo.getName().trim());
+                if (!dupMainNames.add(normalized)) {
+                    throw new IllegalArgumentException("중복된 메인 옵션 이름이 존재합니다: " + normalized);
                 }
+                mo.setName(normalized);
                 preparedMainOptions.add(mo);
             }
         }
 
-        // 3) 식자재 존재 검증 — 기존 로직 유지
-        List<String> ingredientNames = Optional.ofNullable(reqDto.getIngredients()).orElseGet(List::of)
-                .stream().filter(Objects::nonNull).map(String::trim)
-                .filter(s -> !s.isEmpty()).distinct().toList();
-
-        List<Ingredient> ingredients = new ArrayList<>(ingredientNames.size());
-        for (String ingName : ingredientNames) {
-            Ingredient ing = ingredientRepository.findByStoreIdAndName(storeUuid, ingName)
-                    .orElseThrow(() -> new EntityNotFoundException(
-                            "식자재를 찾을 수 없습니다: name=" + ingName + ", storeId=" + storeUuid));
-            ingredients.add(ing);
-        }
-
-        // 4) 이미지 검증 — 기존 유지
+        // 3) 이미지 검증
         MultipartFile imageFile = reqDto.getImageFile();
         if (imageFile == null || imageFile.isEmpty()) {
             throw new IllegalArgumentException("메뉴 이미지 파일이 누락되었습니다.");
@@ -102,14 +87,14 @@ public class MenuService {
 
         String imageUrl = null;
         try {
-            // 5) 업로드
+            // 4) 업로드
             imageUrl = s3Manager.upload(imageFile, "menus");
 
-            // 6) 메뉴 저장
+            // 5) 메뉴 저장
             Menu menu = reqDto.toEntity(category, imageUrl);
             menu = menuRepository.save(menu);
 
-            // 7) 옵션 역참조 연결(cascade)
+            // 6) 옵션 역참조 연결(cascade 가정)
             for (MainOption mo : preparedMainOptions) {
                 mo.setMenu(menu);
                 if (mo.getSubOptions() != null) {
@@ -120,34 +105,27 @@ public class MenuService {
             }
             menu.setMainOptions(preparedMainOptions);
 
-            // 8) MenuIngredient 연결
-            if (!ingredients.isEmpty()) {
-                Set<UUID> seen = new HashSet<>();
-                for (Ingredient ing : ingredients) {
-                    if (!seen.add(ing.getId())) continue;
-                    menu.addMenuIngredient(
-                            MenuIngredient.builder().menu(menu).ingredient(ing).build()
-                    );
-                }
-            }
+            // 7) 식자재 링크 동기화 — ✅ ID 기반으로만 처리
+            List<UUID> ingredientIds = Optional.ofNullable(reqDto.getIngredientIds()).orElseGet(List::of);
+            syncIngredientsByIds(menu, ingredientIds, storeUuid);
 
-            // 9) 재고 상태 계산
+            // 8) 재고 상태 재계산 (수동 품절이 아닌 경우만)
             if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
                 MenuStatus computed = deriveStockStatusFromIngredients(menu);
                 menu.changeStockStatus(computed);
             }
 
-            // 10) 응답
+            // 9) 응답
             return MenuCreateResDto.fromEntity(menu);
 
         } catch (Exception e) {
-            // 8) 실패 시 업로드 파일 정리
             if (imageUrl != null) {
                 s3Manager.delete(imageUrl);
             }
             throw e;
         }
     }
+
 
 
     private MenuStatus deriveStockStatusFromIngredients(Menu menu) {
