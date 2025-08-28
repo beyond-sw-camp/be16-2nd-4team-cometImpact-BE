@@ -10,9 +10,9 @@ import lombok.NoArgsConstructor;
 @AllArgsConstructor
 @Builder
 public class SettlementSummaryDTO {
-    private String bucket;   // 예: 2025-08-22 / 2025-W34 / 2025-08-01
-    private long gross;      // 총 매출
-    private long fee;        // 수수료(없으면 0)
-    private long net;        // 정산 금액(없으면 gross)
-    private long count;      // 건수
+    private String bucket; // "yyyy-MM-dd" / "yyyy-MM-dd(주시작)" / "yyyy-MM-01"
+    private long gross;
+    private long fee;
+    private long net;
+    private long count;
 }
