@@ -4,6 +4,7 @@ import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.domain.MenuStatus;
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
@@ -52,8 +53,12 @@ public class MenuCreateReqDto {
 
     /**
      * 옵션 트리 (메인/서브 옵션 구조)
+     * - 각 MainOptionDto에는 selectionType(필수) 이 포함되어야 함
+     * - @Valid로 중첩 DTO Bean Validation 수행
      */
-    private List<MainOptionDto> mainOptions;
+    @Valid
+    @Builder.Default
+    private List<MainOptionDto> mainOptions = new ArrayList<>();
 
     @NotNull(message = "이미지 파일은 필수입니다.")
     private MultipartFile imageFile;
@@ -74,7 +79,7 @@ public class MenuCreateReqDto {
                 .origin(origin)
                 .salesLimit(salesLimit != null ? salesLimit : -1)
                 .salesToday(0)
-                // 생성 시 기본은 ON_SALE, 이후 식자재 동기화 로직에서 상태 재계산됨
+                // 생성 시 기본은 ON_SALE, 이후 식자재/옵션 정합성 로직에서 상태 재계산됨
                 .stockStatus(MenuStatus.ON_SALE)
                 .build();
     }
