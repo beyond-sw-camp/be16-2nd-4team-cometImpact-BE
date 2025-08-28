@@ -105,7 +105,6 @@ public class ZoneService {
 
         // 테이블의 FK 끊기 (zone_id = null)
         int i = storeTableRepository.detachSoftDeletedFromZone(zoneId);
-        System.out.println("i = " + i);
 
         // 구역 삭제(hard)
         zoneRepository.delete(zone);
