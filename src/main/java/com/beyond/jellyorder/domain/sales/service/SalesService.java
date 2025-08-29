@@ -1,11 +1,10 @@
 package com.beyond.jellyorder.domain.sales.service;
 
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
-import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.sales.entity.OrderType;
 import com.beyond.jellyorder.domain.sales.entity.PaymentMethod;
 import com.beyond.jellyorder.domain.sales.entity.Sales;
-import com.beyond.jellyorder.domain.sales.entity.Status;
+import com.beyond.jellyorder.domain.sales.entity.SalesStatus;
 import com.beyond.jellyorder.domain.sales.repository.SalesRepository;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
@@ -31,7 +30,7 @@ public class SalesService {
         Sales sales = salesRepository.findByTotalOrderId(orderId).orElseGet(() ->
                 Sales.builder()
                         .totalOrder(em.getReference(TotalOrder.class, orderId))
-                        .status(Status.PENDING)
+                        .status(SalesStatus.PENDING)
                         .build()
         );
 
@@ -44,7 +43,7 @@ public class SalesService {
 
         sales.setOrderType(orderType);
         sales.setPaymentMethod(paymentMethod);
-        sales.setStatus(Status.PENDING);
+        sales.setStatus(SalesStatus.PENDING);
         sales.setTotalAmount(null);
         sales.setPaidAt(null);
         sales.setTid(null);
@@ -63,7 +62,7 @@ public class SalesService {
     public Sales complete(UUID orderId, PaymentMethod method, Long totalAmount, LocalDateTime paidAt) {
         Sales sales = getByOrderIdOrThrow(orderId);
 
-        if (sales.getStatus() != Status.PENDING) {
+        if (sales.getStatus() != SalesStatus.PENDING) {
             return sales; // 멱등 처리
         }
 
@@ -80,7 +79,7 @@ public class SalesService {
         }
 
         sales.setPaidAt(paidAt != null ? paidAt : LocalDateTime.now());
-        sales.setStatus(Status.COMPLETED);
+        sales.setStatus(SalesStatus.COMPLETED);
 
         // 결제 완료 후 테이블 status 리셋 && totalOrder의 paymentedAt 시간 업데이트
         TotalOrder totalOrder = sales.getTotalOrder();
@@ -112,10 +111,10 @@ public class SalesService {
     /** 취소 처리 */
     public Sales cancel(UUID orderId) {
         Sales sales = getByOrderIdOrThrow(orderId);
-        if (sales.getStatus() == Status.COMPLETED) {
+        if (sales.getStatus() == SalesStatus.COMPLETED) {
             throw new IllegalStateException("이미 COMPLETED 상태입니다.");
         }
-        sales.setStatus(Status.CANCELLED);
+        sales.setStatus(SalesStatus.CANCELLED);
         return sales;
     }
 
