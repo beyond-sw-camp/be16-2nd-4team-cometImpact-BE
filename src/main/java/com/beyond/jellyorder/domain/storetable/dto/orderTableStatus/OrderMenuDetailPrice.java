@@ -22,7 +22,7 @@ public class OrderMenuDetailPrice {
         return OrderMenuDetailPrice.builder()
                 .MenuName(orderMenu.getMenu().getName())
                 .MenuQuantity(orderMenu.getQuantity())
-                .MenuPrice(orderMenu.getMenu().getPrice() * orderMenu.getQuantity())
+                .MenuPrice(orderMenu.getMenu().getPrice())
                 .menuOptionList(menuOptionList)
                 .build();
     }

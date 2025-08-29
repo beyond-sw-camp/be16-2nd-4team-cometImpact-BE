@@ -51,7 +51,7 @@ public class OrderTableStatusService {
 
                     // 테이블에 주문이 없거나 테이블 상태가 EATING이 아니면 null값 만 넘김.
                     if (totalOrderOpt.isEmpty()
-                            || table.getStatus() != TableStatus.EATING) {
+                            || table.getStatus() == TableStatus.STANDBY) {
                         return OrderTableResDTO.from(table, null, Collections.emptyList());
                     }
 
