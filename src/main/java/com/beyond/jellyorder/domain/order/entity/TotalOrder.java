@@ -5,6 +5,7 @@ import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.security.PublicKey;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
@@ -68,5 +69,15 @@ public class TotalOrder extends BaseIdEntity {
     // 총 가격 감소 메서드
     public void decreaseTotalPrice(Integer decreasePrice) {
         this.totalPrice -= decreasePrice;
+    }
+
+    // 주문 완료 시간 변경
+    public void updateEndedAt(LocalDateTime endedAt) {
+        this.endedAt = endedAt;
+    }
+
+    // 정산 금액 변환 메서드
+    public Long changeSettlementAmount() {
+        return (long) (this.totalPrice * 0.9);
     }
 }
