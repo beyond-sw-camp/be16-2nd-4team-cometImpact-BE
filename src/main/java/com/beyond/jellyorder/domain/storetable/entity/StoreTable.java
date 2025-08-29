@@ -9,6 +9,10 @@ import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.SQLDelete;
+import org.hibernate.annotations.Where;
+
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -22,6 +26,19 @@ import lombok.NoArgsConstructor;
                         columnNames = {"store_id", "name"})
         }
 )
+// 삭제 쿼리 예시) "테이블1__deleted_20250827121530_9x82lm"
+@SQLDelete(sql =
+        "update store_table " +
+                "set deleted = true, " +
+                "    archived_at = now(), " +
+                "    name = concat(" +
+                "      substring(name, 1, 80), " +
+                "      '__deleted_', date_format(now(), '%Y%m%d%H%i%S'), '_'," +
+                "      lpad(conv(floor(rand()*pow(36,6)),10,36),6,'0')" +
+                "    ) " +
+                "where id = ?"
+)
+@Where(clause = "deleted = false")
 public class StoreTable extends BaseIdAndTimeEntity {
 
     @ManyToOne(fetch = FetchType.LAZY)
@@ -46,6 +63,13 @@ public class StoreTable extends BaseIdAndTimeEntity {
     @Enumerated(EnumType.STRING)
     @Builder.Default
     private Role role = Role.STORE_TABLE;
+
+    @Builder.Default
+    @Column(nullable = false)
+    private boolean deleted = false; // 삭제 여부
+
+    private LocalDateTime archivedAt; // 삭제 시간
+
 
     //==테이블 수정 메서드==//
     public void updateStoreTableInfo(Zone zone, StoreTableUpdateReqDTO dto) {
