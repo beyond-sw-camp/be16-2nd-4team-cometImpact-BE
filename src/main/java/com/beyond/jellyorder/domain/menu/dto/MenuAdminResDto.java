@@ -27,7 +27,7 @@ public class MenuAdminResDto {
     private String imageUrl;
     private String description;     // 유저와 동일
     private String origin;          // 유저와 동일
-    private List<MainOptionDto> mainOptions;
+    private List<MainOptionDto> mainOptions; // ✅ MainOptionDto.selectionType 포함
     private MenuStatus status;
 
     // 관리자 전용
@@ -60,7 +60,7 @@ public class MenuAdminResDto {
                 .mainOptions(
                         menu.getMainOptions() == null ? List.of()
                                 : menu.getMainOptions().stream()
-                                .map(MainOptionDto::fromEntity)
+                                .map(MainOptionDto::fromEntity) // ✅ selectionType 포함
                                 .toList()
                 )
                 .ingredients(ingredientDtos)

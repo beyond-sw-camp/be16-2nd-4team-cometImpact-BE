@@ -1,10 +1,12 @@
 package com.beyond.jellyorder.domain.menu.dto;
 
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
+import jakarta.validation.Valid;
 import jakarta.validation.constraints.*;
 import lombok.*;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.UUID;
 
@@ -43,7 +45,7 @@ public class MenuUpdateReqDto {
     private String origin;
 
     @Min(-1)
-    private Integer salesLimit; // 기본 -1
+    private Integer salesLimit; // 기본 -1 (null이면 변경 없음으로 해석 가능)
 
     // 재고/판매 상태 정책에 따라 사용 (예: 수동품절 토글 또는 onSale 표기)
     private Boolean onSale; // null이면 변경 안 함
@@ -51,8 +53,18 @@ public class MenuUpdateReqDto {
     // 이미지 교체 없으면 null/empty로 전송
     private MultipartFile imageFile;
 
-    // 전체 스냅샷
-    private List<MainOptionDto> mainOptions;   // 메인/서브 옵션 트리
+    /**
+     * 전체 스냅샷 (메인/서브 옵션 트리)
+     * - 각 MainOptionDto에는 selectionType(필수)이 포함되어야 함
+     * - @Valid로 중첩 DTO Bean Validation 수행
+     */
+    @Valid
+    @Builder.Default
+    private List<MainOptionDto> mainOptions = new ArrayList<>();
 
-    private List<UUID> ingredientIds;
+    /**
+     * 연결할 식자재 ID 목록 (null이면 변경 없음으로 처리 가능)
+     */
+    @Builder.Default
+    private List<UUID> ingredientIds = new ArrayList<>();
 }
