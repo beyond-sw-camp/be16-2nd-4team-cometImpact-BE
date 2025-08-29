@@ -1,11 +1,13 @@
 package com.beyond.jellyorder.domain.sales.service;
 
+import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
+import com.beyond.jellyorder.domain.sales.dto.CounterPaymentReqDTO;
 import com.beyond.jellyorder.domain.sales.entity.OrderType;
 import com.beyond.jellyorder.domain.sales.entity.PaymentMethod;
 import com.beyond.jellyorder.domain.sales.entity.Sales;
-import com.beyond.jellyorder.domain.sales.entity.Status;
+import com.beyond.jellyorder.domain.sales.entity.SalesStatus;
 import com.beyond.jellyorder.domain.sales.repository.SalesRepository;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
@@ -25,13 +27,14 @@ public class SalesService {
 
     private final SalesRepository salesRepository;
     private final EntityManager em;
+    private final TotalOrderRepository totalOrderRepository;
 
     // 주문을 기준으로 결제 PENDING 생성(있다면 갱신)
     public Sales createPending(UUID orderId, OrderType orderType, PaymentMethod paymentMethod, Long totalAmount) {
         Sales sales = salesRepository.findByTotalOrderId(orderId).orElseGet(() ->
                 Sales.builder()
                         .totalOrder(em.getReference(TotalOrder.class, orderId))
-                        .status(Status.PENDING)
+                        .status(SalesStatus.PENDING)
                         .build()
         );
 
@@ -44,7 +47,7 @@ public class SalesService {
 
         sales.setOrderType(orderType);
         sales.setPaymentMethod(paymentMethod);
-        sales.setStatus(Status.PENDING);
+        sales.setStatus(SalesStatus.PENDING);
         sales.setTotalAmount(null);
         sales.setPaidAt(null);
         sales.setTid(null);
@@ -63,7 +66,7 @@ public class SalesService {
     public Sales complete(UUID orderId, PaymentMethod method, Long totalAmount, LocalDateTime paidAt) {
         Sales sales = getByOrderIdOrThrow(orderId);
 
-        if (sales.getStatus() != Status.PENDING) {
+        if (sales.getStatus() != SalesStatus.PENDING) {
             return sales; // 멱등 처리
         }
 
@@ -80,7 +83,7 @@ public class SalesService {
         }
 
         sales.setPaidAt(paidAt != null ? paidAt : LocalDateTime.now());
-        sales.setStatus(Status.COMPLETED);
+        sales.setStatus(SalesStatus.COMPLETED);
 
         // 결제 완료 후 테이블 status 리셋 && totalOrder의 paymentedAt 시간 업데이트
         TotalOrder totalOrder = sales.getTotalOrder();
@@ -112,10 +115,10 @@ public class SalesService {
     /** 취소 처리 */
     public Sales cancel(UUID orderId) {
         Sales sales = getByOrderIdOrThrow(orderId);
-        if (sales.getStatus() == Status.COMPLETED) {
+        if (sales.getStatus() == SalesStatus.COMPLETED) {
             throw new IllegalStateException("이미 COMPLETED 상태입니다.");
         }
-        sales.setStatus(Status.CANCELLED);
+        sales.setStatus(SalesStatus.CANCELLED);
         return sales;
     }
 
@@ -125,4 +128,63 @@ public class SalesService {
         return salesRepository.findByTotalOrderId(orderId)
                 .orElseThrow(() -> new EntityNotFoundException("Sales not found for orderId=" + orderId));
     }
+
+    public void processPayment(CounterPaymentReqDTO reqDTO) {
+        TotalOrder totalOrder = totalOrderRepository.findById(reqDTO.getTotalOrderId())
+                .orElseThrow(() -> new EntityNotFoundException("해당 전체주문이 없습니다."));
+        if (totalOrder.getPaymentedAt() != null) {
+            throw new IllegalArgumentException("이미 결제가 완료된 주문건입니다.");
+        }
+
+        // sales 엔티티 생성
+        Sales sales = Sales.builder()
+                .totalOrder(totalOrder)
+                .orderType(OrderType.COUNTER)
+                .paymentMethod(reqDTO.getMethod())
+                .status(SalesStatus.COMPLETED)
+                .totalAmount(Long.valueOf(totalOrder.getTotalPrice()))
+                .settlementAmount(totalOrder.changeSettlementAmount())
+                .paidAt(LocalDateTime.now())
+                .build();
+        salesRepository.save(sales);
+
+        // table 상태값 변경
+        totalOrder.getStoreTable().changeStatus(TableStatus.STANDBY);
+
+        // totalOrder 상태값 변경
+        totalOrder.updateEndedAt(LocalDateTime.now());
+        totalOrder.updatePaymentedAt(LocalDateTime.now());
+
+        // 현재 주문 상태 확인
+        totalOrder.getUnitOrderList().forEach(unitOrder -> {
+            if (unitOrder.getStatus() == OrderStatus.ACCEPT) {
+                throw new IllegalStateException("현재 활성상태인 주문이 있습니다." + unitOrder.getOrderNumber());
+            }
+        });
+
+
+
+
+
+
+
+
+
+    }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 }
