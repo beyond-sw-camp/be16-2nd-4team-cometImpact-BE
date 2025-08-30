@@ -42,7 +42,7 @@ public class SettlementService {
 
         LocalDateTime last7Start = today.minusDays(6).atStartOfDay(); // 이번주 카드용: today-6 ~ tomorrow
 
-        // === 카드용 합계 ===
+        // === 일, 주, 월별용 합계 ===
         long todayGross = reportRepository.sumGross(storeId, todayStart, tomorrowStart);
         long weekGross  = reportRepository.sumGross(storeId, last7Start, tomorrowStart);
         long monthGross = reportRepository.sumGross(storeId, monthStart, nextMonthStart);
