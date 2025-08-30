@@ -47,6 +47,14 @@ public class ZoneController {
         return ApiResponse.ok(resDTO, "구역이 수정되었습니다.");
     }
 
+    @DeleteMapping("/{zoneId}")
+    public ResponseEntity<?> deleteZone(
+            @PathVariable UUID zoneId
+    ) {
+        UUID deleteZone = zoneService.deleteZone(zoneId);
+        return ApiResponse.ok(deleteZone, "구역이 삭제되었습니다.");
+    }
+
 
 
 }

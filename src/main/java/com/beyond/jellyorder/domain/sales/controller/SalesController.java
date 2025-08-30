@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.sales.controller;
 
 
+import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.common.exception.CommonErrorDTO;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
@@ -117,7 +118,7 @@ public class SalesController {
     // 카운터 결제 선택 (식사 후)
     @PreAuthorize("hasRole('STORE')")
     @PostMapping("/counter/choose")
-    public ResponseEntity<String> counterChoose(@RequestBody OrderIdReqDto req) {
+    public ResponseEntity<String> counterChoose(@RequestBody OrderIdReqDto req){
         UUID orderId = req.getOrderId();
 
         // orderId 유효성 체크
@@ -148,4 +149,14 @@ public class SalesController {
 
         return ResponseEntity.ok().build();
     }
+
+    // 카운터 결제 처리(NEW! - 형진 개발)
+    @PreAuthorize("hasRole('STORE')")
+    @PostMapping("/counter-payment")
+    public ResponseEntity<?> processPayment(@RequestBody CounterPaymentReqDTO reqDTO) {
+        salesService.processPayment(reqDTO);
+
+        return ApiResponse.ok(null, "결제처리가 완료되었습니다.");
+    }
+
 }

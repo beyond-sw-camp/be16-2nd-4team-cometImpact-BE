@@ -12,4 +12,9 @@ public interface ZoneRepository extends JpaRepository<Zone, UUID> {
     boolean existsByStoreAndName(Store store, String name);
 
     List<Zone> findAllByStoreLoginId(String loginId);
+
+
+
+
+
 }

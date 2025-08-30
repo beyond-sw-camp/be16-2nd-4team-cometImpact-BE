@@ -3,7 +3,6 @@ package com.beyond.jellyorder.domain.sales.entity;
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
 import jakarta.persistence.*;
-import jakarta.validation.constraints.NotNull;
 import lombok.*;
 
 import java.time.LocalDateTime;
@@ -30,7 +29,7 @@ public class Sales extends BaseIdAndTimeEntity {
 
     @Enumerated(EnumType.STRING)
     @Column(name = "status", nullable = false)
-    private Status status;
+    private SalesStatus status;
 
     @Column(name = "total_amount")
     private Long totalAmount;
@@ -48,7 +47,7 @@ public class Sales extends BaseIdAndTimeEntity {
     @PrePersist // Entity가 DB에 insert 되기 전에 호출됨
     void prePersist() {
         if (status == null) {
-            status = Status.PENDING;
+            status = SalesStatus.PENDING;
         }
         validateConsistency(false);
     }
@@ -68,7 +67,7 @@ public class Sales extends BaseIdAndTimeEntity {
             throw new IllegalStateException("COUNTER 결제는 QR을 사용할 수 없습니다.");
         }
         // COMPLETED면 필수값 검증
-        if (status == Status.COMPLETED) {
+        if (status == SalesStatus.COMPLETED) {
             if (paidAt == null) {
                 throw new IllegalStateException("COMPLETED 상태에는 paid_at이 필요합니다.");
             }

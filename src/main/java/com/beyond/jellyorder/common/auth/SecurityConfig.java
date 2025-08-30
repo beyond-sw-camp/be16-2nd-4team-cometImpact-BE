@@ -41,9 +41,7 @@ public class SecurityConfig {
                         "/store/find-login-id",
                         "/store/refresh-at",
                         "/store-table/refresh-at",
-                        "/sales/qr/success",
-                        "/sales/qr/cancel",
-                        "/sales/qr/fail",
+                        "/sales/qr/**",
                         "/v3/api-docs/**",  // swagger 추가
                         "/swagger-ui/**",   // swagger 추가
                         "/swagger-ui.html",  // swagger 추가
@@ -58,8 +56,6 @@ public class SecurityConfig {
 //                        "/menu/**"
 //                        "/zone/**",
                         ).permitAll()
-                        .requestMatchers("/sales/qr/ready", "/sales/qr/approve")
-                            .hasAnyRole("STORE","STORE_TABLE")
                         .anyRequest()
                         .authenticated())
                 .exceptionHandling(e ->
