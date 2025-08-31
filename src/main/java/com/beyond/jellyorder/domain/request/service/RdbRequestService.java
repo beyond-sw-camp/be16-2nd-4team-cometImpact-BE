@@ -1,7 +1,9 @@
 package com.beyond.jellyorder.domain.request.service;
 
+import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.domain.request.dto.RequestRdbDto;
-import com.beyond.jellyorder.domain.request.dto.RequestUpdateDto;
+import com.beyond.jellyorder.domain.request.dto.RequestUpdateReqDto;
+import com.beyond.jellyorder.domain.request.dto.RequestUpdateResDto;
 import com.beyond.jellyorder.domain.request.repository.RequestRdbRepository;
 import com.beyond.jellyorder.domain.sseRequest.dto.RequestResponseDto;
 import com.beyond.jellyorder.domain.sseRequest.entity.Request;
@@ -14,7 +16,6 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
-import java.nio.file.AccessDeniedException;
 import java.util.List;
 import java.util.UUID;
 
@@ -25,6 +26,7 @@ public class RdbRequestService {
 
     private final RequestRdbRepository requestRdbRepository;
     private final StoreRepository storeRepository;
+    private final StoreJwtClaimUtil storeJwtClaimUtil;
 
     // 요청사항 생성
     public UUID create(RequestRdbDto dto) {
@@ -70,11 +72,16 @@ public class RdbRequestService {
     }
 
     // 요청사항 수정
-    public UUID update(RequestUpdateDto dto, UUID requestId) {
-        Request request = requestRdbRepository.findById(requestId).orElseThrow(() -> new EntityNotFoundException("해당 요청사항이 없습니다."));
-        request.updateRequest(dto);
+    public RequestUpdateResDto update(UUID requestId, RequestUpdateReqDto req) {
+        final UUID storeId = UUID.fromString(storeJwtClaimUtil.getStoreId());
+        Request request = requestRdbRepository.findByIdAndStoreId(requestId, storeId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 요청사항이 없습니다."));
+        request.updateRequest(req);
 
-        return request.getId();
+        return RequestUpdateResDto.builder()
+                .id(request.getId())
+                .name(request.getName())
+                .build();
     }
 
     // 요청사항 삭제
