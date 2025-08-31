@@ -88,7 +88,7 @@ public class SalesService {
                 : (toForAmount.getTotalPrice() != null ? toForAmount.getTotalPrice().longValue() : 0L);
         sales.setTotalAmount(gross);
 
-// 정산금액: TotalOrder에 기존 로직이 있으면 그대로 사용, 없으면 10% 공제 fallback
+        // 정산금액: TotalOrder에 기존 로직이 있으면 그대로 사용, 없으면 10% 공제 fallback
         Long settlement = (toForAmount.changeSettlementAmount() != null)
                 ? toForAmount.changeSettlementAmount()
                 : Math.round(gross * 0.9);

@@ -64,8 +64,8 @@ public class OrderStatusService {
         OrderStatus reqOrderStatus = reqDTO.getOrderStatus();
 
         // 상태 전이 검증 로직 (예: 이미 COMPLETE면 다시 CANCEL 불가)
-        if (unitOrder.getStatus() == OrderStatus.COMPLETE || unitOrder.getStatus() == OrderStatus.CANCEL) {
-            throw new IllegalStateException("이미 완료되었거나 취소된 주문은 상태를 변경할 수 없습니다.");
+        if (unitOrder.getStatus() == OrderStatus.CANCEL) {
+            throw new IllegalStateException("이미 취소된 주문은 상태를 변경할 수 없습니다.");
         }
 
         if (reqOrderStatus == OrderStatus.COMPLETE) {
