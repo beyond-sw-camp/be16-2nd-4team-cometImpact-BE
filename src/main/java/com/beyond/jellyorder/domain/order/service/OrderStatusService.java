@@ -54,7 +54,7 @@ public class OrderStatusService {
 
     /**
      * 필수 로직 변환 작업
-     * 추후 redis 재고 도입으로 인한 리팩토링 필요함.
+     * TODO: 추후 redis 재고 도입으로 인한 리팩토링 필요함.
      */
     // 접수된 주문 상태변경(주문완료, 취소) 로직
     public UnitOrderStatusResDTO updateUnitOrderStatus(UUID unitOrderId, OrderStatusUpdateReqDTO reqDTO) {

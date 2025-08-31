@@ -81,6 +81,19 @@ public class SalesService {
             }
             sales.setPaymentMethod(method);
         }
+        // ===== 금액/정산 확정 (집계에 필수) =====
+        TotalOrder toForAmount = sales.getTotalOrder();
+        long gross = (totalAmount != null)
+                ? totalAmount
+                : (toForAmount.getTotalPrice() != null ? toForAmount.getTotalPrice().longValue() : 0L);
+        sales.setTotalAmount(gross);
+
+// 정산금액: TotalOrder에 기존 로직이 있으면 그대로 사용, 없으면 10% 공제 fallback
+        Long settlement = (toForAmount.changeSettlementAmount() != null)
+                ? toForAmount.changeSettlementAmount()
+                : Math.round(gross * 0.9);
+        sales.setSettlementAmount(settlement);
+
 
         sales.setPaidAt(paidAt != null ? paidAt : LocalDateTime.now());
         sales.setStatus(SalesStatus.COMPLETED);
@@ -162,30 +175,5 @@ public class SalesService {
                 throw new IllegalStateException("현재 활성상태인 주문이 있습니다." + unitOrder.getOrderNumber());
             }
         });
-
-
-
-
-
-
-
-
-
     }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 }
