@@ -62,15 +62,11 @@ public class SettlementService {
                 firstOfMonth.minusMonths(1).atStartOfDay(),
                 monthStart);
 
-        DashboardMetricsDTO metrics = DashboardMetricsDTO.builder()
-                .todayGross(todayGross)
-                .vsYesterdayPct(pct(todayGross, yesterdayGross))
-                .weekGross(weekGross)
-                .vsLastWeekPct(pct(weekGross, lastWeekGross))
-                .monthGross(monthGross)
-                .vsLastMonthPct(pct(monthGross, lastMonthGross))
-                .monthNetAfterFee(monthNetAfterFee)
-                .build();
+        DashboardMetricsDTO metrics = DashboardMetricsDTO.fromValues(
+                todayGross, yesterdayGross,
+                weekGross, lastWeekGross,
+                monthGross, lastMonthGross
+        );
 
         // === 시리즈 기본 기간(미지정 시) ===
         // 일별: 최근 5일 (today-4 ~ tomorrow)
