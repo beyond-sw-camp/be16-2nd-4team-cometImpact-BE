@@ -80,4 +80,43 @@ public class TotalOrder extends BaseIdEntity {
     public Long changeSettlementAmount() {
         return (long) (this.totalPrice * 0.9);
     }
+
+    /**
+     * 주문 메뉴 목록(List<OrderMenu>)만으로 총액을 다시 계산해서 갱신한다.
+     * (menu.price + Σ subOption.price) * orderMenu.quantity
+     *
+     * @param orderMenus 리포지토리에서 fetch join으로 가져온 목록
+     * @return 갱신된 총액
+     */
+    public Integer refreshTotaCount(List<OrderMenu> orderMenus) {
+        long sum = 0L; // 내부 계산은 여유 있게 long으로
+
+        if (orderMenus != null) {
+            for (OrderMenu om : orderMenus) {
+                if (om == null) continue;
+
+                int qty        = nz(om.getQuantity());
+                int menuPrice  = (om.getMenu() != null) ? nz(om.getMenu().getPrice()) : 0;
+
+                int optionSum = 0;
+                if (om.getOrderMenuOptionList() != null) {
+                    for (OrderMenuOption omo : om.getOrderMenuOptionList()) {
+                        if (omo != null && omo.getSubOption() != null) {
+                            optionSum += nz(omo.getSubOption().getPrice());
+                        }
+                    }
+                }
+
+                sum += (long) (menuPrice + optionSum) * qty;
+            }
+        }
+
+        // Integer 필드에 반영 (오버플로 방지)
+        int newTotal = (sum > Integer.MAX_VALUE) ? Integer.MAX_VALUE : (int) sum;
+        this.totalPrice = newTotal;
+        return newTotal;
+    }
+
+    private static int nz(Integer v) { return (v != null) ? v : 0; }
+
 }
