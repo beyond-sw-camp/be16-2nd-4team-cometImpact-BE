@@ -1,17 +1,17 @@
 package com.beyond.jellyorder.domain.settlement.service;
 
 import com.beyond.jellyorder.domain.settlement.dto.DashboardMetricsDTO;
-import com.beyond.jellyorder.domain.settlement.dto.SettlementDetailDTO;
 import com.beyond.jellyorder.domain.settlement.dto.SettlementDashboardDTO;
 import com.beyond.jellyorder.domain.settlement.dto.SettlementSummaryDTO;
-import com.beyond.jellyorder.domain.settlement.entity.Bucket;
-import com.beyond.jellyorder.domain.settlement.repository.SettlementReportRepository;
+import com.beyond.jellyorder.domain.settlement.dto.SettlementUnitDetailDTO;
 import com.beyond.jellyorder.domain.settlement.repository.SettlementDetailRepository;
+import com.beyond.jellyorder.domain.settlement.repository.SettlementReportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.time.*;
 import java.util.*;
@@ -22,6 +22,7 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class SettlementService {
     private final SettlementReportRepository reportRepository;
+    private final SettlementDetailRepository detailRepository;
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
@@ -137,4 +138,96 @@ public class SettlementService {
             return new SettlementSummaryDTO(bucket, gross, fee, net, cnt);
         }).toList();
     }
-}
+
+    @Transactional(readOnly = true)
+    public Page<SettlementUnitDetailDTO> detailPage(
+            UUID storeId,
+            LocalDateTime from, LocalDateTime to,
+            String status,                 // "COMPLETED" | "CANCELLED" | null(전체)
+            Pageable pageable
+    ) {
+        // 기본 기간: 오늘 00:00 ~ 내일 00:00 (KST)
+        ZoneId KST = ZoneId.of("Asia/Seoul");
+        if (from == null || to == null) {
+            var today = LocalDate.now(KST);
+            from = (from == null) ? today.atStartOfDay() : from;
+            to   = (to   == null) ? today.plusDays(1).atStartOfDay() : to;
+        }
+
+        Page<Object[]> headerPage = detailRepository.findUnitOrderHeaders(storeId, from, to, status, pageable);
+        if (headerPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // 헤더 매핑
+        Map<UUID, SettlementUnitDetailDTO> map = new LinkedHashMap<>();
+        List<UUID> ids = new ArrayList<>();
+
+        for (Object[] r : headerPage.getContent()) {
+            UUID unitOrderId   = (UUID) r[0];
+            String paidDate    = (String) r[1];
+            String payment     = (String) r[2];
+            String st          = (String) r[3];
+            long totalAmount   = ((Number) r[4]).longValue();
+
+            ids.add(unitOrderId);
+            map.put(unitOrderId, SettlementUnitDetailDTO.builder()
+                    .unitOrderId(unitOrderId)
+                    .paidDate(paidDate)
+                    .paymentMethod(payment)
+                    .status(st)
+                    .totalAmount(totalAmount)
+                    .menus(new ArrayList<>())
+                    .build());
+        }
+
+        // 메뉴/옵션 벌크 조회 후 매핑
+        List<Object[]> lines = detailRepository.findMenuLinesByUnitOrders(ids);
+        // unitOrderId + orderMenuId 단위로 메뉴 묶고, 옵션 축적
+        class MenuKey {
+            UUID unitId; UUID omId;
+            MenuKey(UUID u, UUID o) { this.unitId = u; this.omId = o; }
+            public boolean equals(Object o){ return o instanceof MenuKey k && k.unitId.equals(unitId) && k.omId.equals(omId); }
+            public int hashCode(){ return Objects.hash(unitId, omId); }
+        }
+        Map<MenuKey, SettlementUnitDetailDTO.MenuLine> menuMap = new LinkedHashMap<>();
+
+        for (Object[] r : lines) {
+            UUID unitId       = (UUID) r[0];
+            UUID orderMenuId  = (UUID) r[1];
+            String menuName   = (String) r[2];
+            Integer menuPrice = (r[3] == null) ? null : ((Number) r[3]).intValue();
+            Integer qty       = (r[4] == null) ? null : ((Number) r[4]).intValue();
+            String optName    = (String) r[5];
+            Integer optPrice  = (r[6] == null) ? null : ((Number) r[6]).intValue();
+
+            SettlementUnitDetailDTO dto = map.get(unitId);
+            if (dto == null) continue;
+
+            MenuKey key = new MenuKey(unitId, orderMenuId);
+            SettlementUnitDetailDTO.MenuLine ml = menuMap.get(key);
+            if (ml == null) {
+                ml = SettlementUnitDetailDTO.MenuLine.builder()
+                        .menuName(menuName)
+                        .menuPrice(menuPrice)
+                        .quantity(qty)
+                        .options(new ArrayList<>())
+                        .build();
+                menuMap.put(key, ml);
+                dto.getMenus().add(ml);
+            }
+            if (optName != null) {
+                ml.getOptions().add(
+                        SettlementUnitDetailDTO.OptionLine.builder()
+                                .optionName(optName)
+                                .optionPrice(optPrice)
+                                .build()
+                );
+            }
+        }
+
+        List<SettlementUnitDetailDTO> content = new ArrayList<>(map.values());
+        return new PageImpl<>(content, pageable, headerPage.getTotalElements());
+
+
+}}

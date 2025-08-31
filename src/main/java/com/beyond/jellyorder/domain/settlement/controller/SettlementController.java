@@ -1,9 +1,7 @@
 package com.beyond.jellyorder.domain.settlement.controller;
 
 import com.beyond.jellyorder.domain.settlement.dto.SettlementDashboardDTO;
-import com.beyond.jellyorder.domain.settlement.dto.SettlementDetailDTO;
-import com.beyond.jellyorder.domain.settlement.dto.SettlementSummaryDTO;
-import com.beyond.jellyorder.domain.settlement.entity.Bucket;
+import com.beyond.jellyorder.domain.settlement.dto.SettlementUnitDetailDTO;
 import com.beyond.jellyorder.domain.settlement.service.SettlementService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.domain.Page;
@@ -46,5 +44,17 @@ public class SettlementController {
             @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime monthlyTo
     ) {
         return settlementService.dashboard(storeId, dailyFrom, dailyTo, weeklyFrom, weeklyTo, monthlyFrom, monthlyTo);
+    }
+
+    @GetMapping("/details")
+    public Page<SettlementUnitDetailDTO> details(
+            @RequestParam UUID storeId,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime from,
+            @RequestParam(required = false) @DateTimeFormat(iso = DateTimeFormat.ISO.DATE_TIME) LocalDateTime to,
+            @RequestParam(required = false) String status, // "COMPLETED" | "CANCELLED" | null
+            @PageableDefault(size = 20)
+            Pageable pageable
+    ) {
+        return settlementService.detailPage(storeId, from, to, status, pageable);
     }
 }
