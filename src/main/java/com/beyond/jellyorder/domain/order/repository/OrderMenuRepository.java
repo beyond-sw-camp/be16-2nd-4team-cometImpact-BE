@@ -1,6 +1,8 @@
 package com.beyond.jellyorder.domain.order.repository;
 
 import com.beyond.jellyorder.domain.order.entity.OrderMenu;
+import com.beyond.jellyorder.domain.order.entity.OrderStatus;
+import com.beyond.jellyorder.domain.order.entity.TotalOrder;
 import org.springframework.data.jpa.repository.EntityGraph;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
@@ -48,6 +50,25 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, UUID> {
     """)
     List<OrderMenu> findAllWithOptionsByTotalOrderId(
             @org.springframework.data.repository.query.Param("totalOrderId") UUID totalOrderId
+    );
+
+    // 취소된 주문을 제외한 orderMenuList를 fetch join으로 추출.
+    @Query("""
+      select distinct om
+      from OrderMenu om
+      join om.unitOrder uo
+      join uo.totalOrder to
+      left join fetch om.orderMenuOptionList omo
+      left join fetch omo.subOption so
+      left join fetch so.mainOption mo
+      left join fetch om.menu m
+      where to.id = :totalOrderId
+        and uo.status <> :cancelled
+      order by om.id
+    """)
+    List<OrderMenu> findAllActiveMenusWithOptionsByTotalOrderId(
+            @Param("totalOrderId") UUID totalOrderId,
+            @Param("cancelled") OrderStatus cancelled
     );
 
 }
