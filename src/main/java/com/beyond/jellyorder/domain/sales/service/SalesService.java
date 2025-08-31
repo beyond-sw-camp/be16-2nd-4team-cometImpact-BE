@@ -95,6 +95,7 @@ public class SalesService {
                 updateTableStatusCounter(table, totalOrder);
             }
             totalOrder.updatePaymentedAt(sales.getPaidAt());
+            totalOrder.updateEndedAt(sales.getPaidAt());
         }
 
         return sales;
