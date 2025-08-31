@@ -7,6 +7,7 @@ import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneListResDTO;
 import com.beyond.jellyorder.domain.storetable.dto.orderTableStatus.OrderTableResDTO;
 import com.beyond.jellyorder.domain.storetable.service.OrderTableStatusService;
 import com.beyond.jellyorder.domain.storetable.service.ZoneService;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -52,11 +53,11 @@ public class OrderTableStatusController {
     // 주문 테이블 주문 수정
     @PutMapping("/update")
     public ResponseEntity<?> updateOrderTable(
-            @RequestBody List<OrderTableUpdateReqDTO> reqDTOs
+            @RequestBody @Valid OrderTableUpdateReqDTO reqDTO
     ) {
-        orderTableStatusService.updateOrderTable(reqDTOs);
+        UUID updateUnitOrder = orderTableStatusService.updateOrderTable(reqDTO);
 
-        return ApiResponse.ok(null, "주문 수정 완료");
+        return ApiResponse.ok(updateUnitOrder, "주문 수정 완료");
     }
 
 
