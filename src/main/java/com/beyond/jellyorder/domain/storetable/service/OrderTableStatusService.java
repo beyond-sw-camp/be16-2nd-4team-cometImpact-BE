@@ -19,6 +19,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.function.Function;
 import java.util.stream.Collectors;
@@ -118,7 +119,8 @@ public class OrderTableStatusService {
                 }).toList();
     }
 
-    /** 테이블 UnitOrder 주문 메뉴 수정
+    /**
+     * 테이블 UnitOrder 주문 메뉴 수정
      * 필수 로직 변환 작업
      * TODO: 추후 redis 재고 도입으로 인한 리팩토링 필요함.
      */
@@ -234,6 +236,41 @@ public class OrderTableStatusService {
         totalOrder.refreshTotaCount(optionListByTotalOrder);
 
         return unitOrder.getId();
+    }
+
+    // 테이블 비우기
+    public void resetOrderTable(UUID storeTableId) {
+        StoreTable storeTable = storeTableRepository.findById(storeTableId)
+                .orElseThrow(() -> new EntityNotFoundException("해당 테이블이 존재하지 않습니다."));
+        TotalOrder totalOrder = totalOrderRepository
+                .findTopByStoreTableAndEndedAtIsNullOrderByOrderedAtDesc(storeTable)
+                .orElse(null);
+
+        if (storeTable.getStatus() == TableStatus.EATING) {
+            if (totalOrder == null) {
+                // 데이터 불일치 방어: 활성 테이블인데 주문이 없다면 그냥 STANDBY로
+                storeTable.changeStatus(TableStatus.STANDBY);
+                return;
+            }
+
+
+            // 2) 취소가 아닌 주문이 존재하면 차단
+            long nonCanceled = unitOrderRepository.countByTotalOrderAndStatusNot(totalOrder, OrderStatus.CANCEL);
+            if (nonCanceled > 0) {
+                throw new IllegalArgumentException("테이블 초기화는 주문 건이 없거나 셀프결제가 된 테이블만 가능합니다.");
+            }
+
+            // 3) 종료 처리 + 테이블 STANDBY
+            totalOrder.updateEndedAt(LocalDateTime.now());
+            storeTable.changeStatus(TableStatus.STANDBY);
+        } else if (storeTable.getStatus() == TableStatus.PAY_DONE) {
+            // 결제완료인데도 TotalOrder.endedAt이 없다면 정리
+            if (totalOrder != null && totalOrder.getEndedAt() == null) {
+                totalOrder.updateEndedAt(LocalDateTime.now());
+            }
+            storeTable.changeStatus(TableStatus.STANDBY);
+        }
+
     }
 
 
