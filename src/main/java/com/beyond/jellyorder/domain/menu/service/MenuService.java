@@ -23,6 +23,7 @@ import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
 import lombok.RequiredArgsConstructor;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.security.access.AccessDeniedException;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -43,6 +44,9 @@ public class MenuService {
     private final S3Manager s3Manager;
     private final StoreJwtClaimUtil storeJwtClaimUtil;
     private final StoreRepository storeRepository;
+
+    // ★ 추가: 상태 변경 이벤트 발행용
+    private final ApplicationEventPublisher eventPublisher;
 
     public MenuCreateResDto create(MenuCreateReqDto reqDto) {
         final UUID storeUuid = UUID.fromString(storeJwtClaimUtil.getStoreId());
@@ -129,6 +133,9 @@ public class MenuService {
                 MenuStatus computed = deriveStockStatusFromIngredients(menu);
                 menu.changeStockStatus(computed);
             }
+
+            // ★ 추가: 생성 직후 현재 상태를 이벤트 발행 (커밋 후 퍼블리시)
+            publishMenuStatus(storeUuid, menu.getId(), menu.getStockStatus());
 
             // 9) 응답
             return MenuCreateResDto.fromEntity(menu);
@@ -309,6 +316,8 @@ public class MenuService {
 
         // 5) 메뉴 삭제 (옵션 등 cascade 삭제 포함)
         menuRepository.delete(menu);
+
+        // (선택) 삭제 알림이 필요하다면 여기서 별도 이벤트를 정의/발행하세요.
     }
 
     @Transactional
@@ -327,6 +336,9 @@ public class MenuService {
         if (menuStoreId == null || !menuStoreId.equals(storeUuid)) {
             throw new AccessDeniedException("해당 메뉴는 현재 매장의 소속이 아닙니다.");
         }
+
+        // ★ 추가: 변경 전 상태 백업
+        MenuStatus before = menu.getStockStatus();
 
         // 2) 카테고리 변경
         if (StringUtils.hasText(dto.getCategoryName())) {
@@ -409,6 +421,12 @@ public class MenuService {
         if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
             MenuStatus computed = deriveStockStatusFromIngredients(menu);
             menu.changeStockStatus(computed);
+        }
+
+        // ★ 추가: 변경 후 상태 확인 & 달라졌을 때만 이벤트 발행
+        MenuStatus after = menu.getStockStatus();
+        if (before != after) {
+            publishMenuStatus(storeUuid, menu.getId(), after);
         }
 
         // 9) 응답
@@ -610,5 +628,14 @@ public class MenuService {
                     "필수 타입의 메인 옵션('" + mo.getName() + "')은 최소 1개 이상의 서브 옵션이 필요합니다."
             );
         }
+    }
+
+    // ★ 추가: 상태 이벤트 발행 헬퍼
+    private void publishMenuStatus(UUID storeId, UUID menuId, MenuStatus status) {
+        eventPublisher.publishEvent(MenuStatusChangedEvent.builder()
+                .storeId(storeId)
+                .menuId(menuId)
+                .status(status)
+                .build());
     }
 }
