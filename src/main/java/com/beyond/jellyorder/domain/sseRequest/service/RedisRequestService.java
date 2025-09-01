@@ -57,8 +57,15 @@ public class RedisRequestService {
             }
         }
 
+        // 리스트 보정/병합
+        dto.normalizeAndMerge();
+        if (dto.getRequests().isEmpty()) {
+            throw new IllegalArgumentException("요청 항목이 비어 있습니다.");
+        }
+
         UUID id = UUID.randomUUID();
         dto.setId(id);
+
         // redis에 저장
         redisTemplate.opsForHash().put(REQUEST_HASH_KEY, String.valueOf(id), dto);  // 요청 데이터를 Hash에 저장 (id -> dto)
         redisTemplate.opsForList().rightPush(REQUEST_LIST_KEY, String.valueOf(id)); // 요청 ID를 List에 추가 (순서 보장)
