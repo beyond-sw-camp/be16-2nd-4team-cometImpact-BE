@@ -1,10 +1,14 @@
 package com.beyond.jellyorder.domain.request.controller;
 
 import com.beyond.jellyorder.common.apiResponse.CommonDTO;
+import com.beyond.jellyorder.domain.ingredient.dto.IngredientModifyReqDto;
+import com.beyond.jellyorder.domain.ingredient.dto.IngredientModifyResDto;
 import com.beyond.jellyorder.domain.request.dto.RequestRdbDto;
-import com.beyond.jellyorder.domain.request.dto.RequestUpdateDto;
+import com.beyond.jellyorder.domain.request.dto.RequestUpdateReqDto;
+import com.beyond.jellyorder.domain.request.dto.RequestUpdateResDto;
 import com.beyond.jellyorder.domain.request.service.RdbRequestService;
 import com.beyond.jellyorder.domain.sseRequest.dto.RequestResponseDto;
+import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -28,7 +32,7 @@ public class RequestRdbController {
 
         return new ResponseEntity<>(
                 CommonDTO.builder()
-                        .result(dto)
+                        .result(id)
                         .status_code(HttpStatus.CREATED.value())
                         .status_message("요청사항 등록 완료")
                         .build(),
@@ -51,16 +55,15 @@ public class RequestRdbController {
 
     // 요청사항 수정
     @PutMapping("/update/{requestId}")
-    public ResponseEntity<?> update(@RequestBody RequestUpdateDto dto, @PathVariable UUID requestId) {
-        UUID id = requestService.update(dto, requestId);
+    public ResponseEntity<?> update(@PathVariable UUID requestId, @RequestBody @Valid RequestUpdateReqDto req) {
+        RequestUpdateResDto res = requestService.update(requestId, req);
 
-        return new ResponseEntity<>(
+        return ResponseEntity.ok(
                 CommonDTO.builder()
-                        .result(id)
+                        .result(res)
                         .status_code(HttpStatus.OK.value())
                         .status_message("요청사항 변경 완료")
-                        .build(),
-                HttpStatus.OK
+                        .build()
         );
     }
 
