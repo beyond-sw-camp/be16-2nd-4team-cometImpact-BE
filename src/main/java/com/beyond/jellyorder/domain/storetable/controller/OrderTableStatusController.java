@@ -36,7 +36,7 @@ public class OrderTableStatusController {
     @GetMapping("/zoneList/{zoneId}/table-orders")
     public ResponseEntity<?> getTablesByZone(
             @PathVariable UUID zoneId
-            ) {
+    ) {
         List<OrderTableResDTO> resDTOs = orderTableStatusService.getTablesByZone(zoneId);
         return ApiResponse.ok(resDTOs);
     }
@@ -58,6 +58,15 @@ public class OrderTableStatusController {
         UUID updateUnitOrder = orderTableStatusService.updateOrderTable(reqDTO);
 
         return ApiResponse.ok(updateUnitOrder, "주문 수정 완료");
+    }
+
+    // 테이블 초기화
+    @PatchMapping("/reset/{storeTableId}")
+    public ResponseEntity<?> resetOrderTable(
+            @PathVariable UUID storeTableId
+    ) {
+        orderTableStatusService.resetOrderTable(storeTableId);
+        return ApiResponse.ok(null, "테이블 비우기 완료");
     }
 
 

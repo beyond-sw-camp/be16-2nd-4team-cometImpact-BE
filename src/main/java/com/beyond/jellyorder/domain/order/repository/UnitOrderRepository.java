@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.order.repository;
 
 import com.beyond.jellyorder.domain.order.entity.OrderStatus;
+import com.beyond.jellyorder.domain.order.entity.TotalOrder;
 import com.beyond.jellyorder.domain.order.entity.UnitOrder;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -37,4 +38,7 @@ public interface UnitOrderRepository extends JpaRepository<UnitOrder, UUID> {
             @Param("startAt") LocalDateTime startAt,
             Pageable pageable
     );
+
+    // 취소가 아닌 주문 존재 여부 체크용
+    long countByTotalOrderAndStatusNot(TotalOrder order, OrderStatus status);
 }
