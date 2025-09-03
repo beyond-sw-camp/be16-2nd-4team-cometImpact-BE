@@ -20,7 +20,7 @@ public class DefaultRedisConfig {
         this.props = props;
     }
 
-    // 기본 Redis: 0번 / StoreAuthRedis: 1번 / StoreTableAuth: 2번 / Sse: 7번
+    // 기본 Redis: 0번 / StoreAuthRedis: 1번 / StoreTableAuth: 2번 / Sse: 7번 / OrderNumberRedis: 3번
     /* 총 0, 1, 2, 7 사용중! */
     @Bean(name = "defaultRedisConnectionFactory")
     @Primary // 충돌 방지용, 이 factory를 기본으로 사용
