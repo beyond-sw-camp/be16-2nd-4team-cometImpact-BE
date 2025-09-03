@@ -1,5 +1,7 @@
 package com.beyond.jellyorder.domain.order.service;
 
+import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
+import com.beyond.jellyorder.common.auth.StoreTableJwtClaimUtil;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.domain.MenuStatus;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
@@ -41,6 +43,8 @@ public class UnitOrderService {
     private final MenuRepository menuRepository;
     private final OrderMenuRepository orderMenuRepository;
     private final SubOptionRepository subOptionRepository;
+    private final CollectOrderNumberService collectOrderNumberService;
+    private final StoreTableJwtClaimUtil storeTableJwtClaimUtil;
 
     public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto) {
         // 1. 테이블 조회
@@ -50,7 +54,7 @@ public class UnitOrderService {
         TotalOrder totalOrder = getOrCreateTotalOrder(storeTable);
 
         // 3. 단위주문 생성
-        UnitOrder unitOrder = createUnitOrder(totalOrder);
+        UnitOrder unitOrder = createUnitOrder(totalOrder, UUID.fromString(storeTableJwtClaimUtil.getStoreId()));
 
         // 4. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)
         UnitOrderResult result = processMenus(dto.getMenuList(), unitOrder);
@@ -88,10 +92,12 @@ public class UnitOrderService {
     }
 
     // 3. 단위주문 생성
-    private UnitOrder createUnitOrder(TotalOrder totalOrder) {
+    private UnitOrder createUnitOrder(TotalOrder totalOrder, UUID storeId) {
+        Integer orderNumber = collectOrderNumberService.collectNum(storeId);
         UnitOrder unitOrder = UnitOrder.builder()
                 .totalOrder(totalOrder)
                 .status(OrderStatus.ACCEPT)
+                .orderNumber(orderNumber)
                 .totalCount(0)
                 .build();
         return unitOrderRepository.save(unitOrder);
