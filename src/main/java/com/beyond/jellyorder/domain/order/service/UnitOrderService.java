@@ -44,9 +44,8 @@ public class UnitOrderService {
     private final OrderMenuRepository orderMenuRepository;
     private final SubOptionRepository subOptionRepository;
     private final CollectOrderNumberService collectOrderNumberService;
-    private final StoreTableJwtClaimUtil storeTableJwtClaimUtil;
 
-    public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto) {
+    public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto, UUID storeId) {
         // 1. 테이블 조회
         StoreTable storeTable = findStoreTable(dto.getStoreTableId());
 
@@ -54,7 +53,7 @@ public class UnitOrderService {
         TotalOrder totalOrder = getOrCreateTotalOrder(storeTable);
 
         // 3. 단위주문 생성
-        UnitOrder unitOrder = createUnitOrder(totalOrder, UUID.fromString(storeTableJwtClaimUtil.getStoreId()));
+        UnitOrder unitOrder = createUnitOrder(totalOrder, storeId);
 
         // 4. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)
         UnitOrderResult result = processMenus(dto.getMenuList(), unitOrder);

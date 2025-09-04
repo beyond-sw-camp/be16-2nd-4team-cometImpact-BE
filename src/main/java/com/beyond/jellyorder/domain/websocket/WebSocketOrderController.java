@@ -33,7 +33,7 @@ public class WebSocketOrderController {
             Principal principal
     ) {
         // 주문 생성 및 저장
-        OrderStatusResDTO resDTO = unitOrderService.createUnit(reqDTO);
+        OrderStatusResDTO resDTO = unitOrderService.createUnit(reqDTO, storeId);
 
         // 점주 대시보드에 브로드캐스트 전달
         messageTemplate.convertAndSend("/topic/" + storeId, resDTO);
