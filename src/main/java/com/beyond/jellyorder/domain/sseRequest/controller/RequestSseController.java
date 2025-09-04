@@ -10,16 +10,16 @@ import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.servlet.mvc.method.annotation.SseEmitter;
 
+import java.io.IOException;
+
 // 점주 SSE 구독용
 @RestController
 @RequiredArgsConstructor
-@RequestMapping("/sse/request")
 @PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
 public class RequestSseController { 
     private final SseEmitters emitters;
 
-    @GetMapping(value = "/subscribe", produces = MediaType.TEXT_EVENT_STREAM_VALUE)
-    public SseEmitter subscribe(@RequestParam String storeId) {
+    @GetMapping(value="/sse/request/subscribe", produces=MediaType.TEXT_EVENT_STREAM_VALUE)    public SseEmitter subscribe(@RequestParam String storeId) throws IOException {
         SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
         emitters.add(storeId, sseEmitter); // 내부에서 connect 이벤트 전송됨
         return sseEmitter;
