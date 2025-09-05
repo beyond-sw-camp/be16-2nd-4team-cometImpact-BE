@@ -49,12 +49,8 @@ public class SecurityConfig {
                         "/password/**",
                         "/connect/**", // websocket 허용
                         "/store/check-login-id",
-                        "/store/check-business-number"
-//                        // 테스트용(삭제 필요)
-//                        "/category/**",
-//                        "/ingredient/**",
-//                        "/menu/**"
-//                        "/zone/**",
+                        "/store/check-business-number",
+                        "/health" // health check 용
                         ).permitAll()
                         .anyRequest()
                         .authenticated())
