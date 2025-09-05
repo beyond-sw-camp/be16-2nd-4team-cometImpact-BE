@@ -3,7 +3,10 @@ package com.beyond.jellyorder.domain.websocket;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderCreateReqDto;
 import com.beyond.jellyorder.domain.order.dto.UnitOrderResDto;
 import com.beyond.jellyorder.domain.order.dto.orderStatus.OrderStatusResDTO;
+import com.beyond.jellyorder.domain.order.service.OrderPubSubService;
 import com.beyond.jellyorder.domain.order.service.UnitOrderService;
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.validation.Valid;
 import org.springframework.messaging.handler.annotation.DestinationVariable;
 import org.springframework.messaging.handler.annotation.MessageMapping;
@@ -17,44 +20,32 @@ import java.util.UUID;
 @Controller
 public class WebSocketOrderController {
 
-    private final SimpMessageSendingOperations messageTemplate;
     private final UnitOrderService unitOrderService;
+    private final OrderPubSubService orderPubSubService;
 
-    public WebSocketOrderController(SimpMessageSendingOperations messageTemplate, UnitOrderService unitOrderService) {
-        this.messageTemplate = messageTemplate;
+    public WebSocketOrderController(UnitOrderService unitOrderService, OrderPubSubService orderPubSubService) {
         this.unitOrderService = unitOrderService;
+        this.orderPubSubService = orderPubSubService;
     }
 
     // 주문전송
     @MessageMapping("/{storeId}/orders")
     public void sendOrder(
             @DestinationVariable UUID storeId,
-            @Valid UnitOrderCreateReqDto reqDTO,
-            Principal principal
-    ) {
-        // 주문 생성 및 저장
-        OrderStatusResDTO resDTO = unitOrderService.createUnit(reqDTO, storeId);
+            @Valid UnitOrderCreateReqDto reqDTO
+//            ,Principal principal
+    ) throws JsonProcessingException {
+        // 주문 생성 및 DB에 저장
+        OrderStatusResDTO orderStatusResDTO = unitOrderService.createUnit(reqDTO, storeId);
 
-        // 점주 대시보드에 브로드캐스트 전달
-        messageTemplate.convertAndSend("/topic/" + storeId, resDTO);
-
-//        // 주문응답값 return
-//        OrderAckDto orderAckDto = OrderAckDto.builder()
-//                .type(OrderAckDto.Type.ACK)
-//                .storeId(storeId)
-//                .storeTableId(reqDTO.getStoreTableId())
-//                .unitOrderId(resDTO.getUnitOrderId())
-//                .message("주문이 접수되었습니다.")
-//                .build();
-
-//        // 주문한 테이블 자기 자신에게 응답값 보내기
-//        // queue의 인자값은 (보낼사람, 경로, 보내는 dto)
-//        messageTemplate.convertAndSendToUser(principal.getName(), "/queue/ack", orderAckDto);
-
-
-//        System.out.println("orderAckDto = " + orderAckDto);
-        System.out.println("reqDTO = " + reqDTO);
-        System.out.println("resDTO = " + resDTO);
+        // redis에 보낼 객체 변환 및 redis에 발행.
+        OrderStompResDTO stompResDTO = OrderStompResDTO.builder()
+                .storeId(storeId)
+                .orderStatusResDTO(orderStatusResDTO)
+                .build();
+        ObjectMapper objectMapper = new ObjectMapper();
+        String message = objectMapper.writeValueAsString(stompResDTO);
+        orderPubSubService.publish("order", message);
     }
 
 }
