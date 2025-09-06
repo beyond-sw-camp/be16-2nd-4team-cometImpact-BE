@@ -24,4 +24,28 @@ public class DashboardMetricsDTO {
     private Double vsLastMonthPct;
 
     private long monthNetAfterFee;  // = Math.round(monthGross * 0.9)
+
+    private static Double pct(long current, long prev) {
+        if (prev == 0) {
+            return null;}
+        return ((double) (current - prev) / prev) * 100.0;
+    }
+
+    public static DashboardMetricsDTO fromValues(
+            long todayGross, long yesterdayGross,
+            long weekGross, long lastWeekGross,
+            long monthGross, long lastMonthGross
+    ) {
+        long monthNetAfterFee = Math.round(monthGross * 0.9);
+        return DashboardMetricsDTO.builder()
+                .todayGross(todayGross)
+                .vsYesterdayPct(pct(todayGross, yesterdayGross))
+                .weekGross(weekGross)
+                .vsLastWeekPct(pct(weekGross, lastWeekGross))
+                .monthGross(monthGross)
+                .vsLastMonthPct(pct(monthGross, lastMonthGross))
+                .monthNetAfterFee(monthNetAfterFee)
+                .build();
+    }
+
 }

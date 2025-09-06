@@ -1,17 +1,17 @@
 package com.beyond.jellyorder.domain.settlement.service;
 
 import com.beyond.jellyorder.domain.settlement.dto.DashboardMetricsDTO;
-import com.beyond.jellyorder.domain.settlement.dto.SettlementDetailDTO;
 import com.beyond.jellyorder.domain.settlement.dto.SettlementDashboardDTO;
 import com.beyond.jellyorder.domain.settlement.dto.SettlementSummaryDTO;
-import com.beyond.jellyorder.domain.settlement.entity.Bucket;
-import com.beyond.jellyorder.domain.settlement.repository.SettlementReportRepository;
+import com.beyond.jellyorder.domain.settlement.dto.SettlementUnitDetailDTO;
 import com.beyond.jellyorder.domain.settlement.repository.SettlementDetailRepository;
+import com.beyond.jellyorder.domain.settlement.repository.SettlementReportRepository;
 import lombok.RequiredArgsConstructor;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.PageImpl;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.Pageable;
 
 import java.time.*;
 import java.util.*;
@@ -22,6 +22,7 @@ import java.util.*;
 @Transactional(readOnly = true)
 public class SettlementService {
     private final SettlementReportRepository reportRepository;
+    private final SettlementDetailRepository detailRepository;
 
     private static final ZoneId KST = ZoneId.of("Asia/Seoul");
 
@@ -44,7 +45,7 @@ public class SettlementService {
 
         // === 일, 주, 월별용 합계 ===
         long todayGross = reportRepository.sumGross(storeId, todayStart, tomorrowStart);
-        long weekGross  = reportRepository.sumGross(storeId, last7Start, tomorrowStart);
+        long weekGross = reportRepository.sumGross(storeId, last7Start, tomorrowStart);
         long monthGross = reportRepository.sumGross(storeId, monthStart, nextMonthStart);
         long monthNetAfterFee = Math.round(monthGross * 0.9);
 
@@ -61,32 +62,28 @@ public class SettlementService {
                 firstOfMonth.minusMonths(1).atStartOfDay(),
                 monthStart);
 
-        DashboardMetricsDTO metrics = DashboardMetricsDTO.builder()
-                .todayGross(todayGross)
-                .vsYesterdayPct(pct(todayGross, yesterdayGross))
-                .weekGross(weekGross)
-                .vsLastWeekPct(pct(weekGross, lastWeekGross))
-                .monthGross(monthGross)
-                .vsLastMonthPct(pct(monthGross, lastMonthGross))
-                .monthNetAfterFee(monthNetAfterFee)
-                .build();
+        DashboardMetricsDTO metrics = DashboardMetricsDTO.fromValues(
+                todayGross, yesterdayGross,
+                weekGross, lastWeekGross,
+                monthGross, lastMonthGross
+        );
 
         // === 시리즈 기본 기간(미지정 시) ===
         // 일별: 최근 5일 (today-4 ~ tomorrow)
         if (dailyFrom == null || dailyTo == null) {
             dailyFrom = today.minusDays(4).atStartOfDay();
-            dailyTo   = tomorrowStart;
+            dailyTo = tomorrowStart;
         }
         // 주별: 최근 8주
         if (weeklyFrom == null || weeklyTo == null) {
             LocalDate mondayThisWeek = today.minusDays(today.getDayOfWeek().getValue() - 1); // 월요일
-            weeklyTo   = mondayThisWeek.plusWeeks(1).atStartOfDay(); // 다음 주 시작(Exclusive)
+            weeklyTo = mondayThisWeek.plusWeeks(1).atStartOfDay(); // 다음 주 시작(Exclusive)
             weeklyFrom = mondayThisWeek.minusWeeks(8).atStartOfDay(); // 8주 전 월요일
         }
         // 월별: 최근 6개월
         if (monthlyFrom == null || monthlyTo == null) {
             monthlyFrom = firstOfMonth.minusMonths(5).atStartOfDay();
-            monthlyTo   = nextMonthStart;
+            monthlyTo = nextMonthStart;
         }
 
         // === 시리즈 조회 ===
@@ -99,15 +96,10 @@ public class SettlementService {
         List<SettlementSummaryDTO> monthlySeries = toSummaryDTOs(
                 reportRepository.aggregateMonthly(storeId, monthlyFrom, monthlyTo));
 
-        return SettlementDashboardDTO.builder()
-                .metrics(metrics)
-                .dailySeries(dailySeries)
-                .weeklySeries(weeklySeries)
-                .monthlySeries(monthlySeries)
-                .dailyFrom(dailyFrom.toString()).dailyTo(dailyTo.toString())
-                .weeklyFrom(weeklyFrom.toString()).weeklyTo(weeklyTo.toString())
-                .monthlyFrom(monthlyFrom.toString()).monthlyTo(monthlyTo.toString())
-                .build();
+        return SettlementDashboardDTO.fromAggregates(
+                metrics, dailySeries, weeklySeries, monthlySeries,
+                dailyFrom, dailyTo, weeklyFrom, weeklyTo, monthlyFrom, monthlyTo
+        );
     }
 
     private static Double pct(long curr, long prev) {
@@ -119,9 +111,9 @@ public class SettlementService {
         return rows.stream().map(r -> {
             String bucket = String.valueOf(r[0]);
             long gross = ((Number) r[1]).longValue();
-            long net   = ((Number) r[2]).longValue();
-            long fee   = ((Number) r[3]).longValue();
-            long cnt   = ((Number) r[4]).longValue();
+            long net = ((Number) r[2]).longValue();
+            long fee = ((Number) r[3]).longValue();
+            long cnt = ((Number) r[4]).longValue();
             return new SettlementSummaryDTO(bucket, gross, fee, net, cnt);
         }).toList();
     }
@@ -131,10 +123,123 @@ public class SettlementService {
         return rows.stream().map(r -> {
             String bucket = String.valueOf(r[1]); // 월요일 날짜
             long gross = ((Number) r[2]).longValue();
-            long net   = ((Number) r[3]).longValue();
-            long fee   = ((Number) r[4]).longValue();
-            long cnt   = ((Number) r[5]).longValue();
+            long net = ((Number) r[3]).longValue();
+            long fee = ((Number) r[4]).longValue();
+            long cnt = ((Number) r[5]).longValue();
             return new SettlementSummaryDTO(bucket, gross, fee, net, cnt);
         }).toList();
+    }
+
+    @Transactional(readOnly = true)
+    public Page<SettlementUnitDetailDTO> detailPage(
+            UUID storeId,
+            LocalDateTime from, LocalDateTime to,
+            String status,                 // "COMPLETED" | "CANCELLED" | null(전체)
+            Pageable pageable
+    ) {
+        // 기본 기간: 오늘 00:00 ~ 내일 00:00 (KST)
+        ZoneId KST = ZoneId.of("Asia/Seoul");
+        if (from == null || to == null) {
+            var today = LocalDate.now(KST);
+            from = (from == null) ? today.atStartOfDay() : from;
+            to = (to == null) ? today.plusDays(1).atStartOfDay() : to;
+        }
+
+        Page<Object[]> headerPage = detailRepository.findReceiptHeaders(storeId, from, to, status, pageable);
+        if (headerPage.isEmpty()) {
+            return Page.empty(pageable);
+        }
+
+        // 헤더 매핑
+        Map<UUID, SettlementUnitDetailDTO> map = new LinkedHashMap<>();
+        List<UUID> ids = new ArrayList<>();
+
+        for (Object[] r : headerPage.getContent()) {
+            UUID receiptId = (UUID) r[0];
+            String paidDate = (String) r[1];
+            String payment = (String) r[2];
+            String st = (String) r[3];
+            long totalAmount = ((Number) r[4]).longValue();
+
+            ids.add(receiptId);
+            map.put(receiptId, SettlementUnitDetailDTO.builder()
+                    .receiptId(receiptId)
+                    .paidDate(paidDate)
+                    .paymentMethod(payment)
+                    .status(st)
+                    .totalAmount(totalAmount)
+                    .menus(new ArrayList<>())
+                    .build());
+        }
+
+        // 메뉴/옵션 벌크 조회 후 매핑
+        List<Object[]> lines = detailRepository.findMenuLinesByReceipts(ids);
+        // unitOrderId + orderMenuId 단위로 메뉴 묶고, 옵션 축적
+        class MenuKey {
+            UUID receiptId;
+            UUID orderMenuId;
+
+            MenuKey(UUID receiptId, UUID orderMenuId) {
+                this.receiptId = receiptId;
+                this.orderMenuId = orderMenuId;
+            }
+
+            @Override
+            public boolean equals(Object o) {
+                return o instanceof MenuKey k
+                        && Objects.equals(k.receiptId, receiptId)
+                        && Objects.equals(k.orderMenuId, orderMenuId);
+            }
+            @Override
+            public int hashCode() {
+                return Objects.hash(receiptId, orderMenuId);
+            }
+        }
+
+        Map<MenuKey, SettlementUnitDetailDTO.MenuLine> menuMap = new LinkedHashMap<>();
+
+        for (Object[] r : lines) {
+            // 🔁 쿼리 컬럼 순서에 맞게 수신 (0:receiptId, 1:orderMenuId, 2:menuName, 3:menuPrice, 4:qty, 5:optName, 6:optPrice)
+            UUID receiptId   = (UUID)  r[0];
+            UUID orderMenuId = (UUID)  r[1];
+            String menuName  = (String) r[2];
+            Integer menuPrice= (r[3] == null) ? null : ((Number) r[3]).intValue();
+            Integer qty      = (r[4] == null) ? null : ((Number) r[4]).intValue();
+            String optName   = (String) r[5];
+            Integer optPrice = (r[6] == null) ? null : ((Number) r[6]).intValue();
+
+            // 헤더 DTO 찾기 (헤더 맵의 키도 receiptId)
+            SettlementUnitDetailDTO dto = map.get(receiptId);
+            if (dto == null) continue;
+
+            // 같은 결제건의 같은 order_menu 는 1줄로만 생성
+            MenuKey key = new MenuKey(receiptId, orderMenuId);
+            SettlementUnitDetailDTO.MenuLine ml = menuMap.get(key);
+            if (ml == null) {
+                ml = SettlementUnitDetailDTO.MenuLine.builder()
+                        .menuName(menuName)
+                        .menuPrice(menuPrice)
+                        .quantity(qty)
+                        .options(new ArrayList<>())
+                        .build();
+                menuMap.put(key, ml);
+                dto.getMenus().add(ml);
+            }
+
+            // 옵션은 해당 메뉴 라인에 누적
+            if (optName != null) {
+                ml.getOptions().add(
+                        SettlementUnitDetailDTO.OptionLine.builder()
+                                .optionName(optName)
+                                .optionPrice(optPrice)
+                                .build()
+                );
+            }
+        }
+
+        List<SettlementUnitDetailDTO> content = new ArrayList<>(map.values());
+        return new PageImpl<>(content, pageable, headerPage.getTotalElements());
+
+
     }
 }
