@@ -18,7 +18,7 @@ public class StoreOpenClose extends BaseIdAndTimeEntity {
     private Store store;
     @Column(name = "opened_at", nullable = false)
     private LocalDateTime openedAt;
-    @Column(name = "closed_at", nullable = false)
+    @Column(name = "closed_at", nullable = true)
     private LocalDateTime closedAt;
 
     public boolean isOpen() {

@@ -44,6 +44,8 @@ public class Sales extends BaseIdAndTimeEntity {
     @Column(name = "tid")
     private String tid;
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_open_close_id")
     private StoreOpenClose storeOpenClose;
 
     // 카운터 결제 선택 시 Status = PENDING
