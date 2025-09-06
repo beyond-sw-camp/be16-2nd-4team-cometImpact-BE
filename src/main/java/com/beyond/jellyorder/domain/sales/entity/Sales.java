@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.sales.entity;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
+import com.beyond.jellyorder.domain.shift.entity.StoreOpenClose;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,6 +43,8 @@ public class Sales extends BaseIdAndTimeEntity {
 
     @Column(name = "tid")
     private String tid;
+
+    private StoreOpenClose storeOpenClose;
 
     // 카운터 결제 선택 시 Status = PENDING
     @PrePersist // Entity가 DB에 insert 되기 전에 호출됨
