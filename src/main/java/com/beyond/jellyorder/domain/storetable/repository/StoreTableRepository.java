@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.storetable.repository;
 
+import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
@@ -66,6 +67,21 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
                and archived_at is not null
             """, nativeQuery = true)
     int detachSoftDeletedFromZone(@Param("zoneId") UUID zoneId);
+
+    @Query("select st from StoreTable st where st.store.id = :storeId")
+    List<StoreTable> findAllByStoreId(@Param("storeId") UUID storeId);
+
+    @Query("""
+    select case when count(uo)>0 then true else false end
+    from UnitOrder uo
+    join uo.totalOrder to
+    join to.storeTable st
+    where st.store.id = :storeId
+    and to.endedAt is null                   -- ★ 아직 종료되지 않은 주문만
+    and uo.status <> :cancelStatus          -- 취소 아닌 단위주문 존재
+""")
+    boolean existsOpenOrderInStore(@Param("storeId") UUID storeId,
+                                   @Param("cancelStatus") OrderStatus cancelStatus);
 
 
 
