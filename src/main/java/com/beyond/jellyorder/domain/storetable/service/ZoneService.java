@@ -9,6 +9,7 @@ import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneListResDTO;
 import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneResDTO;
 import com.beyond.jellyorder.domain.storetable.dto.zone.ZoneUpdateReqDTO;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
+import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
 import com.beyond.jellyorder.domain.storetable.repository.ZoneRepository;
@@ -92,8 +93,16 @@ public class ZoneService {
             throw new IllegalArgumentException("다른 매장의 구역을 삭제할 수 없습니다.");
         }
 
-        // 해당 구역에 대한 storeTable 전부 삭제(soft)
+        // 해당 구역의 테이블 목록 조회
         List<StoreTable> storeTableList = storeTableRepository.findAllByZone(zone);
+
+        // 사용 중(EATING) 테이블이 하나라도 있으면 삭제 금지
+        boolean hasEating = storeTableList.stream()
+                .anyMatch(t -> t.getStatus() == TableStatus.EATING);
+        if (hasEating) {
+            throw new IllegalArgumentException("구역 내 사용 중(EATING) 테이블이 있어 삭제할 수 없습니다.");
+        }
+
         for (StoreTable storeTable : storeTableList) {
             // 진행 중인 주문있는지 검증
             if (storeTableRepository.existsOpenOrder(storeTable.getId())) {

@@ -21,7 +21,7 @@ import java.util.UUID;
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/request")
-@PreAuthorize("hasRole('STORE')")
+@PreAuthorize("hasAnyRole('STORE','STORE_TABLE')")
 public class RequestRdbController {
     private final RdbRequestService requestService;
 
