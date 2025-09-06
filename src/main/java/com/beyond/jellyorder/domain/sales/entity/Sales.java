@@ -2,7 +2,7 @@ package com.beyond.jellyorder.domain.sales.entity;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
-import com.beyond.jellyorder.domain.shift.entity.StoreOpenClose;
+import com.beyond.jellyorder.domain.openclose.entity.StoreOpenClose;
 import jakarta.persistence.*;
 import lombok.*;
 
