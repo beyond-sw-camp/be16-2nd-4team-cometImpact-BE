@@ -5,6 +5,8 @@ import com.beyond.jellyorder.domain.category.domain.Category;
 import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import jakarta.persistence.*;
 import lombok.*;
+
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 import static com.beyond.jellyorder.domain.menu.domain.MenuStatus.*;
@@ -58,6 +60,13 @@ public class Menu extends BaseIdAndTimeEntity {
     @Builder.Default
     @Column(name = "stock_status", nullable = false)
     private MenuStatus stockStatus = ON_SALE;
+
+    @Builder.Default
+    @Column(name = "deleted", nullable = false)
+    private boolean deleted = false;
+
+    @Column(name = "deleted_at")
+    private LocalDateTime deletedAt;
 
     // 재고 상태 변환 함수
     public void changeStockStatus(MenuStatus newStatus) {
