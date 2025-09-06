@@ -11,7 +11,8 @@ import java.util.*;
 @AllArgsConstructor
 @Builder
 public class SettlementUnitDetailDTO {
-    private UUID unitOrderId;
+    private UUID receiptId;
+    private String receiptNo; // 주문번호, 추후 도입
     private String paidDate;          // "yyyy-MM-dd HH:mm:ss" (CANCELLED이면 updated_at 기준)
     private String paymentMethod;     // CARD/CASH/QR (nullable 가능)
     private String status;            // COMPLETED/CANCELLED

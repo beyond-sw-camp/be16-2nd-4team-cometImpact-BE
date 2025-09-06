@@ -145,7 +145,7 @@ public class SettlementService {
             to = (to == null) ? today.plusDays(1).atStartOfDay() : to;
         }
 
-        Page<Object[]> headerPage = detailRepository.findUnitOrderHeaders(storeId, from, to, status, pageable);
+        Page<Object[]> headerPage = detailRepository.findReceiptHeaders(storeId, from, to, status, pageable);
         if (headerPage.isEmpty()) {
             return Page.empty(pageable);
         }
@@ -155,15 +155,15 @@ public class SettlementService {
         List<UUID> ids = new ArrayList<>();
 
         for (Object[] r : headerPage.getContent()) {
-            UUID unitOrderId = (UUID) r[0];
+            UUID receiptId = (UUID) r[0];
             String paidDate = (String) r[1];
             String payment = (String) r[2];
             String st = (String) r[3];
             long totalAmount = ((Number) r[4]).longValue();
 
-            ids.add(unitOrderId);
-            map.put(unitOrderId, SettlementUnitDetailDTO.builder()
-                    .unitOrderId(unitOrderId)
+            ids.add(receiptId);
+            map.put(receiptId, SettlementUnitDetailDTO.builder()
+                    .receiptId(receiptId)
                     .paidDate(paidDate)
                     .paymentMethod(payment)
                     .status(st)
@@ -173,40 +173,47 @@ public class SettlementService {
         }
 
         // 메뉴/옵션 벌크 조회 후 매핑
-        List<Object[]> lines = detailRepository.findMenuLinesByUnitOrders(ids);
+        List<Object[]> lines = detailRepository.findMenuLinesByReceipts(ids);
         // unitOrderId + orderMenuId 단위로 메뉴 묶고, 옵션 축적
         class MenuKey {
-            UUID unitId;
-            UUID omId;
+            UUID receiptId;
+            UUID orderMenuId;
 
-            MenuKey(UUID u, UUID o) {
-                this.unitId = u;
-                this.omId = o;
+            MenuKey(UUID receiptId, UUID orderMenuId) {
+                this.receiptId = receiptId;
+                this.orderMenuId = orderMenuId;
             }
 
+            @Override
             public boolean equals(Object o) {
-                return o instanceof MenuKey k && k.unitId.equals(unitId) && k.omId.equals(omId);
+                return o instanceof MenuKey k
+                        && Objects.equals(k.receiptId, receiptId)
+                        && Objects.equals(k.orderMenuId, orderMenuId);
             }
-
+            @Override
             public int hashCode() {
-                return Objects.hash(unitId, omId);
+                return Objects.hash(receiptId, orderMenuId);
             }
         }
+
         Map<MenuKey, SettlementUnitDetailDTO.MenuLine> menuMap = new LinkedHashMap<>();
 
         for (Object[] r : lines) {
-            UUID unitId = (UUID) r[0];
-            UUID orderMenuId = (UUID) r[1];
-            String menuName = (String) r[2];
-            Integer menuPrice = (r[3] == null) ? null : ((Number) r[3]).intValue();
-            Integer qty = (r[4] == null) ? null : ((Number) r[4]).intValue();
-            String optName = (String) r[5];
+            // 🔁 쿼리 컬럼 순서에 맞게 수신 (0:receiptId, 1:orderMenuId, 2:menuName, 3:menuPrice, 4:qty, 5:optName, 6:optPrice)
+            UUID receiptId   = (UUID)  r[0];
+            UUID orderMenuId = (UUID)  r[1];
+            String menuName  = (String) r[2];
+            Integer menuPrice= (r[3] == null) ? null : ((Number) r[3]).intValue();
+            Integer qty      = (r[4] == null) ? null : ((Number) r[4]).intValue();
+            String optName   = (String) r[5];
             Integer optPrice = (r[6] == null) ? null : ((Number) r[6]).intValue();
 
-            SettlementUnitDetailDTO dto = map.get(unitId);
+            // 헤더 DTO 찾기 (헤더 맵의 키도 receiptId)
+            SettlementUnitDetailDTO dto = map.get(receiptId);
             if (dto == null) continue;
 
-            MenuKey key = new MenuKey(unitId, orderMenuId);
+            // 같은 결제건의 같은 order_menu 는 1줄로만 생성
+            MenuKey key = new MenuKey(receiptId, orderMenuId);
             SettlementUnitDetailDTO.MenuLine ml = menuMap.get(key);
             if (ml == null) {
                 ml = SettlementUnitDetailDTO.MenuLine.builder()
@@ -218,6 +225,8 @@ public class SettlementService {
                 menuMap.put(key, ml);
                 dto.getMenus().add(ml);
             }
+
+            // 옵션은 해당 메뉴 라인에 누적
             if (optName != null) {
                 ml.getOptions().add(
                         SettlementUnitDetailDTO.OptionLine.builder()
