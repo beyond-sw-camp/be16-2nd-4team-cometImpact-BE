@@ -16,4 +16,6 @@ public class CloseSummaryDTO {
     private LocalDateTime closedAt;
     private long receiptCount;   // 영수건수
     private long grossAmount;    // 총매출
-}
+
+ }
+
