@@ -71,4 +71,14 @@ public interface OrderMenuRepository extends JpaRepository<OrderMenu, UUID> {
             @Param("cancelled") OrderStatus cancelled
     );
 
+    @Query("""
+        select (count(om) > 0)
+          from OrderMenu om
+          join om.unitOrder uo
+          join uo.totalOrder to2
+          join to2.storeTable st
+         where om.menu.id = :menuId
+           and st.status = com.beyond.jellyorder.domain.storetable.entity.TableStatus.EATING
+        """)
+    boolean existsInEatingTable(@Param("menuId") UUID menuId);
 }
