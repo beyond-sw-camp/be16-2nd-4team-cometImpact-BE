@@ -121,12 +121,13 @@ public class SettlementService {
     // 주별은 SELECT 컬럼이 bucket_key, bucket ... 이라 인덱스 주의
     private static List<SettlementSummaryDTO> toWeeklyDTOs(List<Object[]> rows) {
         return rows.stream().map(r -> {
-            String bucket = String.valueOf(r[1]); // 월요일 날짜
-            long gross = ((Number) r[2]).longValue();
-            long net = ((Number) r[3]).longValue();
-            long fee = ((Number) r[4]).longValue();
-            long cnt = ((Number) r[5]).longValue();
+            String bucket = String.valueOf(r[0]); // 월요일 날짜
+            long gross = ((Number) r[1]).longValue();
+            long net = ((Number) r[2]).longValue();
+            long fee = ((Number) r[3]).longValue();
+            long cnt = ((Number) r[4]).longValue();
             return new SettlementSummaryDTO(bucket, gross, fee, net, cnt);
+
         }).toList();
     }
 

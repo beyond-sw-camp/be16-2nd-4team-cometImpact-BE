@@ -18,22 +18,13 @@ import java.util.Map;
 @PreAuthorize("hasRole('STORE')")
 public class StoreOpenCloseController {
     private final StoreOpenCloseService storeOpenCloseService;
-    @PostMapping("/close")
-    public ResponseEntity<?> close(@RequestBody(required = false) Map<String, String> body) {
-        LocalDateTime closedAt = (body != null && body.get("closedAt") != null)
-                ? LocalDateTime.parse(body.get("closedAt"))
-                : null;
-        CloseSummaryDTO dto = storeOpenCloseService.close(closedAt);
-        return ApiResponse.ok(dto, "마감완료");
+    @PostMapping("/open")
+    public ResponseEntity<?> open() {
+        return ApiResponse.ok(storeOpenCloseService.open(), "오픈 완료");
     }
 
-    @PostMapping("/open")
-    public ResponseEntity<?> open(@RequestBody(required = false) Map<String, String> body) {
-        LocalDateTime openedAt = (body != null && body.get("openedAt") != null)
-                ? LocalDateTime.parse(body.get("openedAt"))
-                : null;
-
-        OpenSummaryDTO dto = storeOpenCloseService.open(openedAt);
-        return ApiResponse.ok(dto, "오픈완료");
+    @PostMapping("/close")
+    public ResponseEntity<?> close() {
+        return ApiResponse.ok(storeOpenCloseService.close(), "마감 완료");
     }
 }

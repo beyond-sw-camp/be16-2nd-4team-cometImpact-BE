@@ -48,6 +48,7 @@ public class Sales extends BaseIdAndTimeEntity {
     @JoinColumn(name = "store_open_close_id")
     private StoreOpenClose storeOpenClose;
 
+
     public void setStoreOpenClose(StoreOpenClose soc) { this.storeOpenClose = soc; }
     public StoreOpenClose getStoreOpenClose() { return storeOpenClose; }
 

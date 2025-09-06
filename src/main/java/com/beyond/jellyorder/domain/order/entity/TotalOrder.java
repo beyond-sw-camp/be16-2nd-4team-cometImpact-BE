@@ -1,6 +1,7 @@
 package com.beyond.jellyorder.domain.order.entity;
 
 import com.beyond.jellyorder.common.BaseIdEntity;
+import com.beyond.jellyorder.domain.openclose.entity.StoreOpenClose;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import jakarta.persistence.*;
 import lombok.*;
@@ -43,6 +44,14 @@ public class TotalOrder extends BaseIdEntity {
     @Builder.Default
     private List<UnitOrder> unitOrderList = new ArrayList<>();
 
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_open_close_id", columnDefinition = "BINARY(16)")
+    private StoreOpenClose storeOpenClose;
+
+    public void setStoreOpenClose(StoreOpenClose soc) {
+        this.storeOpenClose = soc;
+    }
+    public StoreOpenClose getStoreOpenClose() { return storeOpenClose; }
 
     // 최초 주문 생성 시 자동 주입
     @PrePersist
