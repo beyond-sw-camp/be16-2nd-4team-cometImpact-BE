@@ -5,6 +5,7 @@ import com.beyond.jellyorder.common.auth.StoreTableJwtClaimUtil;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.domain.MenuStatus;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
+import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepository;
 import com.beyond.jellyorder.domain.option.dto.MainOptionReqDto;
 import com.beyond.jellyorder.domain.option.dto.SubOptionReqDto;
 import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
@@ -44,8 +45,12 @@ public class UnitOrderService {
     private final OrderMenuRepository orderMenuRepository;
     private final SubOptionRepository subOptionRepository;
     private final CollectOrderNumberService collectOrderNumberService;
+    private final StoreOpenCloseRepository storeOpenCloseRepository;
 
     public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto, UUID storeId) {
+        storeOpenCloseRepository.findOpen(storeId)
+                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
+
         // 1. 테이블 조회
         StoreTable storeTable = findStoreTable(dto.getStoreTableId());
 
