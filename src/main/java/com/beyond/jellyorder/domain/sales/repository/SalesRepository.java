@@ -28,4 +28,12 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
                                   @Param("openCloseId") UUID openCloseId,
                                   @Param("completed") SalesStatus completed);
 
+    @Query("""
+  select count(s) from Sales s
+ where s.storeOpenClose.id = :openCloseId
+   and s.status = :status
+""")
+    long countBySessionAndStatus(@Param("openCloseId") UUID openCloseId,
+                                 @Param("status") SalesStatus status);
+
 }

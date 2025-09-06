@@ -77,8 +77,8 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
     join uo.totalOrder to
     join to.storeTable st
     where st.store.id = :storeId
-    and to.endedAt is null                   -- ★ 아직 종료되지 않은 주문만
-    and uo.status <> :cancelStatus          -- 취소 아닌 단위주문 존재
+    and to.endedAt is null                    
+    and uo.status <> :cancelStatus          
 """)
     boolean existsOpenOrderInStore(@Param("storeId") UUID storeId,
                                    @Param("cancelStatus") OrderStatus cancelStatus);

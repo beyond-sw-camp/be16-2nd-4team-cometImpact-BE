@@ -48,6 +48,9 @@ public class Sales extends BaseIdAndTimeEntity {
     @JoinColumn(name = "store_open_close_id")
     private StoreOpenClose storeOpenClose;
 
+    public void setStoreOpenClose(StoreOpenClose soc) { this.storeOpenClose = soc; }
+    public StoreOpenClose getStoreOpenClose() { return storeOpenClose; }
+
     // 카운터 결제 선택 시 Status = PENDING
     @PrePersist // Entity가 DB에 insert 되기 전에 호출됨
     void prePersist() {

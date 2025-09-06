@@ -52,6 +52,11 @@ public class StoreOpenCloseService {
                 .setLockMode(LockModeType.PESSIMISTIC_WRITE)
                 .getResultStream().findFirst()
                 .orElseThrow(() -> new IllegalStateException("현재 영업 중이 아닙니다."));
+        long pendingCnt = salesRepository.countBySessionAndStatus(current.getId(), SalesStatus.PENDING);
+        if (pendingCnt > 0) {
+            throw new IllegalStateException("미결제(PENDING) 결제건이 있어 마감할 수 없습니다.");
+        }
+
 
         // 2) 진행 중 주문이 있으면 마감 차단
         boolean hasActive = storeTableRepository.existsOpenOrderInStore(storeId, OrderStatus.CANCEL);
@@ -89,6 +94,7 @@ public class StoreOpenCloseService {
                 .receiptCount(cnt)
                 .grossAmount(gross)
                 .build();
+
     }
 
     /** 현재 오픈 상태 확인 */
@@ -98,4 +104,5 @@ public class StoreOpenCloseService {
         return storeOpenCloseRepository.findOpen(storeId)
                 .orElseThrow(() -> new IllegalStateException("현재 영업 중이 아닙니다."));
     }
+
 }

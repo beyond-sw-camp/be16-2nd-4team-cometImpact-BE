@@ -15,7 +15,7 @@ import java.util.Map;
 @RequestMapping("/open-close")
 @RequiredArgsConstructor
 @PreAuthorize("hasRole('STORE')")
-public class StoreOpenController {
+public class StoreOpenCloseController {
     private final StoreOpenCloseService storeOpenCloseService;
     @PostMapping("/close")
     public ResponseEntity<?> close(@RequestBody(required = false) Map<String, String> body) {

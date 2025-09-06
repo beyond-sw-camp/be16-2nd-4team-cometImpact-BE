@@ -27,6 +27,4 @@ public class StoreOpenClose extends BaseIdAndTimeEntity {
     public void storeClose(LocalDateTime closedAt) {
         this.closedAt = closedAt;
     }
-
-
 }

@@ -1,5 +1,8 @@
 package com.beyond.jellyorder.domain.sales.service;
 
+import com.beyond.jellyorder.domain.openclose.entity.StoreOpenClose;
+import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepository;
+import com.beyond.jellyorder.domain.openclose.service.StoreOpenCloseService;
 import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
@@ -28,6 +31,7 @@ public class SalesService {
     private final SalesRepository salesRepository;
     private final EntityManager em;
     private final TotalOrderRepository totalOrderRepository;
+    private final StoreOpenCloseRepository storeOpenCloseRepository;
 
     // 주문을 기준으로 결제 PENDING 생성(있다면 갱신)
     public Sales createPending(UUID orderId, OrderType orderType, PaymentMethod paymentMethod, Long totalAmount) {
@@ -52,6 +56,12 @@ public class SalesService {
         sales.setPaidAt(null);
         sales.setTid(null);
 
+        TotalOrder totalOrder = sales.getTotalOrder();
+        UUID storeId = totalOrder.getStoreTable().getStore().getId();
+        StoreOpenClose openClose = storeOpenCloseRepository.findOpen(storeId)
+                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
+        sales.setStoreOpenClose(openClose);
+
         return salesRepository.save(sales);
     }
 
@@ -65,6 +75,14 @@ public class SalesService {
     /** 공통 완료 처리 (QR/COUNTER 공용) */
     public Sales complete(UUID orderId, PaymentMethod method, Long totalAmount, LocalDateTime paidAt) {
         Sales sales = getByOrderIdOrThrow(orderId);
+
+        // ★ 혹시 null이면 다시 보강(과거 데이터 보호)
+        if (sales.getStoreOpenClose() == null) {
+            UUID storeId = sales.getTotalOrder().getStoreTable().getStore().getId();
+            StoreOpenClose openClose = storeOpenCloseRepository.findOpen(storeId)
+                    .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
+            sales.setStoreOpenClose(openClose);
+        }
 
         if (sales.getStatus() != SalesStatus.PENDING) {
             return sales; // 멱등 처리
