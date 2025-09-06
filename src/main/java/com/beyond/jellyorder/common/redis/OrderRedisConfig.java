@@ -64,19 +64,19 @@ public class OrderRedisConfig {
     }
 
     // subscribe 객체
-    @Bean
+    @Bean(name = "orderRedisMessageListenerContainer")
     public RedisMessageListenerContainer redisMessageListenerContainer(
             @Qualifier("orderPubSub") RedisConnectionFactory redisConnectionFactory,
-            MessageListenerAdapter messageListenerAdapter
+            @Qualifier("orderMessageListenerAdapter") MessageListenerAdapter messageListenerAdapter
     ) {
         RedisMessageListenerContainer container = new RedisMessageListenerContainer();
         container.setConnectionFactory(redisConnectionFactory);
-        container.addMessageListener(messageListenerAdapter, new PatternTopic("order"));
+        container.addMessageListener(messageListenerAdapter, new PatternTopic("order")); // 주문 pub/sub이기 때문에 order라고 채널 네이밍
         return container;
     }
 
     // Redis에 수신된 메시지를 처리하는 객체 생성
-    @Bean
+    @Bean(name = "orderMessageListenerAdapter")
     public MessageListenerAdapter messageListenerAdapter(OrderPubSubService orderPubSubService) {
         // OrderPubSubService의 특정 메서드가 수신된 메시지를 처리할 수 있도록 지정.
         return new MessageListenerAdapter(orderPubSubService, "onMessage");
