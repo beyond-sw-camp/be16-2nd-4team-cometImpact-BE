@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.openclose.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.openclose.dto.CloseSummaryDTO;
+import com.beyond.jellyorder.domain.openclose.dto.OpenSummaryDTO;
 import com.beyond.jellyorder.domain.openclose.service.StoreOpenCloseService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -24,5 +25,15 @@ public class StoreOpenCloseController {
                 : null;
         CloseSummaryDTO dto = storeOpenCloseService.close(closedAt);
         return ApiResponse.ok(dto, "마감완료");
+    }
+
+    @PostMapping("/open")
+    public ResponseEntity<?> open(@RequestBody(required = false) Map<String, String> body) {
+        LocalDateTime openedAt = (body != null && body.get("openedAt") != null)
+                ? LocalDateTime.parse(body.get("openedAt"))
+                : null;
+
+        OpenSummaryDTO dto = storeOpenCloseService.open(openedAt);
+        return ApiResponse.ok(dto, "오픈완료");
     }
 }

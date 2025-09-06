@@ -46,4 +46,7 @@ public class Store extends BaseIdAndTimeEntity {
         this.password = encodedPassword;
     }
 
+    public void changeBusinessOpenedAt(LocalDateTime openedAt) {
+        this.businessOpenedAt = openedAt;
+    }
 }

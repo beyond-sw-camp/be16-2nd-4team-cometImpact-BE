@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.openclose.service;
 
 import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.domain.openclose.dto.CloseSummaryDTO;
+import com.beyond.jellyorder.domain.openclose.dto.OpenSummaryDTO;
 import com.beyond.jellyorder.domain.openclose.entity.StoreOpenClose;
 import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepository;
 import com.beyond.jellyorder.domain.order.entity.OrderStatus;
@@ -103,6 +104,40 @@ public class StoreOpenCloseService {
         UUID storeId = UUID.fromString(claimUtil.getStoreId());
         return storeOpenCloseRepository.findOpen(storeId)
                 .orElseThrow(() -> new IllegalStateException("현재 영업 중이 아닙니다."));
+    }
+
+    @Transactional
+    public OpenSummaryDTO open(LocalDateTime openedAtNullable) {
+        UUID storeId = UUID.fromString(claimUtil.getStoreId());
+
+        // 1) 중복 오픈 방지
+        storeOpenCloseRepository.findOpen(storeId).ifPresent(s -> {
+            throw new IllegalStateException("이미 영업 중입니다. 영업 오픈 시각 : " + s.getOpenedAt());
+        });
+
+        // 2) 매장 락(or 보통 조회) 후 세션 생성
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalStateException("매장을 찾을 수 없습니다. " + storeId));
+
+        LocalDateTime openedAt = (openedAtNullable != null) ? openedAtNullable : LocalDateTime.now();
+
+        StoreOpenClose oc = storeOpenCloseRepository.save(
+                StoreOpenClose.builder()
+                        .store(store)
+                        .openedAt(openedAt)
+                        .build()
+        );
+
+        // 3) 대시보드/주문현황 기준 시각 갱신 (OrderStatusService에서 사용)
+        // Store 엔티티에 세터가 없다면 작은 메서드 하나 추가해줘: changeBusinessOpenedAt(...)
+        store.changeBusinessOpenedAt(openedAt);
+
+        return OpenSummaryDTO.builder()
+                .openCloseId(oc.getId())
+                .storeId(store.getId())
+                .storeName(store.getStoreName())
+                .openedAt(openedAt)
+                .build();
     }
 
 }
