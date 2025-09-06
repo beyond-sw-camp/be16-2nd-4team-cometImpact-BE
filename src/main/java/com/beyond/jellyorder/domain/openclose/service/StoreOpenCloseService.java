@@ -8,6 +8,7 @@ import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepositor
 import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.order.service.CollectOrderNumberService;
 import com.beyond.jellyorder.domain.order.service.RdbOrderNumberService;
+import com.beyond.jellyorder.domain.sales.dto.SalesSummaryDTO;
 import com.beyond.jellyorder.domain.sales.entity.SalesStatus;
 import com.beyond.jellyorder.domain.sales.repository.SalesRepository;
 import com.beyond.jellyorder.domain.store.entity.Store;
@@ -78,9 +79,9 @@ public class StoreOpenCloseService {
         current.storeClose(closedAt);
 
         // 6) 이 세션 매출 요약 집계 (COMPLETED만)
-        Object[] sum = salesRepository.summarizeByOpenClose(storeId, current.getId(), SalesStatus.COMPLETED);
-        long gross = ((Number) sum[0]).longValue();
-        long cnt   = ((Number) sum[2]).longValue();
+        SalesSummaryDTO sum = salesRepository.summarizeByOpenClose(storeId, current.getId(), SalesStatus.COMPLETED);
+        long gross = (sum != null && sum.getGross() != null) ? sum.getGross() : 0L;
+        long cnt   = (sum != null && sum.getCnt()   != null) ? sum.getCnt()   : 0L;
 
         // 7) 매장 정보
         Store store = storeRepository.findById(storeId)

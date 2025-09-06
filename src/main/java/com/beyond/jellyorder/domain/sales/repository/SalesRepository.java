@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.sales.repository;
 
+import com.beyond.jellyorder.domain.sales.dto.SalesSummaryDTO;
 import com.beyond.jellyorder.domain.sales.entity.Sales;
 import com.beyond.jellyorder.domain.sales.entity.SalesStatus;
 import org.springframework.data.jpa.repository.JpaRepository;
@@ -14,19 +15,21 @@ public interface SalesRepository extends JpaRepository<Sales, UUID> {
 
     // SalesRepository
     @Query("""
-  select coalesce(sum(s.totalAmount), 0),
-         coalesce(sum(s.settlementAmount), 0),
-         count(s)
-    from Sales s
-    join s.totalOrder t
-    join t.storeTable st
-   where st.store.id = :storeId
-     and s.status = :completed
-     and s.storeOpenClose.id = :openCloseId
+select new com.beyond.jellyorder.domain.sales.dto.SalesSummaryDTO(
+       coalesce(sum(s.totalAmount), 0),
+       coalesce(sum(s.settlementAmount), 0),
+       count(s)
+)
+from Sales s
+join s.totalOrder t
+join t.storeTable st
+where st.store.id = :storeId
+  and s.status = :completed
+  and s.storeOpenClose.id = :openCloseId
 """)
-    Object[] summarizeByOpenClose(@Param("storeId") UUID storeId,
-                                  @Param("openCloseId") UUID openCloseId,
-                                  @Param("completed") SalesStatus completed);
+    SalesSummaryDTO summarizeByOpenClose(@Param("storeId") UUID storeId,
+                                         @Param("openCloseId") UUID openCloseId,
+                                         @Param("completed") SalesStatus completed);
 
     @Query("""
   select count(s) from Sales s
