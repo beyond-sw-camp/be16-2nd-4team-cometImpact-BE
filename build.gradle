@@ -57,6 +57,8 @@ dependencies {
 //	gmail 인증번호를 받기 위한 의존성 추가
 	implementation 'org.springframework.boot:spring-boot-starter-mail'
 
+//	ObjectMapper에 java의 시간타입(LocalTime 등)을 직렬화/역직렬화를 가능하게 하는 의존성
+	implementation 'com.fasterxml.jackson.datatype:jackson-datatype-jsr310'
 
 	// 테스트용
 	implementation 'org.springframework.boot:spring-boot-starter-thymeleaf'

@@ -3,6 +3,7 @@ package com.beyond.jellyorder.common.redis;
 
 import com.beyond.jellyorder.domain.menu.sse.MenuStatusRedisSubscriber;
 import com.beyond.jellyorder.domain.menu.sse.MenuStatusToSseBridge;
+import com.beyond.jellyorder.domain.sseRequest.dto.RequestCreateDto;
 import com.beyond.jellyorder.domain.sseRequest.service.SseAlarmService;
 import com.beyond.jellyorder.domain.sseRequest.sse.RequestRedisSubscriber;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -17,6 +18,7 @@ import org.springframework.data.redis.listener.PatternTopic;
 import org.springframework.data.redis.listener.RedisMessageListenerContainer;
 import org.springframework.data.redis.listener.adapter.MessageListenerAdapter;
 import org.springframework.data.redis.serializer.GenericJackson2JsonRedisSerializer;
+import org.springframework.data.redis.serializer.Jackson2JsonRedisSerializer;
 import org.springframework.data.redis.serializer.StringRedisSerializer;
 
 @Configuration
@@ -113,13 +115,22 @@ public class SseRedisConfig {
         RedisTemplate<String, Object> template = new RedisTemplate<>();
         template.setConnectionFactory(cf);
 
+        /**
+         * Redis 직렬화기 설정 설명
+            - keySer: Redis의 "키"를 사람이 읽기 쉬운 문자열(String)로 직렬화/역직렬화합니다.
+                (예: store:123:requests 같은 키를 그대로 확인 가능, 타 언어/도구와도 호환 ↑)
+            - valueSer: Redis의 "값"을 RequestCreateDto <-> JSON 으로 변환합니다.
+              타입을 RequestCreateDto로 고정했기 때문에 JSON에 @class 같은 타입 메타 정보가 붙지 않습니다.
+         *  (이전 @class 오류 방지. 발행/구독 양쪽 모두 동일 직렬화기를 쓰는 것이 중요합니다.)
+         */
         var keySer = new StringRedisSerializer();
-        var jsonSer = new GenericJackson2JsonRedisSerializer();
+        Jackson2JsonRedisSerializer<RequestCreateDto> valueSer =
+                new Jackson2JsonRedisSerializer<>(RequestCreateDto.class);
 
         template.setKeySerializer(keySer);
-        template.setValueSerializer(jsonSer);
+        template.setValueSerializer(valueSer);
         template.setHashKeySerializer(keySer);
-        template.setHashValueSerializer(jsonSer);
+        template.setHashValueSerializer(valueSer);
 
         template.setEnableDefaultSerializer(false);
         template.afterPropertiesSet();
