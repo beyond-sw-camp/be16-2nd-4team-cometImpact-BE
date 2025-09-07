@@ -85,6 +85,7 @@ public class IngredientService {
                         .id(i.getId())
                         .name(i.getName())
                         .status(i.getStatus())
+                        .updatedAt(i.getUpdatedAt())
                         .build())
                 .toList();
 
