@@ -19,7 +19,8 @@ import java.io.IOException;
 public class RequestSseController { 
     private final SseEmitters emitters;
 
-    @GetMapping(value="/sse/request/subscribe", produces=MediaType.TEXT_EVENT_STREAM_VALUE)    public SseEmitter subscribe(@RequestParam String storeId) throws IOException {
+    @GetMapping(value="/sse/request/subscribe", produces=MediaType.TEXT_EVENT_STREAM_VALUE)
+    public SseEmitter subscribe(@RequestParam String storeId) throws IOException {
         SseEmitter sseEmitter = new SseEmitter(Long.MAX_VALUE);
         emitters.add(storeId, sseEmitter); // 내부에서 connect 이벤트 전송됨
         return sseEmitter;
