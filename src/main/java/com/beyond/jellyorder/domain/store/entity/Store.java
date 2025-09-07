@@ -49,4 +49,7 @@ public class Store extends BaseIdAndTimeEntity {
     public void changeBusinessOpenedAt(LocalDateTime openedAt) {
         this.businessOpenedAt = openedAt;
     }
+    public void changeBusinessClosedAt(LocalDateTime closedAt) {
+        this.businessClosedAt = closedAt;
+    }
 }

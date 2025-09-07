@@ -21,6 +21,8 @@ import com.beyond.jellyorder.domain.order.entity.*;
 import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.order.repository.UnitOrderRepository;
+import com.beyond.jellyorder.domain.store.entity.Store;
+import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
@@ -33,6 +35,7 @@ import org.hibernate.query.Order;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -49,32 +52,33 @@ public class UnitOrderService {
     private final SubOptionRepository subOptionRepository;
     private final CollectOrderNumberService collectOrderNumberService;
     private final StoreOpenCloseRepository storeOpenCloseRepository;
+    private final StoreRepository storeRepository;
 
     @PersistenceContext
     private EntityManager em;
 
     public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto, UUID storeId) {
-        var current = storeOpenCloseRepository.findOpen(storeId)
-                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
-
-        // 1) 세션 행에 비관적 읽기 락 (마감 close()의 WRITE 락과 경합 시 순서 보장)
-        em.lock(current, LockModeType.PESSIMISTIC_READ);
-        // 2) 경합 상황 대비: 락을 건 후에도 닫혔는지 최종 확인
-        if (current.getClosedAt() != null) {
-            throw new IllegalStateException("이미 마감되었습니다. 주문 생성 불가");
-        }
+//        var current = storeOpenCloseRepository.findOpen(storeId)
+//                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
+//
+//        // 1) 세션 행에 비관적 읽기 락 (마감 close()의 WRITE 락과 경합 시 순서 보장)
+//        em.lock(current, LockModeType.PESSIMISTIC_READ);
+//        // 2) 경합 상황 대비: 락을 건 후에도 닫혔는지 최종 확인
+//        if (current.getClosedAt() != null) {
+//            throw new IllegalStateException("이미 마감되었습니다. 주문 생성 불가");
+//        }
 
         // 1. 테이블 조회
         StoreTable storeTable = findStoreTable(dto.getStoreTableId());
 
         // 2. 전체주문 확보
         TotalOrder totalOrder = getOrCreateTotalOrder(storeTable);
-        if (totalOrder.getStoreOpenClose() == null
-                || !Objects.equals(totalOrder.getStoreOpenClose().getId(), current.getId())) {
-            totalOrder.setStoreOpenClose(current);
-        }
 
         // 3. 단위주문 생성
+        Store store = storeRepository.findById(storeId).orElseThrow(() -> new IllegalArgumentException("찾는 매장이 없습니다."));
+        if (store.getBusinessClosedAt() != null) {
+            throw new IllegalArgumentException("매장이 마감되었습니다.");
+        }
         UnitOrder unitOrder = createUnitOrder(totalOrder, storeId);
 
         // 4. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)

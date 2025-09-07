@@ -45,7 +45,7 @@ public class TotalOrder extends BaseIdEntity {
     private List<UnitOrder> unitOrderList = new ArrayList<>();
 
     @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "store_open_close_id", columnDefinition = "BINARY(16)")
+    @JoinColumn(name = "store_open_close_id")
     private StoreOpenClose storeOpenClose;
 
     public void setStoreOpenClose(StoreOpenClose soc) {

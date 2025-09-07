@@ -87,6 +87,7 @@ public class StoreOpenCloseService {
 
         Store store = storeRepository.findById(storeId)
                 .orElseThrow(() -> new IllegalStateException("매장을 찾을 수 없습니다. " + storeId));
+        store.changeBusinessClosedAt(closedAt);
 
         return CloseSummaryDTO.builder()
                 .storeId(store.getId())
@@ -120,6 +121,7 @@ public class StoreOpenCloseService {
 
         // "오늘" 기준 갱신(주문 현황 필터에 사용)
         store.changeBusinessOpenedAt(openedAt);
+
 
         return OpenSummaryDTO.builder()
                 .openCloseId(oc.getId())
