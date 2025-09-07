@@ -3,6 +3,7 @@ package com.beyond.jellyorder.domain.ingredient.dto;
 import com.beyond.jellyorder.domain.ingredient.domain.IngredientStatus;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.UUID;
 
 @Getter
@@ -13,4 +14,5 @@ public class IngredientResDto {
     private UUID id;
     private String name;
     private IngredientStatus status;
+    private LocalDateTime updatedAt;
 }
