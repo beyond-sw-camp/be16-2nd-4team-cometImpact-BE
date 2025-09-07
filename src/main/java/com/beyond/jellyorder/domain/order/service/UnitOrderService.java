@@ -4,6 +4,7 @@ import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.common.auth.StoreTableJwtClaimUtil;
 import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.domain.MenuStatus;
+import com.beyond.jellyorder.domain.menu.dto.MenuStatusChangedEvent;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
 import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepository;
 import com.beyond.jellyorder.domain.option.dto.MainOptionReqDto;
@@ -32,6 +33,7 @@ import jakarta.persistence.LockModeType;
 import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.query.Order;
+import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -51,6 +53,7 @@ public class UnitOrderService {
     private final OrderMenuRepository orderMenuRepository;
     private final SubOptionRepository subOptionRepository;
     private final CollectOrderNumberService collectOrderNumberService;
+    private final ApplicationEventPublisher eventPublisher;
     private final StoreOpenCloseRepository storeOpenCloseRepository;
     private final StoreRepository storeRepository;
 
@@ -180,6 +183,9 @@ public class UnitOrderService {
                 menu.increaseSalesToday(req.getQuantity());
                 if (menu.getSalesLimit().equals(menu.getSalesToday())) {
                     menu.changeStockStatus(MenuStatus.OUT_OF_STOCK);
+                    if (menu.getCategory() != null && menu.getCategory().getStore() != null) {
+                        publishMenuStatus(menu.getCategory().getStore().getId(), menu.getId(), menu.getStockStatus());
+                    }
                 }
             } else {
                 menu.increaseSalesToday(req.getQuantity());
@@ -289,5 +295,13 @@ public class UnitOrderService {
                 .localTime(unitOrder.getRelevantTime())
                 .orderMenuList(orderMenuDtos)
                 .build();
+    }
+
+    private void publishMenuStatus(UUID storeId, UUID menuId, MenuStatus status) {
+        eventPublisher.publishEvent(MenuStatusChangedEvent.builder()
+                .storeId(storeId)
+                .menuId(menuId)
+                .status(status)
+                .build());
     }
 }

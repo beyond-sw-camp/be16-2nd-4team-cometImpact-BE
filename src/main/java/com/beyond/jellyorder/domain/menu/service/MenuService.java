@@ -19,6 +19,7 @@ import com.beyond.jellyorder.domain.option.mainOption.domain.OptionSelectionType
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
 import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import com.beyond.jellyorder.domain.option.subOption.dto.SubOptionDto;
+import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -44,6 +45,7 @@ public class MenuService {
     private final S3Manager s3Manager;
     private final StoreJwtClaimUtil storeJwtClaimUtil;
     private final StoreRepository storeRepository;
+    private final OrderMenuRepository orderMenuRepository;
 
     // ★ 추가: 상태 변경 이벤트 발행용
     private final ApplicationEventPublisher eventPublisher;
@@ -60,7 +62,8 @@ public class MenuService {
         if (catName.isEmpty()) {
             throw new IllegalArgumentException("카테고리명은 필수입니다.");
         }
-        Category category = categoryRepository.findByStoreIdAndName(storeUuid, reqDto.getCategoryName())
+        Category category = categoryRepository
+                .findByStoreIdAndNameAndDeletedFalse(storeUuid, reqDto.getCategoryName())
                 .orElseGet(() -> categoryRepository.save(
                         Category.builder()
                                 .store(store)
@@ -164,34 +167,32 @@ public class MenuService {
 
     @Transactional(readOnly = true)
     public List<MenuUserResDto> getMenusForUserByStoreId() {
-        final String storeId = storeJwtClaimUtil.getStoreId();
+        final UUID storeId = UUID.fromString(storeJwtClaimUtil.getStoreId());
 
-        storeRepository.findById(UUID.fromString(storeId))
+        storeRepository.findById(storeId)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        List<Menu> menus = menuRepository.findAllByCategory_StoreId(UUID.fromString(storeId));
+        List<Menu> menus = menuRepository
+                .findAllByCategory_StoreIdAndDeletedFalseAndCategory_DeletedFalse(storeId);
 
-        return menus.stream()
-                .map(MenuUserResDto::fromEntity)
-                .toList();
+        return menus.stream().map(MenuUserResDto::fromEntity).toList();
     }
 
     @Transactional(readOnly = true)
     public List<MenuAdminResDto> getMenusForAdminByStoreId() {
-        final String storeId = storeJwtClaimUtil.getStoreId();
+        final UUID storeId = UUID.fromString(storeJwtClaimUtil.getStoreId());
 
-        storeRepository.findById(UUID.fromString(storeId))
+        storeRepository.findById(storeId)
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
-        List<Menu> menus = menuRepository.findAllByCategory_StoreId(UUID.fromString(storeId));
+        List<Menu> menus = menuRepository
+                .findAllByCategory_StoreIdAndDeletedFalseAndCategory_DeletedFalse(storeId);
 
-        return menus.stream()
-                .map(MenuAdminResDto::fromEntity)
-                .toList();
+        return menus.stream().map(MenuAdminResDto::fromEntity).toList();
     }
 
     public OptionAddResDto addOptionsToMenu(OptionAddReqDto reqDto) {
-        Menu menu = menuRepository.findById(UUID.fromString(reqDto.getMenuId()))
+        Menu menu = menuRepository.findByIdAndDeletedFalse(UUID.fromString(String.valueOf(reqDto.getMenuId())))
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다."));
 
         // 1) 기존 메인옵션 맵과 서브옵션 이름 집합 구성 (이름 trim 기준)
@@ -291,33 +292,34 @@ public class MenuService {
                 .build();
     }
 
+    @Transactional
     public void deleteMenuById(UUID menuId) {
-        final String storeId = storeJwtClaimUtil.getStoreId();
-        UUID storeUuid = UUID.fromString(storeId);
+        final UUID storeUuid = UUID.fromString(storeJwtClaimUtil.getStoreId());
 
-        // 1) storeId 유효성 체크
+        // 1) storeId 검증
         storeRepository.findById(storeUuid)
-                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
+                .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeUuid));
 
-        // 2) 메뉴 조회
-        Menu menu = menuRepository.findById(menuId)
+        // 2) 살아있는 메뉴만 조회 + 소속 검증
+        Menu menu = menuRepository.findByIdAndDeletedFalse(menuId)
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다."));
-
-        // 3) 메뉴가 해당 매장 소속인지 확인
-        UUID menuStoreId = menu.getCategory().getStore().getId(); // Category 엔티티에 storeId 필드가 있다고 가정
-        if (!menuStoreId.equals(storeUuid)) {
-            throw new IllegalArgumentException("해당 메뉴는 현재 매장의 소속이 아닙니다.");
+        if (!menu.getCategory().getStore().getId().equals(storeUuid)) {
+            throw new AccessDeniedException("해당 메뉴는 현재 매장의 소속이 아닙니다.");
         }
 
-        // 4) S3 이미지 삭제
-        if (menu.getImageUrl() != null) {
-            s3Manager.delete(menu.getImageUrl());
+        // 3) EATING 테이블에 포함된 주문이 있으면 삭제 금지
+        if (orderMenuRepository.existsInEatingTable(menuId)) {
+            throw new IllegalStateException("현재 식사 중(EATING) 테이블의 주문에 포함된 메뉴는 삭제할 수 없습니다.");
         }
 
-        // 5) 메뉴 삭제 (옵션 등 cascade 삭제 포함)
-        menuRepository.delete(menu);
+        // 4) (정책) 이미지: 소프트 삭제에서는 보존 권장. 필요시만 삭제.
+        // if (menu.getImageUrl() != null) s3Manager.delete(menu.getImageUrl());
 
-        // (선택) 삭제 알림이 필요하다면 여기서 별도 이벤트를 정의/발행하세요.
+        // 5) 소프트 삭제 (명시적 UPDATE)
+        int updated = menuRepository.softDeleteById(menuId);
+        if (updated == 0) {
+            throw new IllegalStateException("메뉴 소프트 삭제에 실패했습니다: " + menuId);
+        }
     }
 
     @Transactional
@@ -329,7 +331,7 @@ public class MenuService {
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeUuid));
 
         // 1) 메뉴 조회 + 소속 검증
-        Menu menu = menuRepository.findById(dto.getMenuId())
+        Menu menu = menuRepository.findByIdAndDeletedFalse(UUID.fromString(String.valueOf(dto.getMenuId())))
                 .orElseThrow(() -> new EntityNotFoundException("해당 메뉴를 찾을 수 없습니다."));
 
         UUID menuStoreId = menu.getCategory() != null ? menu.getCategory().getStore().getId() : null; // Category에 storeId 필드 있다고 가정
@@ -347,7 +349,7 @@ public class MenuService {
 
             if (!Objects.equals(currName, newName)) {
                 Category targetCategory = categoryRepository
-                        .findByStoreIdAndName(storeUuid, newName)
+                        .findByStoreIdAndNameAndDeletedFalse(storeUuid, newName)
                         .orElseGet(() -> {
                             // 없으면 생성해서 바로 사용
                             Category created = Category.builder()
