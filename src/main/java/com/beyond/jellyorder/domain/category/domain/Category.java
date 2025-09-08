@@ -3,6 +3,7 @@ package com.beyond.jellyorder.domain.category.domain;
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import jakarta.persistence.*;
+import jakarta.validation.constraints.Size;
 import lombok.*;
 import org.hibernate.annotations.SQLDelete;
 
@@ -34,7 +35,8 @@ public class Category extends BaseIdAndTimeEntity {
     @ToString.Exclude
     private Store store;
 
-    @Column(length = 20, nullable = false)
+    @Column(length = 10, nullable = false)
+    @Size(max = 10, message = "카테고리명은 10자 이내여야 합니다.")
     private String name;
 
     @Column(length = 255, nullable = false)
