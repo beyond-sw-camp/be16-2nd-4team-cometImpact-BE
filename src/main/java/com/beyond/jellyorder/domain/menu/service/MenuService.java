@@ -421,6 +421,9 @@ public class MenuService {
         // 8) 재고 상태 재계산
         if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
             MenuStatus computed = deriveStockStatusFromIngredients(menu);
+            if (Objects.equals(menu.getSalesLimit(), menu.getSalesToday())){
+                computed = MenuStatus.OUT_OF_STOCK;
+            }
             menu.changeStockStatus(computed);
         }
 
