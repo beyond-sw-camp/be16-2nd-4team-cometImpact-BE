@@ -27,6 +27,7 @@ public class StoreOpenCloseController {
 
     @PostMapping("/close")
     public ResponseEntity<?> close() {
+
         return ApiResponse.ok(storeOpenCloseService.close(), "마감 완료");
     }
 
@@ -34,5 +35,11 @@ public class StoreOpenCloseController {
     public ResponseEntity<?> status() {
         OpenCloseStatusDTO openCloseStatusDTO = storeOpenCloseService.status();
         return ApiResponse.ok(openCloseStatusDTO, "상태 조회 완료");
+    }
+
+    @GetMapping("/summary")
+    public ResponseEntity<?> summary() {
+        CloseSummaryDTO dto = storeOpenCloseService.summary();
+        return ApiResponse.ok(dto, "요약 조회 완료");
     }
 }

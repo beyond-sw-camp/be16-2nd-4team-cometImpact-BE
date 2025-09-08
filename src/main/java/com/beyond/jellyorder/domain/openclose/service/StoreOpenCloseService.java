@@ -171,4 +171,61 @@ public class StoreOpenCloseService {
                     );
                 });
     }
+
+    @Transactional(readOnly = true)
+    public CloseSummaryDTO summary() {
+        UUID storeId = UUID.fromString(claimUtil.getStoreId());
+
+        // 매장 정보
+        var store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalStateException("매장을 찾을 수 없습니다. " + storeId));
+
+        // 1) 현재 오픈 세션이 있으면: 지금까지 집계(마감 전 미리보기)
+        var openOpt = storeOpenCloseRepository.findOpen(storeId);
+        if (openOpt.isPresent()) {
+            var current = openOpt.get();
+            SalesSummaryDTO sum = salesRepository.summarizeByOpenClose(
+                    storeId, current.getId(), SalesStatus.COMPLETED);
+
+            long gross = (sum != null && sum.getGross() != null) ? sum.getGross() : 0L;
+            long cnt   = (sum != null && sum.getCnt()   != null) ? sum.getCnt()   : 0L;
+
+            return CloseSummaryDTO.builder()
+                    .storeId(store.getId())
+                    .storeName(store.getStoreName())
+                    .openedAt(current.getOpenedAt())
+                    .closedAt(null)            // 오픈 중이므로 null
+                    .receiptCount(cnt)
+                    .grossAmount(gross)
+                    .build();
+        }
+
+        // 2) 오픈 세션이 없으면: 마지막(마감된) 세션 집계
+        var last = storeOpenCloseRepository.findTopByStoreIdOrderByOpenedAtDesc(storeId).orElse(null);
+        if (last == null) {
+            return CloseSummaryDTO.builder()
+                    .storeId(store.getId())
+                    .storeName(store.getStoreName())
+                    .openedAt(null)
+                    .closedAt(null)
+                    .receiptCount(0L)
+                    .grossAmount(0L)
+                    .build();
+        }
+
+        SalesSummaryDTO sum = salesRepository.summarizeByOpenClose(
+                storeId, last.getId(), SalesStatus.COMPLETED);
+
+        long gross = (sum != null && sum.getGross() != null) ? sum.getGross() : 0L;
+        long cnt   = (sum != null && sum.getCnt()   != null) ? sum.getCnt()   : 0L;
+
+        return CloseSummaryDTO.builder()
+                .storeId(store.getId())
+                .storeName(store.getStoreName())
+                .openedAt(last.getOpenedAt())
+                .closedAt(last.getClosedAt())
+                .receiptCount(cnt)
+                .grossAmount(gross)
+                .build();
+    }
 }
