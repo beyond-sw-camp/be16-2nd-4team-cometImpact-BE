@@ -103,7 +103,7 @@ public class StoreOpenCloseService {
         if (pendingCnt > 0) throw new IllegalStateException("미결제(PENDING) 결제건이 있어 마감할 수 없습니다.");
 
         // 진행 중 주문 차단
-        boolean hasActive = storeTableRepository.existsOpenOrderInStore(storeId, OrderStatus.ACCEPT);
+        boolean hasActive = storeTableRepository.existsOpenOrderInStore(storeId);
         if (hasActive) throw new IllegalStateException("진행 중 주문이 있어 마감할 수 없습니다.");
 
         // 테이블 초기화
