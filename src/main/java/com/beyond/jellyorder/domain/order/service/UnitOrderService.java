@@ -78,10 +78,8 @@ public class UnitOrderService {
         TotalOrder totalOrder = getOrCreateTotalOrder(storeTable);
 
         // 3. 단위주문 생성
-        Store store = storeRepository.findById(storeId).orElseThrow(() -> new IllegalArgumentException("찾는 매장이 없습니다."));
-        if (store.getBusinessClosedAt() != null) {
-            throw new IllegalArgumentException("매장이 마감되었습니다.");
-        }
+        storeOpenCloseRepository.findOpen(storeId)
+                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
         UnitOrder unitOrder = createUnitOrder(totalOrder, storeId);
 
         // 4. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)

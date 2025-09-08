@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.openclose.controller;
 
 import com.beyond.jellyorder.common.apiResponse.ApiResponse;
 import com.beyond.jellyorder.domain.openclose.dto.CloseSummaryDTO;
+import com.beyond.jellyorder.domain.openclose.dto.OpenCloseStatusDTO;
 import com.beyond.jellyorder.domain.openclose.dto.OpenSummaryDTO;
 import com.beyond.jellyorder.domain.openclose.service.StoreOpenCloseService;
 import lombok.RequiredArgsConstructor;
@@ -18,6 +19,7 @@ import java.util.Map;
 @PreAuthorize("hasRole('STORE')")
 public class StoreOpenCloseController {
     private final StoreOpenCloseService storeOpenCloseService;
+
     @PostMapping("/open")
     public ResponseEntity<?> open() {
         return ApiResponse.ok(storeOpenCloseService.open(), "오픈 완료");
@@ -26,5 +28,11 @@ public class StoreOpenCloseController {
     @PostMapping("/close")
     public ResponseEntity<?> close() {
         return ApiResponse.ok(storeOpenCloseService.close(), "마감 완료");
+    }
+
+    @GetMapping("/status")
+    public ResponseEntity<?> status() {
+        OpenCloseStatusDTO openCloseStatusDTO = storeOpenCloseService.status();
+        return ApiResponse.ok(openCloseStatusDTO, "상태 조회 완료");
     }
 }

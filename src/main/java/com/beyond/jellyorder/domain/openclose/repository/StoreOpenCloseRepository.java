@@ -15,12 +15,6 @@ public interface StoreOpenCloseRepository extends JpaRepository<StoreOpenClose, 
     @Query("select s from StoreOpenClose s where s.store.id = :storeId and s.closedAt is null")
     Optional<StoreOpenClose> findOpen(@Param("storeId") UUID storeId);
 
-    // ✅ 현재 열린 세션(비관적 읽기 락) — 주문/결제 진입부에서 사용
-    @Lock(LockModeType.PESSIMISTIC_READ)
-    @QueryHints(@QueryHint(name = "jakarta.persistence.lock.timeout", value = "3000")) // 3초 대기(선택)
-    @Query("select s from StoreOpenClose s where s.store.id = :storeId and s.closedAt is null")
-    Optional<StoreOpenClose> findOpenForUpdate(@Param("storeId") UUID storeId);
-
     // 특정 시각(ts)에 유효한 세션 찾기 — 과거/경계 보정용
     @Query("""
        select s from StoreOpenClose s
@@ -37,4 +31,6 @@ public interface StoreOpenCloseRepository extends JpaRepository<StoreOpenClose, 
         order by s.openedAt desc
     """)
     Optional<StoreOpenClose> findLastBefore(@Param("storeId") UUID storeId, @Param("ts") LocalDateTime ts);
+
+    Optional<StoreOpenClose> findTopByStoreIdOrderByOpenedAtDesc(UUID storeId);
 }

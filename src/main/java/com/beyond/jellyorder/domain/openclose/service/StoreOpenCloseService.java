@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.openclose.service;
 
 import com.beyond.jellyorder.common.auth.StoreJwtClaimUtil;
 import com.beyond.jellyorder.domain.openclose.dto.CloseSummaryDTO;
+import com.beyond.jellyorder.domain.openclose.dto.OpenCloseStatusDTO;
 import com.beyond.jellyorder.domain.openclose.dto.OpenSummaryDTO;
 import com.beyond.jellyorder.domain.openclose.entity.StoreOpenClose;
 import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepository;
@@ -42,64 +43,16 @@ public class StoreOpenCloseService {
     private final StoreJwtClaimUtil claimUtil;
     private final Clock clock;
 
-    @PersistenceContext private EntityManager em;
+    @PersistenceContext
+    private EntityManager em;
 
-    private LocalDateTime now() { return LocalDateTime.now(clock); }
-
-    /** 마감 + 요약 DTO */
-    public CloseSummaryDTO close() {
-        UUID storeId = UUID.fromString(claimUtil.getStoreId());
-
-        StoreOpenClose current = em.createQuery(
-                        "select s from StoreOpenClose s where s.store.id = :sid and s.closedAt is null",
-                        StoreOpenClose.class)
-                .setParameter("sid", storeId)
-                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
-                .getResultStream().findFirst()
-                .orElseThrow(() -> new IllegalStateException("현재 영업 중이 아닙니다."));
-
-        // (선택) 세션 내 PENDING 결제건 차단
-        long pendingCnt = salesRepository.countBySessionAndStatus(current.getId(), SalesStatus.PENDING);
-        if (pendingCnt > 0) throw new IllegalStateException("미결제(PENDING) 결제건이 있어 마감할 수 없습니다.");
-
-        // 진행 중 주문 차단
-        boolean hasActive = storeTableRepository.existsOpenOrderInStore(storeId, OrderStatus.CANCEL);
-        if (hasActive) throw new IllegalStateException("진행 중 주문이 있어 마감할 수 없습니다.");
-
-        // 테이블 초기화
-        storeTableRepository.findAllByStoreId(storeId)
-                .forEach(t -> t.changeStatus(TableStatus.STANDBY));
-
-        // 주문번호 초기화
-        rdbOrderNumberService.reset(storeId);
-        collectOrderNumberService.resetOrderNum(storeId);
-
-        // 서버 시간으로 마감
-        LocalDateTime closedAt = now();
-        current.storeClose(closedAt);
-
-        // 매출 요약(세션 기준)
-        SalesSummaryDTO sum = salesRepository.summarizeByOpenClose(
-                storeId, current.getId(), SalesStatus.COMPLETED);
-
-        long gross = (sum != null && sum.getGross() != null) ? sum.getGross() : 0L;
-        long cnt   = (sum != null && sum.getCnt()   != null) ? sum.getCnt()   : 0L;
-
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalStateException("매장을 찾을 수 없습니다. " + storeId));
-        store.changeBusinessClosedAt(closedAt);
-
-        return CloseSummaryDTO.builder()
-                .storeId(store.getId())
-                .storeName(store.getStoreName())
-                .openedAt(current.getOpenedAt())
-                .closedAt(current.getClosedAt())
-                .receiptCount(cnt)
-                .grossAmount(gross)
-                .build();
+    private LocalDateTime now() {
+        return LocalDateTime.now(clock);
     }
 
-    /** 오픈 */
+    /**
+     * 오픈
+     */
     public OpenSummaryDTO open() {
         UUID storeId = UUID.fromString(claimUtil.getStoreId());
 
@@ -121,7 +74,7 @@ public class StoreOpenCloseService {
 
         // "오늘" 기준 갱신(주문 현황 필터에 사용)
         store.changeBusinessOpenedAt(openedAt);
-
+        store.changeBusinessClosedAt(null);
 
         return OpenSummaryDTO.builder()
                 .openCloseId(oc.getId())
@@ -131,4 +84,91 @@ public class StoreOpenCloseService {
                 .build();
     }
 
+    /**
+     * 마감 + 요약 DTO
+     */
+    public CloseSummaryDTO close() {
+        UUID storeId = UUID.fromString(claimUtil.getStoreId());
+
+        StoreOpenClose current = em.createQuery(
+                        "select s from StoreOpenClose s where s.store.id = :sid and s.closedAt is null",
+                        StoreOpenClose.class)
+                .setParameter("sid", storeId)
+                .setLockMode(LockModeType.PESSIMISTIC_WRITE)
+                .getResultStream().findFirst()
+                .orElseThrow(() -> new IllegalStateException("현재 영업 중이 아닙니다."));
+
+        // (선택) 세션 내 PENDING 결제건 차단
+        long pendingCnt = salesRepository.countBySessionAndStatus(current.getId(), SalesStatus.PENDING);
+        if (pendingCnt > 0) throw new IllegalStateException("미결제(PENDING) 결제건이 있어 마감할 수 없습니다.");
+
+        // 진행 중 주문 차단
+        boolean hasActive = storeTableRepository.existsOpenOrderInStore(storeId, OrderStatus.ACCEPT);
+        if (hasActive) throw new IllegalStateException("진행 중 주문이 있어 마감할 수 없습니다.");
+
+        // 테이블 초기화
+        storeTableRepository.findAllByStoreId(storeId)
+                .forEach(t -> t.changeStatus(TableStatus.STANDBY));
+
+        // 주문번호 초기화
+        rdbOrderNumberService.reset(storeId);
+        collectOrderNumberService.resetOrderNum(storeId);
+
+        // 서버 시간으로 마감
+        LocalDateTime closedAt = now();
+        current.storeClose(closedAt);
+
+        // 매출 요약(세션 기준)
+        SalesSummaryDTO sum = salesRepository.summarizeByOpenClose(
+                storeId, current.getId(), SalesStatus.COMPLETED);
+
+        long gross = (sum != null && sum.getGross() != null) ? sum.getGross() : 0L;
+        long cnt = (sum != null && sum.getCnt() != null) ? sum.getCnt() : 0L;
+
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalStateException("매장을 찾을 수 없습니다. " + storeId));
+
+        return CloseSummaryDTO.builder()
+                .storeId(store.getId())
+                .storeName(store.getStoreName())
+                .openedAt(current.getOpenedAt())
+                .closedAt(current.getClosedAt())
+                .receiptCount(cnt)
+                .grossAmount(gross)
+                .build();
+    }
+
+    @Transactional(readOnly = true)
+    public OpenCloseStatusDTO status() {
+        UUID storeId = UUID.fromString(claimUtil.getStoreId());
+
+        // 현재 열려있는 세션
+        return storeOpenCloseRepository.findOpen(storeId)
+                .map(oc -> OpenCloseStatusDTO.open(
+                        oc.getId(),
+                        oc.getStore().getId(),
+                        oc.getStore().getStoreName(),
+                        oc.getOpenedAt()
+                ))
+                .orElseGet(() -> {
+                    // 마지막 세션(마감된 것 포함)
+                    StoreOpenClose last = storeOpenCloseRepository
+                            .findTopByStoreIdOrderByOpenedAtDesc(storeId)
+                            .orElse(null);
+
+                    CloseSummaryDTO summary = null;
+                    if (last != null && last.getClosedAt() != null) {
+                        // 필요 시 마지막 세션 요약을 조회/계산하여 매핑
+                        // summary = ...
+                    }
+
+                    return OpenCloseStatusDTO.closed(
+                            last != null ? last.getStore().getId() : storeId,
+                            last != null ? last.getStore().getStoreName() : null,
+                            last != null ? last.getOpenedAt() : null,
+                            last != null ? last.getClosedAt() : null,
+                            summary
+                    );
+                });
+    }
 }
