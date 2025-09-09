@@ -17,8 +17,10 @@ import com.beyond.jellyorder.domain.option.dto.OptionAddResDto;
 import com.beyond.jellyorder.domain.option.mainOption.domain.MainOption;
 import com.beyond.jellyorder.domain.option.mainOption.domain.OptionSelectionType;
 import com.beyond.jellyorder.domain.option.mainOption.dto.MainOptionDto;
+import com.beyond.jellyorder.domain.option.mainOption.repository.MainOptionRepository;
 import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
 import com.beyond.jellyorder.domain.option.subOption.dto.SubOptionDto;
+import com.beyond.jellyorder.domain.option.subOption.repository.SubOptionRepository;
 import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.store.repository.StoreRepository;
@@ -46,8 +48,9 @@ public class MenuService {
     private final StoreJwtClaimUtil storeJwtClaimUtil;
     private final StoreRepository storeRepository;
     private final OrderMenuRepository orderMenuRepository;
+    private final MainOptionRepository mainOptionRepository;
+    private final SubOptionRepository subOptionRepository;
 
-    // ★ 추가: 상태 변경 이벤트 발행용
     private final ApplicationEventPublisher eventPublisher;
 
     public MenuCreateResDto create(MenuCreateReqDto reqDto) {
@@ -92,7 +95,6 @@ public class MenuService {
                 }
                 mo.setName(normalized);
 
-                // ✅ 필수 타입 정합성 (생성 전 단계에서도 1차 확인: subOptions 포함 여부)
                 validateSelectionTypeConsistency(mo);
 
                 preparedMainOptions.add(mo);
@@ -122,12 +124,10 @@ public class MenuService {
                         so.setMainOption(mo);
                     }
                 }
-                // ✅ 연결 후 다시 한번 정합성 확인(누락 방지)
                 validateSelectionTypeConsistency(mo);
             }
             menu.setMainOptions(preparedMainOptions);
 
-            // 7) 식자재 링크 동기화 — ✅ ID 기반으로만 처리
             List<UUID> ingredientIds = Optional.ofNullable(reqDto.getIngredientIds()).orElseGet(List::of);
             syncIngredientsByIds(menu, ingredientIds, storeUuid);
 
@@ -281,7 +281,6 @@ public class MenuService {
                 }
             }
 
-            // ✅ 필수 타입 정합성
             validateSelectionTypeConsistency(targetMain);
         }
 
@@ -422,6 +421,9 @@ public class MenuService {
         // 8) 재고 상태 재계산
         if (menu.getStockStatus() != MenuStatus.SOLD_OUT_MANUAL) {
             MenuStatus computed = deriveStockStatusFromIngredients(menu);
+            if (Objects.equals(menu.getSalesLimit(), menu.getSalesToday())){
+                computed = MenuStatus.OUT_OF_STOCK;
+            }
             menu.changeStockStatus(computed);
         }
 
@@ -502,121 +504,166 @@ public class MenuService {
     private void syncOptions(Menu menu, List<MainOptionDto> requestedMainDtos) {
         List<MainOptionDto> req = Optional.ofNullable(requestedMainDtos).orElseGet(List::of);
 
-        // 현재 main 맵 (trim 기준)
-        Map<String, MainOption> currMain = Optional.ofNullable(menu.getMainOptions())
-                .orElseGet(List::of).stream()
-                .collect(Collectors.toMap(mo -> mo.getName().trim(), mo -> mo, (a, b) -> a, LinkedHashMap::new));
-
-        // 요청 main 맵 (trim 기준) + 검증
-        Map<String, MainOptionDto> desiredMain = req.stream()
-                .peek(dto -> {
-                    String n = Optional.ofNullable(dto.getName()).map(String::trim).orElse("");
-                    if (n.isEmpty()) throw new IllegalArgumentException("메인 옵션 이름은 필수입니다.");
-                    if (dto.getSelectionType() == null) throw new IllegalArgumentException("메인 옵션의 선택 유형은 필수입니다.");
-                })
-                .collect(Collectors.toMap(
-                        m -> m.getName().trim(),
-                        m -> m,
-                        (a, b) -> { throw new IllegalArgumentException("중복 메인 옵션: " + a.getName()); },
-                        LinkedHashMap::new
-                ));
-
-        // 제거
-        if (menu.getMainOptions() != null) {
-            for (String name : new ArrayList<>(currMain.keySet())) {
-                if (!desiredMain.containsKey(name)) {
-                    menu.getMainOptions().remove(currMain.get(name)); // orphanRemoval
-                }
-            }
-        } else {
-            menu.setMainOptions(new ArrayList<>());
+        // 요청 내 메인옵션 이름 검증/중복 방지
+        Set<String> mainNames = new HashSet<>();
+        for (MainOptionDto dto : req) {
+            String name = Optional.ofNullable(dto.getName()).map(String::trim).orElse("");
+            if (name.isEmpty()) throw new IllegalArgumentException("메인 옵션 이름은 필수입니다.");
+            if (dto.getSelectionType() == null) throw new IllegalArgumentException("메인 옵션의 선택 유형은 필수입니다.");
+            if (!mainNames.add(name)) throw new IllegalArgumentException("중복 메인 옵션: " + name);
         }
 
-        // 추가/수정
-        for (Map.Entry<String, MainOptionDto> e : desiredMain.entrySet()) {
-            String name = e.getKey();
-            MainOptionDto dto = e.getValue();
+        // 요청된 메인옵션만 upsert (삭제 없음)
+        for (MainOptionDto dto : req) {
+            String name = dto.getName().trim();
 
-            if (!currMain.containsKey(name)) {
-                // 추가
-                MainOption newMo = dto.toEntity(); // 내부에서 subOptions, selectionType 검증/세팅
-                newMo.setMenu(menu);
-                if (newMo.getSubOptions() != null) {
-                    for (SubOption so : newMo.getSubOptions()) {
-                        so.setMainOption(newMo);
-                    }
-                }
-                // ✅ 정합성
-                validateSelectionTypeConsistency(newMo);
+            MainOption mo = mainOptionRepository
+                    .findByMenu_IdAndNameAndDeletedFalse(menu.getId(), name)
+                    .orElseGet(() -> {
+                        MainOption created = MainOption.builder()
+                                .menu(menu)
+                                .name(name)
+                                .selectionType(dto.getSelectionType())
+                                .build();
+                        if (menu.getMainOptions() == null) menu.setMainOptions(new ArrayList<>());
+                        menu.getMainOptions().add(created);
+                        return created;
+                    });
 
-                menu.getMainOptions().add(newMo);
-            } else {
-                // 수정
-                MainOption mo = currMain.get(name);
-
-                // selectionType 변경 반영
-                if (mo.getSelectionType() != dto.getSelectionType()) {
-                    mo.setSelectionType(dto.getSelectionType());
-                }
-
-                // 서브옵션 동기화
-                syncSubOptions(mo, dto.getSubOptions());
-
-                // ✅ 정합성
-                validateSelectionTypeConsistency(mo);
+            // selectionType 변경 반영
+            if (mo.getSelectionType() != dto.getSelectionType()) {
+                mo.setSelectionType(dto.getSelectionType());
             }
+
+            // 서브옵션: 삭제 없이 인덱스 병합(리네임/가격 변경은 UPDATE)
+            upsertSubOptionsByName(mo, dto.getSubOptions());
+
+            // 정합성 체크
+            validateSelectionTypeConsistency(mo);
+        }
+
+        List<MainOption> existingActive = mainOptionRepository.findAllByMenu_IdAndDeletedFalse(menu.getId());
+        Set<String> desiredMainNames = req.stream()
+                .map(m -> Optional.ofNullable(m.getName()).map(String::trim).orElse(""))
+                .collect(Collectors.toSet());
+
+        for (MainOption existingMo : existingActive) {
+            String exName = Optional.ofNullable(existingMo.getName()).map(String::trim).orElse("");
+            if (!desiredMainNames.contains(exName)) {
+                // 메인옵션 soft delete
+                existingMo.setDeleted(true);
+                // 자식 서브옵션도 같이 숨김(정책에 따라 생략 가능)
+                if (existingMo.getSubOptions() != null) {
+                    existingMo.getSubOptions().forEach(so -> so.setDeleted(true));
+                }
+            }
+        }
+
+        if (menu.getMainOptions() != null) {
+            List<MainOption> col = menu.getMainOptions();
+            // soft-deleted 제거 (in-place)
+            col.removeIf(mo -> Boolean.TRUE.equals(mo.getDeleted()));
+
+            // 요청 순서 맵
+            Map<String, Integer> orderIdx = new HashMap<>();
+            for (int i = 0; i < req.size(); i++) {
+                String n = Optional.ofNullable(req.get(i).getName()).map(String::trim).orElse("");
+                orderIdx.put(n, i);
+            }
+
+            // in-place 정렬 (참조 유지)
+            col.sort(Comparator.comparingInt(mo ->
+                    orderIdx.getOrDefault(Optional.ofNullable(mo.getName()).map(String::trim).orElse(""),
+                            Integer.MAX_VALUE)));
         }
     }
 
-    private void syncSubOptions(MainOption mo, List<SubOptionDto> requestedSubs) {
+    private void upsertSubOptionsByName(MainOption mo, List<SubOptionDto> requestedSubs) {
         List<SubOptionDto> req = Optional.ofNullable(requestedSubs).orElseGet(List::of);
 
-        Map<String, SubOption> curr = Optional.ofNullable(mo.getSubOptions())
-                .orElseGet(List::of).stream()
+        // 요청 검증 + 이름 중복 방지
+        Set<String> desiredNames = new LinkedHashSet<>();
+        for (SubOptionDto d : req) {
+            String n = Optional.ofNullable(d.getName()).map(String::trim).orElse("");
+            if (n.isEmpty()) throw new IllegalArgumentException("서브 옵션 이름은 필수입니다.");
+            if (d.getPrice() == null || d.getPrice() < 0) throw new IllegalArgumentException("서브 옵션 가격은 0 이상이어야 합니다.");
+            if (!desiredNames.add(n)) throw new IllegalArgumentException("중복 서브 옵션: " + n);
+        }
+
+        // 현재 살아있는 서브옵션 조회 (deleted = false 만)
+        List<SubOption> existingActive = (mo.getId() == null)
+                ? Optional.ofNullable(mo.getSubOptions()).orElseGet(ArrayList::new)
+                : subOptionRepository.findAllByMainOption_IdAndDeletedFalseOrderByIdAsc(mo.getId());
+
+        // 이름 기준 맵
+        Map<String, SubOption> byName = existingActive.stream()
                 .collect(Collectors.toMap(
-                        so -> (so.getName() == null ? "" : so.getName().trim()),
+                        so -> Optional.ofNullable(so.getName()).map(String::trim).orElse(""),
                         so -> so, (a, b) -> a, LinkedHashMap::new
                 ));
 
-        Map<String, SubOptionDto> desired = req.stream()
-                .peek(d -> {
-                    String n = (d.getName() == null ? "" : d.getName().trim());
-                    if (n.isEmpty()) throw new IllegalArgumentException("서브 옵션 이름은 필수입니다.");
-                    if (d.getPrice() == null || d.getPrice() < 0) throw new IllegalArgumentException("서브 옵션 가격은 0 이상이어야 합니다.");
-                })
-                .collect(Collectors.toMap(
-                        d -> d.getName().trim(),
-                        d -> d,
-                        (a, b) -> { throw new IllegalArgumentException("중복 서브 옵션: " + a.getName()); },
-                        LinkedHashMap::new
-                ));
-
-        // 제거
-        if (mo.getSubOptions() != null) {
-            for (String name : new ArrayList<>(curr.keySet())) {
-                if (!desired.containsKey(name)) {
-                    mo.getSubOptions().remove(curr.get(name)); // orphanRemoval
-                }
-            }
-        } else {
-            mo.setSubOptions(new ArrayList<>());
-        }
-
-        // 추가/수정
-        for (Map.Entry<String, SubOptionDto> e : desired.entrySet()) {
-            String name = e.getKey();
-            SubOptionDto dto = e.getValue();
-            if (!curr.containsKey(name)) {
-                SubOption so = SubOption.builder().name(name).price(dto.getPrice()).build();
-                so.setMainOption(mo);
+        // upsert
+        for (SubOptionDto d : req) {
+            String n = d.getName().trim();
+            SubOption target = byName.get(n);
+            if (target == null) {
+                // 신규
+                SubOption so = SubOption.builder()
+                        .mainOption(mo)
+                        .name(n)
+                        .price(d.getPrice())
+                        .build();
+                if (mo.getSubOptions() == null) mo.setSubOptions(new ArrayList<>());
                 mo.getSubOptions().add(so);
+                byName.put(n, so);
             } else {
-                SubOption so = curr.get(name);
-                if (!Objects.equals(so.getPrice(), dto.getPrice())) {
-                    so.setPrice(dto.getPrice());
+                // 수정 (가격/리네임 필요시)
+                if (!Objects.equals(target.getPrice(), d.getPrice())) target.setPrice(d.getPrice());
+                // 혹시 복구 시나리오 대비
+                if (Boolean.TRUE.equals(target.getDeleted())) target.setDeleted(false);
+                if (!Objects.equals(Optional.ofNullable(target.getName()).map(String::trim).orElse(""), n)) {
+                    target.setName(n);
                 }
             }
         }
+
+        // 요청에 없는 기존 서브옵션은 soft delete
+        for (SubOption existed : new ArrayList<>(existingActive)) {
+            String exName = Optional.ofNullable(existed.getName()).map(String::trim).orElse("");
+            if (!desiredNames.contains(exName)) {
+                existed.setDeleted(true);
+            }
+        }
+
+        List<SubOption> col = mo.getSubOptions();
+        if (col == null) {
+            // 아직 초기화 안된 새 엔티티인 경우에만 1회 초기화 허용
+            col = new ArrayList<>();
+            mo.setSubOptions(col);
+        }
+
+        // soft-deleted 제거 (in-place)
+        col.removeIf(so -> Boolean.TRUE.equals(so.getDeleted()));
+
+        // 누락된(신규) 항목이 컬렉션에 없다면 추가 (in-place)
+        for (String name : desiredNames) {
+            SubOption kept = byName.get(name);
+            if (kept != null && !Boolean.TRUE.equals(kept.getDeleted()) && !col.contains(kept)) {
+                col.add(kept);
+            }
+        }
+
+        // 요청 순서 맵
+        Map<String, Integer> orderIdx = new HashMap<>();
+        int i = 0;
+        for (SubOptionDto d : req) {
+            orderIdx.put(d.getName().trim(), i++);
+        }
+
+        // in-place 정렬 (참조 유지)
+        col.sort(Comparator.comparingInt(so ->
+                orderIdx.getOrDefault(Optional.ofNullable(so.getName()).map(String::trim).orElse(""),
+                        Integer.MAX_VALUE)));
     }
 
     private void validateSelectionTypeConsistency(MainOption mo) {
