@@ -1,5 +1,6 @@
 package com.beyond.jellyorder.domain.storetable.repository;
 
+import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.store.entity.Store;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.Zone;
@@ -16,15 +17,16 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
     List<String> findNamesByStoreAndNames(@Param("store") Store store, @Param("names") List<String> names);
 
     List<StoreTable> findAllByZone(Zone zone);
+
     List<StoreTable> findAllByZoneId(UUID zoneId);
 
     @Query("""
-    SELECT COUNT(st) > 0
-    FROM StoreTable st
-    WHERE st.store = :store
-    AND st.name = :name
-    AND st.id <> :excludedId
-""")
+                SELECT COUNT(st) > 0
+                FROM StoreTable st
+                WHERE st.store = :store
+                AND st.name = :name
+                AND st.id <> :excludedId
+            """)
     boolean existsByStoreAndNameExcludingId(
             @Param("store") Store store,
             @Param("name") String name,
@@ -38,11 +40,11 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
 
     // 특정 테이블이 진행중 주문과 연결되어 있는지 체크 메서드
     @Query("""
-        select case when count(t) > 0 then true else false end
-        from TotalOrder t
-        where t.storeTable.id = :storeTableId
-          and t.endedAt is null
-    """)
+                select case when count(t) > 0 then true else false end
+                from TotalOrder t
+                where t.storeTable.id = :storeTableId
+                  and t.endedAt is null
+            """)
     boolean existsOpenOrder(UUID storeTableId);
 
     // 아카이브 포함 단건 조회 (네이티브로 @Where 우회)
@@ -67,6 +69,17 @@ public interface StoreTableRepository extends JpaRepository<StoreTable, UUID> {
             """, nativeQuery = true)
     int detachSoftDeletedFromZone(@Param("zoneId") UUID zoneId);
 
+    @Query("select st from StoreTable st where st.store.id = :storeId")
+    List<StoreTable> findAllByStoreId(@Param("storeId") UUID storeId);
+
+    @Query("""
+            select (count(uo) > 0)
+            from UnitOrder uo
+            where uo.totalOrder.storeTable.store.id = :storeId
+              and uo.totalOrder.endedAt is null
+              and uo.status = com.beyond.jellyorder.domain.order.entity.OrderStatus.ACCEPT
+            """)
+    boolean existsOpenOrderInStore(@Param("storeId") UUID storeId);
 
 
 }

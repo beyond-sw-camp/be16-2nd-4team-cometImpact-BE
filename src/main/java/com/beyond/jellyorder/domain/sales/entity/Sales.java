@@ -2,6 +2,7 @@ package com.beyond.jellyorder.domain.sales.entity;
 
 import com.beyond.jellyorder.common.BaseIdAndTimeEntity;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
+import com.beyond.jellyorder.domain.openclose.entity.StoreOpenClose;
 import jakarta.persistence.*;
 import lombok.*;
 
@@ -42,6 +43,14 @@ public class Sales extends BaseIdAndTimeEntity {
 
     @Column(name = "tid")
     private String tid;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "store_open_close_id")
+    private StoreOpenClose storeOpenClose;
+
+
+    public void setStoreOpenClose(StoreOpenClose soc) { this.storeOpenClose = soc; }
+    public StoreOpenClose getStoreOpenClose() { return storeOpenClose; }
 
     // 카운터 결제 선택 시 Status = PENDING
     @PrePersist // Entity가 DB에 insert 되기 전에 호출됨

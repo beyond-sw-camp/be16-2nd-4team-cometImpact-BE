@@ -1,5 +1,8 @@
 package com.beyond.jellyorder.domain.sales.service;
 
+import com.beyond.jellyorder.domain.openclose.entity.StoreOpenClose;
+import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepository;
+import com.beyond.jellyorder.domain.openclose.service.StoreOpenCloseService;
 import com.beyond.jellyorder.domain.order.entity.OrderStatus;
 import com.beyond.jellyorder.domain.order.entity.TotalOrder;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
@@ -17,6 +20,7 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.util.UUID;
 
@@ -28,6 +32,12 @@ public class SalesService {
     private final SalesRepository salesRepository;
     private final EntityManager em;
     private final TotalOrderRepository totalOrderRepository;
+    private final StoreOpenCloseRepository storeOpenCloseRepository;
+    private final Clock clock;
+
+    private LocalDateTime now() {
+        return LocalDateTime.now(clock);
+    }
 
     // 주문을 기준으로 결제 PENDING 생성(있다면 갱신)
     public Sales createPending(UUID orderId, OrderType orderType, PaymentMethod paymentMethod, Long totalAmount) {
@@ -52,19 +62,42 @@ public class SalesService {
         sales.setPaidAt(null);
         sales.setTid(null);
 
+        TotalOrder totalOrder = sales.getTotalOrder();
+        UUID storeId = totalOrder.getStoreTable().getStore().getId();
+        StoreOpenClose openClose = storeOpenCloseRepository.findOpen(storeId)
+                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
+        sales.setStoreOpenClose(openClose);
+
         return salesRepository.save(sales);
     }
 
-    /** 카카오페이 결제 식별자(tid)를 Sales에 연결 */
+    /**
+     * 카카오페이 결제 식별자(tid)를 Sales에 연결
+     */
     public void attachTid(UUID orderId, String tid) {
         Sales sales = getByOrderIdOrThrow(orderId);
         sales.setTid(tid);
         // save 생략: JPA dirty checking
     }
 
-    /** 공통 완료 처리 (QR/COUNTER 공용) */
+    /**
+     * 공통 완료 처리 (QR/COUNTER 공용)
+     */
     public Sales complete(UUID orderId, PaymentMethod method, Long totalAmount, LocalDateTime paidAt) {
         Sales sales = getByOrderIdOrThrow(orderId);
+
+        // 혹시 null이면 다시 보강(과거 데이터 보호)
+        // 결제 시각 확정 (Clock 사용)
+        final LocalDateTime paid = (paidAt != null) ? paidAt : now();
+
+        // ★ 세션 보강: "결제 시각에 유효한 세션"으로 연결 (마감 이후에도 안전)
+        if (sales.getStoreOpenClose() == null) {
+            UUID storeId = sales.getTotalOrder().getStoreTable().getStore().getId();
+            StoreOpenClose session = storeOpenCloseRepository.findAt(storeId, paid)
+                    .orElseGet(() -> storeOpenCloseRepository.findLastBefore(storeId, paid)
+                            .orElseThrow(() -> new IllegalStateException("결제 시각에 매칭되는 영업 세션이 없습니다.")));
+            sales.setStoreOpenClose(session);
+        }
 
         if (sales.getStatus() != SalesStatus.PENDING) {
             return sales; // 멱등 처리
@@ -94,25 +127,35 @@ public class SalesService {
                 : Math.round(gross * 0.9);
         sales.setSettlementAmount(settlement);
 
+        // clock 사용
 
-        sales.setPaidAt(paidAt != null ? paidAt : LocalDateTime.now());
+        sales.setPaidAt(paid);
         sales.setStatus(SalesStatus.COMPLETED);
 
         // 결제 완료 후 테이블 status 리셋 && totalOrder의 paymentedAt 시간 업데이트
-        TotalOrder totalOrder = sales.getTotalOrder();
-        if (totalOrder != null && totalOrder.getStoreTable() != null) {
-            StoreTable table = totalOrder.getStoreTable();
+//        TotalOrder totalOrder = sales.getTotalOrder();
+//        if (totalOrder != null && totalOrder.getStoreTable() != null) {
+//            StoreTable table = totalOrder.getStoreTable();
+//            if (method == PaymentMethod.QR) {
+//                updateTableStatusQR(table, totalOrder);
+//            } else if ((method == PaymentMethod.CARD || method == PaymentMethod.CASH)) {
+//                updateTableStatusCounter(table, totalOrder);
+//            }
+//            totalOrder.updatePaymentedAt(sales.getPaidAt());
+//            totalOrder.updateEndedAt(sales.getPaidAt());
+        if (toForAmount != null && toForAmount.getStoreTable() != null) {
+            StoreTable table = toForAmount.getStoreTable();
             if (method == PaymentMethod.QR) {
-                updateTableStatusQR(table, totalOrder);
-            } else if ((method == PaymentMethod.CARD || method == PaymentMethod.CASH)) {
-                updateTableStatusCounter(table, totalOrder);
+                updateTableStatusQR(table, toForAmount);
+            } else if (method == PaymentMethod.CARD || method == PaymentMethod.CASH) {
+                updateTableStatusCounter(table, toForAmount);
             }
-            totalOrder.updatePaymentedAt(sales.getPaidAt());
-            totalOrder.updateEndedAt(sales.getPaidAt());
+            toForAmount.updatePaymentedAt(paid);
+            toForAmount.updateEndedAt(paid);
         }
-
         return sales;
     }
+
 
     private void updateTableStatusQR(StoreTable storeTable, TotalOrder totalOrder) {
         if (storeTable.getStatus() == TableStatus.EATING && totalOrder.getOrderedAt() != null) {
@@ -126,7 +169,9 @@ public class SalesService {
         }
     }
 
-    /** 취소 처리 */
+    /**
+     * 취소 처리
+     */
     public Sales cancel(UUID orderId) {
         Sales sales = getByOrderIdOrThrow(orderId);
         if (sales.getStatus() == SalesStatus.COMPLETED) {
@@ -136,7 +181,9 @@ public class SalesService {
         return sales;
     }
 
-    /** orderId 조회 */
+    /**
+     * orderId 조회
+     */
     @Transactional(readOnly = true)
     public Sales getByOrderIdOrThrow(UUID orderId) {
         return salesRepository.findByTotalOrderId(orderId)
@@ -149,31 +196,47 @@ public class SalesService {
         if (totalOrder.getPaymentedAt() != null) {
             throw new IllegalArgumentException("이미 결제가 완료된 주문건입니다.");
         }
-
-        // sales 엔티티 생성
-        Sales sales = Sales.builder()
-                .totalOrder(totalOrder)
-                .orderType(OrderType.COUNTER)
-                .paymentMethod(reqDTO.getMethod())
-                .status(SalesStatus.COMPLETED)
-                .totalAmount(Long.valueOf(totalOrder.getTotalPrice()))
-                .settlementAmount(totalOrder.changeSettlementAmount())
-                .paidAt(LocalDateTime.now())
-                .build();
-        salesRepository.save(sales);
-
-        // table 상태값 변경
-        totalOrder.getStoreTable().changeStatus(TableStatus.STANDBY);
-
-        // totalOrder 상태값 변경
-        totalOrder.updateEndedAt(LocalDateTime.now());
-        totalOrder.updatePaymentedAt(LocalDateTime.now());
-
-        // 현재 주문 상태 확인
-        totalOrder.getUnitOrderList().forEach(unitOrder -> {
-            if (unitOrder.getStatus() == OrderStatus.ACCEPT) {
-                throw new IllegalStateException("현재 활성상태인 주문이 있습니다." + unitOrder.getOrderNumber());
+        // 1) 현재 영업 중인지(세션 오픈) 강제 검증
+        UUID storeId = totalOrder.getStoreTable().getStore().getId();
+        storeOpenCloseRepository.findOpen(storeId)
+                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
+        // 2) 진행중(ACCEPT) 단위주문이 남아있으면 결제 차단 (기존 규칙 유지)
+        totalOrder.getUnitOrderList().forEach(uo -> {
+            if (uo.getStatus() == OrderStatus.ACCEPT) {
+                throw new IllegalStateException("현재 활성상태인 주문이 있습니다. " + uo.getOrderNumber());
             }
         });
+        createPending(totalOrder.getId(), OrderType.COUNTER, null, null);
+        complete(
+                totalOrder.getId(),
+                reqDTO.getMethod(),         // CARD 또는 CASH
+                null,    // null이면 complete()가 TotalOrder.totalPrice로 확정
+                now()                       // 서버시간(Clock)
+        );
+//        // sales 엔티티 생성
+//        Sales sales = Sales.builder()
+//                .totalOrder(totalOrder)
+//                .orderType(OrderType.COUNTER)
+//                .paymentMethod(reqDTO.getMethod())
+//                .status(SalesStatus.COMPLETED)
+//                .totalAmount(Long.valueOf(totalOrder.getTotalPrice()))
+//                .settlementAmount(totalOrder.changeSettlementAmount())
+//                .paidAt(LocalDateTime.now())
+//                .build();
+//        salesRepository.save(sales);
+//
+//        // table 상태값 변경
+//        totalOrder.getStoreTable().changeStatus(TableStatus.STANDBY);
+//
+//        // totalOrder 상태값 변경
+//        totalOrder.updateEndedAt(LocalDateTime.now());
+//        totalOrder.updatePaymentedAt(LocalDateTime.now());
+//
+//        // 현재 주문 상태 확인
+//        totalOrder.getUnitOrderList().forEach(unitOrder -> {
+//            if (unitOrder.getStatus() == OrderStatus.ACCEPT) {
+//                throw new IllegalStateException("현재 활성상태인 주문이 있습니다." + unitOrder.getOrderNumber());
+//            }
+//        });
     }
 }
