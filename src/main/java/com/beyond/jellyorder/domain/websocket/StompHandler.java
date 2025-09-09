@@ -46,6 +46,9 @@ public class StompHandler implements ChannelInterceptor {
             String username = String.valueOf(claims.get("storeTableId"));
             var auth = new UsernamePasswordAuthenticationToken(username, null, List.of());
             accessor.setUser(auth);
+            System.out.println("WS CONNECT ok: principal=" + username + ", session=" + accessor.getSessionId());
+            System.out.println("auth = " + auth);
+
         }
         // 메시지들어오는 값 로그 확인 로직
         if (StompCommand.SEND.equals(accessor.getCommand())) {
