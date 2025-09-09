@@ -6,6 +6,7 @@ import com.beyond.jellyorder.domain.menu.domain.Menu;
 import com.beyond.jellyorder.domain.menu.domain.MenuStatus;
 import com.beyond.jellyorder.domain.menu.dto.MenuStatusChangedEvent;
 import com.beyond.jellyorder.domain.menu.repository.MenuRepository;
+import com.beyond.jellyorder.domain.openclose.repository.StoreOpenCloseRepository;
 import com.beyond.jellyorder.domain.option.dto.MainOptionReqDto;
 import com.beyond.jellyorder.domain.option.dto.SubOptionReqDto;
 import com.beyond.jellyorder.domain.option.subOption.domain.SubOption;
@@ -21,16 +22,22 @@ import com.beyond.jellyorder.domain.order.entity.*;
 import com.beyond.jellyorder.domain.order.repository.OrderMenuRepository;
 import com.beyond.jellyorder.domain.order.repository.TotalOrderRepository;
 import com.beyond.jellyorder.domain.order.repository.UnitOrderRepository;
+import com.beyond.jellyorder.domain.store.entity.Store;
+import com.beyond.jellyorder.domain.store.repository.StoreRepository;
 import com.beyond.jellyorder.domain.storetable.entity.StoreTable;
 import com.beyond.jellyorder.domain.storetable.entity.TableStatus;
 import com.beyond.jellyorder.domain.storetable.repository.StoreTableRepository;
+import jakarta.persistence.EntityManager;
 import jakarta.persistence.EntityNotFoundException;
+import jakarta.persistence.LockModeType;
+import jakarta.persistence.PersistenceContext;
 import lombok.RequiredArgsConstructor;
 import org.hibernate.query.Order;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -47,8 +54,23 @@ public class UnitOrderService {
     private final SubOptionRepository subOptionRepository;
     private final CollectOrderNumberService collectOrderNumberService;
     private final ApplicationEventPublisher eventPublisher;
+    private final StoreOpenCloseRepository storeOpenCloseRepository;
+    private final StoreRepository storeRepository;
+
+    @PersistenceContext
+    private EntityManager em;
 
     public OrderStatusResDTO createUnit(UnitOrderCreateReqDto dto, UUID storeId) {
+//        var current = storeOpenCloseRepository.findOpen(storeId)
+//                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
+//
+//        // 1) 세션 행에 비관적 읽기 락 (마감 close()의 WRITE 락과 경합 시 순서 보장)
+//        em.lock(current, LockModeType.PESSIMISTIC_READ);
+//        // 2) 경합 상황 대비: 락을 건 후에도 닫혔는지 최종 확인
+//        if (current.getClosedAt() != null) {
+//            throw new IllegalStateException("이미 마감되었습니다. 주문 생성 불가");
+//        }
+
         // 1. 테이블 조회
         StoreTable storeTable = findStoreTable(dto.getStoreTableId());
 
@@ -56,6 +78,8 @@ public class UnitOrderService {
         TotalOrder totalOrder = getOrCreateTotalOrder(storeTable);
 
         // 3. 단위주문 생성
+        storeOpenCloseRepository.findOpen(storeId)
+                .orElseThrow(() -> new IllegalStateException("영업 오픈 상태가 아닙니다."));
         UnitOrder unitOrder = createUnitOrder(totalOrder, storeId);
 
         // 4. 메뉴 처리 (재고 검증 + 주문/옵션 저장 + 합산)
