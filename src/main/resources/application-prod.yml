@@ -74,6 +74,6 @@ external:
 kakaopay:
   devSecretKey: "${KAKAO_DEVSECRETKEY}"
   cid: "TC0ONETIME"
-  approvalUrl: "https:www.jellyorder.store/sales/qr/success"
-  cancelUrl: "https:www.jellyorder.store/qr/cancel"
-  failUrl: "https:www.jellyorder.store/sales/qr/fail"
+  approvalUrl: "https://www.jellyorder.store/sales/qr/success"
+  cancelUrl: "https://www.jellyorder.store/qr/cancel"
+  failUrl: "https://www.jellyorder.store/sales/qr/fail"
