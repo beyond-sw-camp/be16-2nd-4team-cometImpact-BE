@@ -1,0 +1,119 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: jellyorder-deployment
+  namespace: jo
+spec:
+  replicas: 2
+  # 아래의 label은 replicaset이 관리해야 할 파드를 결정하는데 사용 - 레플리카셋의 연동
+  selector:
+    matchLabels:
+      app: jellyorder
+  template:
+    metadata:
+    # 아래의 labels는 service의 selector.app과 일치해야 함 - 서비스와 연동
+      labels:
+        app: jellyorder
+    spec:
+      containers:
+      - name: jellyorder
+        image: 346903264902.dkr.ecr.ap-northeast-2.amazonaws.com/jo/jellyorder
+        ports: 
+        - containerPort: 8080
+        resources:
+          # 컨테이너가 사용할 수 있는 리소스의 최대치
+          limits:
+            cpu: "1"
+            memory: "500Mi"
+          # 컨테이너가 시작될 때 보장받아야 하는 최소 자원
+          requests:
+            cpu: "0.5"
+            memory: "250Mi"
+        # ecr에 있는 시크릿 키를 적용한다는 코드
+        env:
+        # 아래의 name과 yml의 ${}의 변수명과 일치해야 함.
+        - name: DB_HOST
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              # 아래의 name과 aws의 시크릿 키값과 일치해야 함.
+              key: DB_HOST
+        - name: DB_PW
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: DB_PW
+        - name: EMAIL_USERNAME
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: EMAIL_USERNAME
+        - name: EMAIL_PW
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: EMAIL_PW
+        - name: S3_ACCESS_KEY
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: S3_ACCESS_KEY      
+        - name: S3_SECRET_KEY
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: S3_SECRET_KEY
+        - name: JWT_SECRET_AT
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: JWT_SECRET_AT
+        - name: JWT_SECRET_RT
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: JWT_SECRET_RT
+        - name: BIZNO_URL
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: BIZNO_URL
+        - name: BIZNO_KEY
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: BIZNO_KEY
+        - name: KAKAO_DEVSECRETKEY
+          valueFrom:
+            secretKeyRef:
+              name: jellyorder-secrets
+              key: KAKAO_DEVSECRETKEY
+        
+
+        # 컨테이너 상태 확인을 통해 롤링업데이트 최적화 
+        readinessProbe:
+          httpGet:
+            # healthcheck 경로
+            path: /health
+            port: 8080
+          # 컨테이너 시작 후 지연
+          initialDelaySeconds: 10
+          # 확인 반복 주기
+          periodSeconds: 10
+
+# 한 파일안에 두가지 옵션(파드, 서비스)를 정의할 수 있음.
+---
+apiVersion: v1
+kind: Service
+metadata:
+# 클러스터내에서 service명은 url주소로 사용. ex)http://my-service
+  name: jellyorder-service
+  namespace: jo
+spec:
+  type: ClusterIP
+  ports:
+  # port는 서비스의 port, targetPort는 pod의 port이다.
+  - port: 80
+    targetPort: 8080
+  selector: 
+    app: jellyorder

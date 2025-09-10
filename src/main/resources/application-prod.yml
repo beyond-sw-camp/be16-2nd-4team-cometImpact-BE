@@ -1,0 +1,77 @@
+spring:
+  config:
+    activate:
+      on-profile: prod
+  cache:
+    type: redis
+  redis:
+    host: redis-service
+    port: 6379
+  datasource:
+    driver-class-name: org.mariadb.jdbc.Driver
+    url: jdbc:mariadb://${DB_HOST}:3306/jellyorder
+    username: admin
+    password: ${DB_PW}
+  jpa:
+    database: mysql
+    database-platform: org.hibernate.dialect.MariaDBDialect
+    generate-ddl: true
+    hibernate:
+      ddl-auto: update # !! 'CREATE' 아닌지 꼭 꼭 꼭 확인
+    show_sql: true
+  jackson:
+    time-zone: Asia/Seoul
+  servlet:
+    multipart:
+      max-file-size: 500MB
+      max-request-size: 500MB
+  mail:
+    host: smtp.gmail.com
+    port: 587
+    username: ${EMAIL_USERNAME}
+    password: ${EMAIL_PW}
+    properties:
+      mail.smtp.auth: true
+      mail.smtp.starttls.enable: true
+
+
+cloud:
+  aws:
+    credentials:
+      access-key: ${S3_ACCESS_KEY}
+      secret-key: ${S3_SECRET_KEY}
+    region:
+      static: ap-northeast-2
+    s3:
+      bucket: jellyorder-bucket
+
+server:
+  port: 8080
+
+
+logging:
+  level:
+    org.springframework.cache.interceptor: TRACE
+    org.springframework.data.redis.cache: TRACE
+    org.springframework.data.redis.cache.RedisCache: TRACE
+    org.springframework.cache.interceptor.CacheInterceptor: TRACE
+    org.springframework.data.redis.cache.RedisCacheWriter: TRACE
+    root: info
+
+jwt:
+  expirationAt: 1000 # 1000분 세팅
+  expirationRt: 10000 # 10000분 세팅
+  secretKeyAt: ${JWT_SECRET_AT}
+  secretKeyRt: ${JWT_SECRET_RT}
+
+external:
+  api:
+    bizno-url: ${BIZNO_URL}
+    bizno-key: ${BIZNO_KEY}
+
+kakaopay:
+  devSecretKey: "${KAKAO_DEVSECRETKEY}"
+  cid: "TC0ONETIME"
+  approvalUrl: "https://www.jellyorder.store/sales/qr/success"
+  cancelUrl: "https://www.jellyorder.store/qr/cancel"
+  failUrl: "https://www.jellyorder.store/sales/qr/fail"
