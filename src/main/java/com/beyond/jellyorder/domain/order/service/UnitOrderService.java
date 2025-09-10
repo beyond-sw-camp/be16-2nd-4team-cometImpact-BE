@@ -159,17 +159,27 @@ public class UnitOrderService {
             if (!Objects.equals(menu.getSalesLimit(), -1)) {
                 int remain = menu.getSalesLimit() - menu.getSalesToday();
                 if (remain < req.getQuantity()) {
-                    shortage.add(menu.getName() + " (남은 " + remain + "개)");
+                    shortage.add(menu.getName() + " (남은 수량: " + remain + "개)");
                 }
             }
         }
 
         // 하나로 모아 던지기
         if (!soldOut.isEmpty() || !shortage.isEmpty()) {
-            List<String> msgs = new ArrayList<>();
-            if (!soldOut.isEmpty()) msgs.add("품절된 상품입니다: " + String.join(", ", soldOut));
-            if (!shortage.isEmpty()) msgs.add("수량이 부족한 상품입니다: " + String.join(", ", shortage));
-            throw new IllegalArgumentException(String.join(" / ", msgs));
+            StringBuilder sb = new StringBuilder();
+
+            if (!soldOut.isEmpty()) {
+                sb.append("품절된 상품입니다.\n")
+                        .append(String.join(", ", soldOut))
+                        .append("\n");                       // 줄바꿈
+            }
+
+            if (!shortage.isEmpty()) {
+                sb.append("수량이 부족한 상품입니다.\n\n")
+                        .append(String.join("\n", shortage));
+            }
+
+            throw new IllegalArgumentException(sb.toString().trim());
         }
 
         // ---------- 2nd pass: 실제 적용(증가/저장/합산) ----------

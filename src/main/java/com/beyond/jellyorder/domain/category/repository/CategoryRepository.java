@@ -18,6 +18,8 @@ public interface CategoryRepository extends JpaRepository<Category, UUID> {
 
     List<Category> findAllByStoreIdAndDeletedFalse(UUID storeId);
 
+    List<Category> findAllByStoreIdAndDeletedFalseOrderByUpdatedAtAsc(UUID storeId);
+
     Optional<Category> findByIdAndStoreIdAndDeletedFalse(UUID id, UUID storeId);
 
     Optional<Category> findByStoreIdAndNameAndDeletedFalse(UUID storeId, String name);
