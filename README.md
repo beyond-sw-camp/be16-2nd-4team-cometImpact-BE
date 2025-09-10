@@ -257,343 +257,250 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 
 ---
 
-## 5. 단위테스트 결과서
+## 5. 단위 테스트 결과서
 
-> 점주 페이지와 테이블 오더 페이지의 핵심 기능을 단위테스트로 검증했습니다.  
-> 각 결과는 접을 수 있는 토글과 함께, 이미지/동영상에 대한 설명을 리스트로 제공합니다.
+> 점주 페이지와 테이블 오더 페이지의 핵심 기능을 단위 테스트로 검증했습니다.  
+> 각 결과는 접을 수 있는 토글(`details`)로 제공하며, 이미지와 설명을 정렬했습니다.
 
+
+### 📌 점주 페이지
 <details>
-  <summary><h4><b>점주 페이지</b></h4></summary>
+  <summary><b>회원가입 및 로그인</b></summary>
+  
+  - **점주 회원가입**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/43680d12-01ba-4f90-8d4f-7e6965704932" alt="점주 회원 가입" width="720">
+    </p>
+  
+  - **점주 일반 로그인**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/b431146e-4368-4559-8c06-44291ab59692" alt="점주 일반로그인" width="720">
+    </p>
+  
+  - **점주 자동 로그인**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/3a68f0f8-9e06-4513-abcc-a30a9631e2a7" alt="점주 자동로그인" width="720">
+    </p>
 
-  <details>
-    <summary><b>회원가입 및 로그인</b></summary>
-    <ul>
-      <li>
-        점주 회원가입
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/43680d12-01ba-4f90-8d4f-7e6965704932" alt="점주 회원 가입" width="720">
-        </div>
-      </li>
-      <li>
-        점주 일반로그인
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/b431146e-4368-4559-8c06-44291ab59692" alt="점주 일반로그인" width="720">
-        </div>
-      </li>
-      <li>
-        점주 자동로그인
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/3a68f0f8-9e06-4513-abcc-a30a9631e2a7" alt="점주 자동로그인" width="720">
-        </div>
-      </li>
-      <li>
-        점주 아이디 찾기
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/99220b56-a342-4283-b39d-7465954cd054" alt="점주 아이디찾기" width="720">
-        </div>
-      </li>
-      <li>
-        점주 비밀번호 재설정
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/f0d92778-05ff-4068-afbc-3727e21502e2" alt="점주 비밀번호 재설정" width="720">
-        </div>
-      </li>
-    </ul>
-  </details>
+  - **아이디 찾기**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/99220b56-a342-4283-b39d-7465954cd054" alt="점주 아이디 찾기" width="720">
+    </p>
 
-  <details>
-    <summary><b>테이블 현황</b></summary>
-    <ul>
-      <li>
-        구역 별 주문 테이블 정보 조회 (기본 화면)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/ced2bcc1-2fc1-4476-a309-cc00b4335b20" alt="구역 별 주문 테이블 정보 조회" width="900">
-        </div>
-      </li>
-      <li>
-        주문 테이블 상세 정보
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/1c254460-b2e9-43bb-bee5-b827e58f0cce" alt="주문 테이블 상세 정보" width="900">
-        </div>
-      </li>
-    </ul>
-  </details>
-
-  <details>
-    <summary><b>주문 현황</b></summary>
-    <ul>
-      <li>
-        주문 접수 페이지 (접수/완료/취소 탭)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/c368e723-4966-41b6-8dc5-0c2aef6840c7" alt="주문 접수 탭" width="300">
-          <img src="https://github.com/user-attachments/assets/c432923d-108a-4189-8c3e-22bc87726048" alt="주문 완료 탭" width="300">
-          <img src="https://github.com/user-attachments/assets/e0276868-41db-4ae9-b192-606d45f197a2" alt="주문 취소 탭" width="300">
-        </div>
-      </li>
-      <li>
-        실시간 주문 확인 (WebSocket 연결/수신)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/5fb32e56-39e3-490f-8dd8-8b414d0bc88b" alt="실시간 주문 수신(WebSocket)" width="720">
-        </div>
-      </li>
-      <li>
-        조리 완료
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/de8fec5b-4813-422d-b6e4-63f18a0637fe" alt="조리 완료" width="360">
-        </div>
-      </li>
-      <li>
-        조리 취소
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/18b21176-1cc9-4f4d-9e4e-e82f45204341" alt="주문 취소" width="360">
-        </div>
-      </li>
-    </ul>
-  </details>
-
-  <details>
-    <summary><b>테이블 및 구역 관리</b></summary>
-    <ul>
-      <li>
-        테이블 추가
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/dd19b603-6acb-4429-9189-208ecc5de6b5" alt="테이블 추가" width="720">
-        </div>
-      </li>
-      <li>
-        테이블 수정
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/b9a09b8c-208c-4366-894e-7aff13aa8bf6" alt="테이블 수정" width="720">
-        </div>
-      </li>
-      <li>
-        구역 추가
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/1bff8794-2c3e-4056-afb5-fa658ef910d0" alt="구역 추가" width="720">
-        </div>
-      </li>
-      <li>
-        구역 수정
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/44c2ccee-7ab7-4ea2-a659-a8d62898b0e5" alt="구역 수정" width="720">
-        </div>
-      </li>
-    </ul>
-  </details>
-
-  <details>
-    <summary><b>메뉴 관리</b></summary>
-    <ul>
-      <li>
-        메뉴 추가 (기본 값 설정)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/4da9ec68-da96-4310-8dc9-3359ec646ba0" alt="메뉴 추가 - 기본 값 설정" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (옵션 추가)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/2c3d99f7-1062-4d01-a39f-c62ae301e427" alt="메뉴 추가 - 옵션 추가" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (신규 카테고리 추가)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/4ce31115-c2da-46c2-a783-14209c5d8a71" alt="메뉴 추가 - 신규 카테고리 추가" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (동일 카테고리 생성 방지)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/83c4ea18-a9a8-4181-919b-d97c66aac2e6" alt="메뉴 추가 - 동일 카테고리 생성 방지" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (이미지 미리보기)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/222e1747-fe92-4ff2-91e2-3484e6718091" alt="메뉴 추가 - 이미지 미리보기" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (식자재 선택 - 선택 X)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/10198fee-c74f-4964-8340-c6f4bbdb7d9c" alt="메뉴 추가 - 식자재 선택 안 함" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (식자재 선택 - 선택 O)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/629ce26d-8ba4-40ad-8d7b-44ca0ab1eafd" alt="메뉴 추가 - 식자재 선택 함" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (식자재 추가 - 기본화면)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/7b39637c-2dfe-4081-9e6f-c95901e43847" alt="메뉴 추가 - 식자재 추가 기본 화면" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 추가 (식자재 추가 - 정상 작동 알림)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/e0080c55-a7c5-44b5-b310-e80df1d41d3e" alt="메뉴 추가 - 식자재 추가 정상 작동 알림" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 삭제 (재확인 모달)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/7a685621-b65d-4f1b-83dc-74e226253e06" alt="메뉴 삭제 - 재확인 모달" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 삭제 (정상 작동 알림)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/3e9ecdee-c512-46ea-91f0-945061f96e71" alt="메뉴 삭제 - 정상 작동 알림" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 검색 (상태 기반 검색)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/be5af027-9563-4946-8068-7e64f43c5cbc" alt="메뉴 검색 - 상태 기반" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 검색 (상태 + 카테고리)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/eecc59c3-2919-4b1d-8569-c25636e5f3e9" alt="메뉴 검색 - 상태+카테고리" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 수정 (식자재 수정)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/899f6a61-3423-4c69-9ba6-b5939d73fff0" alt="메뉴 수정 - 식자재 수정" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 수정 (식자재 수정 후 상태값 자동 변경 - 치즈_듬뿍_피자)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/f1f9e8f7-b6aa-479e-b8c7-501b9d93a079" alt="메뉴 수정 - 식자재 수정 후 상태 자동 변경" width="720">
-        </div>
-      </li>
-    </ul>
-  </details>
-
-  <details>
-    <summary><b>식자재 관리</b></summary>
-    <ul>
-      <li>
-        식자재 관리 메인 페이지
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/dae3073d-0040-4472-93e6-2514becee436" alt="식자재 관리 메인 페이지" width="720">
-        </div>
-      </li>
-      <li>
-        식자재 수정 모달
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/dd819b53-0ad7-4b33-bc4f-a88735f0b00a" alt="식자재 수정 모달" width="720">
-        </div>
-      </li>
-      <li>
-        식자재 추가 모달
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/b6670ca4-9dbd-4845-8e9e-392c5ad77ee5" alt="식자재 추가 모달" width="720">
-        </div>
-      </li>
-      <li>
-        식자재 삭제 확인 모달
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/16e3bcbf-af83-4015-a762-4d284ee905dc" alt="식자재 삭제 확인 모달" width="720">
-        </div>
-      </li>
-    </ul>
-  </details>
-
+  - **비밀번호 재설정**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/f0d92778-05ff-4068-afbc-3727e21502e2" alt="점주 비밀번호 재설정" width="720">
+    </p>
 </details>
 
 <details>
-  <summary><h4><b>테이블 오더 페이지</b></h4></summary>
+  <summary><b>테이블 현황</b></summary>
 
-  <details>
-    <summary><b>로그인</b></summary>
-    <ul>
-      <li>
-        테이블 자동로그인(기본)
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/ba6664ff-1f00-477b-b143-199734f6ce41" alt="테이블 자동로그인 기본" width="720">
-        </div>
-      </li>
-      <li>
-        테이블 일반로그인
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/dbceaeba-8561-47e2-8c26-fedc7331ffed" alt="테이블 일반로그인" width="720">
-        </div>
-      </li>
-    </ul>
-  </details>
+  - **구역 별 주문 테이블 조회**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/0db521d3-c686-4b13-9538-68711bf03a52" alt="구역 별 주문 테이블 조회" width="720">
+    </p>
 
-  <details>
-    <summary><b>테이블 오더</b></summary>
-    <ul>
-      <li>
-        카테고리 선택
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/21cc53b1-4653-4cb9-9858-a95ddebe1155" alt="카테고리 선택" width="720">
-        </div>
-      </li>
-      <li>
-        레이아웃 변경
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/026e292b-18c3-472a-80ef-36152b4bde2f" alt="레이아웃 변경" width="720">
-        </div>
-      </li>
-      <li>
-        메뉴 상세 모달
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/76c3b3ed-b80d-4e9b-b8e3-abe38b5001ec" alt="메뉴 상세 모달" width="720">
-        </div>
-      </li>
-      <li>
-        옵션 선택
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/3d0562ee-d29e-4ba0-a3cf-4d7c8e4422f8" alt="옵션 선택" width="720">
-        </div>
-      </li>
-      <li>
-        장바구니 수량 선택
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/4abeafd8-bfac-42a9-bda7-0e0b1da6618d" alt="장바구니 수량 선택" width="720">
-        </div>
-      </li>
-      <li>
-        품절된 상품 주문
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/e62121e9-09de-440f-bb8f-d81273a76c46" alt="품절된 상품 주문" width="720">
-        </div>
-      </li>
-      <li>
-        한정 수량 상품 주문
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/b19dd341-1b77-4406-85a4-b760ae345d6d" alt="한정 수량 상품 주문" width="720">
-        </div>
-      </li>
-      <li>
-        동일 메뉴, 다른 옵션
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/b9cd78a8-1eb0-4137-aab8-3c95ef1d6c43" alt="동일 메뉴 다른 옵션" width="720">
-        </div>
-      </li>
-      <li>
-        주문 후 주문 내역 조회
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/21048e43-0a4b-452d-957b-6b531aa686fa" alt="주문 후 주문 내역 조회" width="720">
-        </div>
-      </li>
-      <li>
-        QR 결제
-        <div align="center">
-          <img src="https://github.com/user-attachments/assets/036a22f0-19a1-4447-b9e1-90b585e686ed" alt="QR 결제" width="720">
-        </div>
-      </li>
-    </ul>
-  </details>
+  - **QR 결제 후 테이블 상태 변환**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/eee7ec00-0810-4648-bc99-dcb33b79cb1a" alt="QR 결제 후 상태 변환" width="720">
+    </p>
+
+  - **카운터 결제**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/674e6a6a-7e93-455e-b80c-343aef914e7e" alt="카운터 결제" width="720">
+    </p>
+
+  - **테이블 비우기**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/d5e6c6f5-a588-4372-adf4-bbb2d0876af8" alt="카운터 결제" width="720">
+    </p>
+
+  - **주문 수정**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/14d64ee4-fe28-418b-9345-a51e7153f3e0" alt="카운터 결제" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>주문 현황</b></summary>
+
+  - **주문 접수 페이지 (접수 탭)**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/f06d9dee-5260-4e89-9a31-bec36bb6c273" width="720">
+    </p>
+    
+  - **주문 접수 페이지 (완료 탭)**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/92b9335d-69ac-4f8f-b4a5-461c91bd1202" width="720">
+    </p>
+
+  - **주문 접수 페이지 (취소 탭)**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/0c85ad12-07e4-4f37-9824-1bd5233de9cd" width="720">
+    </p>
+    
+  - **실시간 주문 확인**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/3f330879-6b42-4359-b4f9-647f251f6872" width="720">
+    </p>
+
+  - **조리 완료**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/5d7d0036-7118-4266-a042-a58685159562" width="720">
+    </p>
+
+  - **조리 취소**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/ac051629-bcb0-4246-b293-cd525c17eb9d" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>메뉴 관리</b></summary>
+
+  - **메뉴 페이지**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/4a7618f2-1817-49aa-8d80-322b85c4300e" width="720">
+    </p>
+
+  - **메뉴 생성 (옵션 추가)**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/4040d775-de6d-4cac-8dbf-2165de76ba2c" width="720">
+    </p>
+
+  - **메뉴 생성 (식자재 설정 및 추가)**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/661784de-255c-4c98-b093-6dea3d34c9f7" width="720">
+    </p>
+
+  - **메뉴 수정 (식자재 소진 시 메뉴 품절)**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/100132f8-5a50-4664-a66c-6ea66690a2da" width="720">
+    </p>
+
+  - **메뉴 삭제**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/56d18fdf-eebc-4cdd-bc8f-1ab9e50b1d1d" width="720">
+    </p>
+
+  - **메뉴 검색**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/c65e3f9e-0b37-4385-81ac-196dec89f4ad" width="720">
+    </p>
+    
+  - **카테고리별 메뉴 조회**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/04735dfc-0fa5-4d4f-aa4a-63b1a8705cac" width="720">
+    </p>
+        
+  - **카테고리 생성 (중복 불가)**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/5909c887-f8b1-47e5-a632-da3fc2b27148" width="720">
+    </p>
+</details>
+
+<details>
+  <summary><b>식자재 관리</b></summary>
+  
+  - **식자재 관리 페이지**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/8b0c4cb0-c68d-4bb2-993e-6dc62ec5e91b" width="720">
+    </p>
+
+  - **식자재 검색**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/d077f4a8-feed-40b4-a6ce-bfc5eb4e4556" width="720">
+    </p>
+    
+  - **식자재 추가**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/1418257f-615a-472d-8541-067a7336605d" width="720">
+    </p>
+
+  - **식자재 수정**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/8bd52f97-1c99-43a8-8327-15b7f78ad1cf" width="720">
+    </p>
+
+  - **식자재 삭제**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/16e3bcbf-af83-4015-a762-4d284ee905dc" width="720">
+    </p>
+  
 
 </details>
+
+---
+
+### 📌 테이블 오더
+<details>
+  <summary><b>주요 기능</b></summary>
+
+  - **대기 화면**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/afd3565a-5b1e-44b3-9c58-1b97094320f1" width="720">
+    </p>
+
+  - **카테고리 선택**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/07a70800-979e-41e6-b517-fd40b81b0f63" width="720">
+    </p>
+    
+  - **레이아웃 변경**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/a7f501bb-f8f8-42cc-b21e-fff3e00abf24" width="720">
+    </p>
+
+  - **요청사항 전송**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/0540c3af-c6b0-45b3-9976-1980a0e20637" width="720">
+    </p>
+
+  - **메뉴 상세 페이지 + 메뉴 담기**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/40bb14c4-01f6-469f-af61-9758ec436699" width="720">
+    </p>
+
+  - **옵션 타입별 선택**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/1f3f30d9-a050-4c56-9066-249a8e628a8e" width="720">
+    </p>
+    
+  - **장바구니 수량 선택**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/df401c5c-590f-440e-9ccb-57ba28d2489b" width="720">
+    </p>
+    
+  - **품절된 메뉴 조회**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/592b79e4-dccf-47b3-9fe1-8e90bca6a213" alt=" storeTable 품절된 메뉴 조회" width="720">
+    </p>
+
+  - **품절된 메뉴 주문**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/992cf2b5-7e2b-4895-be24-741a5c7f7fb6" alt=" storeTable 품절된 메뉴 주문" width="720">
+    </p>
+    
+  - **한정 수량인 메뉴 주문**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/d22f5bb0-0362-463f-9123-dfd217a83598" alt=" storeTable 한정 수량인 메뉴 주문" width="720">
+    </p>
+        
+  - **정상 주문**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/537c4ed4-81d5-4167-94be-30de2f9ec02c" alt=" storeTable 정상 주문" width="720">
+    </p>
+    
+  - **주문 내역 조회**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/d6ccd45f-038d-44a6-b252-cb9482ea43e4" alt=" storeTable 주문 내역 조회" width="720">
+    </p>
+
+  - **QR 결제**  
+    <p align="center">
+      <img src="https://github.com/user-attachments/assets/5c60bfee-ff61-4d4b-9a89-5f57f87d24e2" alt=" storeTable QR 결제" width="720">
+      <img src="https://github.com/user-attachments/assets/f114d151-7382-4a0e-8bea-089697a3ee11" alt=" storeTable QR 결제2" width="720">
+    </p>
+</details>
+
