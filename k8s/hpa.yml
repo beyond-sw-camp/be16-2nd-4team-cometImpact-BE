@@ -1,0 +1,23 @@
+# 메트릭 서버 설치
+# kubectl apply -f https://github.com/kubernetes-sigs/metrics-server/releases/latest/download/components.yaml
+
+apiVersion: autoscaling/v1
+kind: HorizontalPodAutoscaler
+metadata:
+  name: jellyorder-hpa
+  namespace: jo
+spec: 
+  scaleTargetRef:
+    apiVersion: apps/v1
+    kind: Deployment
+    name: jellyorder-deployment
+  minReplicas: 1
+  maxReplicas: 3
+  targetCPUUtilizationPercentage: 30
+
+# 메트릭 서버와 HPA를 통한 pod 현황 조회
+# kubectl get hpa ordersystem-hpa -n charlie -w
+
+# 부하 간단 테스트
+# 특정 pod에 접속
+# while true; do curl -s https://server.charliekim20022.shop/product/list; done
