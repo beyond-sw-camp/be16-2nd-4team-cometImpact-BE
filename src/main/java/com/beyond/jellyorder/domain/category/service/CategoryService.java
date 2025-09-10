@@ -71,7 +71,7 @@ public class CategoryService {
                 .orElseThrow(() -> new EntityNotFoundException("유효하지 않은 storeId: " + storeId));
 
         // 살아있는 카테고리만 조회
-        List<Category> categoryList = categoryRepository.findAllByStoreIdAndDeletedFalse(storeId);
+        List<Category> categoryList = categoryRepository.findAllByStoreIdAndDeletedFalseOrderByUpdatedAtAsc(storeId);
 
         return categoryList.stream()
                 .map(c -> new GetCategoryResDto(c.getId(), c.getName(), c.getDescription()))
