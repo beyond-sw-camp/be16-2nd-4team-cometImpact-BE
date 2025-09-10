@@ -115,8 +115,13 @@ public class StoreOpenCloseService {
         collectOrderNumberService.resetOrderNum(storeId);
 
         // 서버 시간으로 마감
+        Store store = storeRepository.findById(storeId)
+                .orElseThrow(() -> new IllegalStateException("매장을 찾을 수 없습니다. " + storeId));
+
         LocalDateTime closedAt = now();
         current.storeClose(closedAt);
+        store.changeBusinessClosedAt(closedAt);
+
 
         // 매출 요약(세션 기준)
         SalesSummaryDTO sum = salesRepository.summarizeByOpenClose(
@@ -125,8 +130,7 @@ public class StoreOpenCloseService {
         long gross = (sum != null && sum.getGross() != null) ? sum.getGross() : 0L;
         long cnt = (sum != null && sum.getCnt() != null) ? sum.getCnt() : 0L;
 
-        Store store = storeRepository.findById(storeId)
-                .orElseThrow(() -> new IllegalStateException("매장을 찾을 수 없습니다. " + storeId));
+
 
         return CloseSummaryDTO.builder()
                 .storeId(store.getId())
