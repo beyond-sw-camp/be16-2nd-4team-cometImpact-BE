@@ -4,8 +4,10 @@ import com.beyond.jellyorder.common.BaseIdEntity;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.Clock;
 import java.time.LocalDateTime;
 import java.time.LocalTime;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,10 +48,12 @@ public class UnitOrder extends BaseIdEntity {
     @Builder.Default
     private List<OrderMenu> orderMenus = new ArrayList<>();
 
+
+
     // 최초 주문 생성 시 자동 주입
     @PrePersist
     protected void onCreate() {
-        this.acceptedAt = LocalDateTime.now();
+        this.acceptedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
     }
 
     // 주문 상태의 따라 시간 값 추출 메서드
@@ -65,8 +69,8 @@ public class UnitOrder extends BaseIdEntity {
     public void updateOrderStatus(OrderStatus status) {
         this.status = status;
         switch (status) {
-            case COMPLETE -> this.completedAt = LocalDateTime.now();
-            case CANCEL -> this.cancelledAt = LocalDateTime.now();
+            case COMPLETE -> this.completedAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
+            case CANCEL -> this.cancelledAt = LocalDateTime.now(ZoneId.of("Asia/Seoul"));
         }
     }
 
