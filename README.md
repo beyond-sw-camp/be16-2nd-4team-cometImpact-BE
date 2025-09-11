@@ -181,11 +181,14 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 
 ## 3. 분석 및 설계
 
-### 요구사항 명세서 [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1037534638#gid=1037534638)
+### 요구사항 명세서 [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=1096538882#gid=1096538882)
 <details>
   <summary><b>요구사항 명세서</b></summary>
-<img width="1362" height="608" alt="스크린샷 2025-08-26 오후 3 29 12" src="https://github.com/user-attachments/assets/8a6c232d-0e74-44f2-a18a-fe436ef44985" />
+<img width="1714" height="1863" alt="KakaoTalk_20250911_120034881" src="https://github.com/user-attachments/assets/c850eac9-e2e1-4006-bd64-32953ab91beb" />
 </details>
+
+
+
 
 ###  화면 설계서 - [상세보기](https://www.figma.com/design/WuBdoUWSz5n3gdSHdMN2qo/be16-4th-team?node-id=0-1&t=5D9WbMwwOTOxQaVj-1)
 <details>
@@ -200,7 +203,7 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 ### ERD - [상세보기](https://www.erdcloud.com/d/fAJgKBWBde3CPAkgW)
 <details>
   <summary><b>ERD</b></summary>
-  <img src="https://raw.githubusercontent.com/beyond-sw-camp/be16-2nd-4team-cometImpact-BE/develop/Jelly_order_ERD.png"></img>
+  <img width="3380" height="1629" alt="Jelly_Order" src="https://github.com/user-attachments/assets/6230dd70-a6f5-42a7-8c24-b7d5026507a5" />
 </details>
 
 ### WBS - [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=0#gid=0)
@@ -227,6 +230,11 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
     </tr>
   </thead>
   <tbody>
+    <tr>
+      <td><b>Spring Security 기반 JWT 인증/인가</b></td>
+      <td>
+          Spring Security에서 JWT 필터를 구성해 인증·인가 규칙을 정의하고, STORE/STORE_TABLE 로그인 시 <code>Access·Refresh Token</code>을 발급했습니다. JWT는 무상태(stateless) 구조이므로 <code>RefreshToken</code>을 Redis에 저장해 고성능 관리가 가능하도록 했습니다. 로그인 유형별로 <code>payload</code>를 조립해 UUID 기반 테이블 아이디 등 필요한 값을 서비스 전역에서 활용할 수 있도록 <code>@Bean 객체</code>를 두었으며, 자동 로그인은 <code>Session Storage와 Local Storage</code>를 적절히 분리해 구현했습니다. 또한, 공공데이터포털 API를 연동하여 사업자등록번호 검증 절차를 적용했습니다.
+      </td>
     <tr>
       <td><b>Redis Pub/Sub 기반 실시간 메시징</b></td>
       <td>
