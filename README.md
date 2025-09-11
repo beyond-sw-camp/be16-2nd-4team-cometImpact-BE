@@ -215,7 +215,7 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 ### API 명세서 - [상세보기](https://docs.google.com/spreadsheets/d/1lV6OYcvnEEBzQFvDyBVyoR1MRkYB52oj-mvlcYLXNRM/edit?gid=394720298#gid=394720298)
 <details>
   <summary><b>API 명세서</b></summary>
-<img width="1402" height="580" alt="스크린샷 2025-08-26 오후 3 02 55" src="https://github.com/user-attachments/assets/ebaf6eaa-b99c-4d8d-bfa1-b98f8370fd9c" />
+<img width="1665" height="1389" alt="image" src="https://github.com/user-attachments/assets/b51c1360-2863-459b-a3d7-f35f32df07f0" />
 </details>
 <br>
 
