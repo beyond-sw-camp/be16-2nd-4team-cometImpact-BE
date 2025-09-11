@@ -135,7 +135,6 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 ![Redis](https://img.shields.io/badge/Redis-DC382D?style=for-the-badge&logo=redis&logoColor=white)
 ![WebSocket](https://img.shields.io/badge/WebSocket-000000?style=for-the-badge&logo=websocket&logoColor=white)
 ![MariaDB](https://img.shields.io/badge/MariaDB-003545?style=for-the-badge&logo=mariadb&logoColor=white)
-![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![SSE](https://img.shields.io/badge/SSE%20(Server--Sent%20Events)-000000?style=for-the-badge&logo=fastapi&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=jsonwebtokens&logoColor=white)
 
@@ -148,8 +147,16 @@ Jelly Order는 소상공인을 위한 경량형 오픈소스 테이블 오더·�
 ![CSS3](https://img.shields.io/badge/CSS3-1572B6?style=for-the-badge&logo=css3&logoColor=white)
 
 ### ☁️ Infra & Cloud
+![Kubernetes](https://img.shields.io/badge/kubernetes-%23326ce5.svg?style=for-the-badge&logo=kubernetes&logoColor=white)
+![Docker](https://img.shields.io/badge/Docker-2496ED?style=for-the-badge&logo=docker&logoColor=white)
 ![AWS S3](https://img.shields.io/badge/AWS%20S3-569A31?style=for-the-badge&logo=amazons3&logoColor=white)
 ![AWS](https://img.shields.io/badge/AWS-232F3E?style=for-the-badge&logo=amazonaws&logoColor=white)
+![CloudFront](https://img.shields.io/badge/CloudFront-945CF1?style=for-the-badge&logo=CloudFront&logoColor=white)
+![Aurora-and-RDS](https://img.shields.io/badge/Aurora--and--RDS-4561E3?style=for-the-badge&logo=Aurora-and-RDS&logoColor=white)
+![Route53](https://img.shields.io/badge/Route53-945CF2?style=for-the-badge&logo=Route53&logoColor=white)
+![Certificate Manager](https://img.shields.io/badge/Certificate--Manager-F54749?style=for-the-badge&logo=Certificate--Manager&logoColor=white)
+![IAM](https://img.shields.io/badge/IAM-F54648?style=for-the-badge&logo=IAM&logoColor=white)
+![VPC](https://img.shields.io/badge/VPC-5B31B6?style=for-the-badge&logo=VPC&logoColor=white)
 
 ### External API & Integration
 ![RestTemplate](https://img.shields.io/badge/RestTemplate-6DB33F?style=for-the-badge&logo=spring&logoColor=white)
